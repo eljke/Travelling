@@ -135,7 +135,7 @@ ul {
   color: var(--on-accent);
 }
 .dark-button:hover {
-  background: #23584d;
+  filter: brightness(1.08);
 }
 .text-button {
   display: inline-flex;
