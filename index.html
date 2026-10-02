@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#1d4a3d" />
+    <meta
+      name="description"
+      content="Личный путеводитель по местам, которые стоят вашего времени. Дубай: карта, билеты, источники и избранное."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="ru_RU" />
+    <meta property="og:title" content="Ваши путешествия — elsewhere" />
+    <meta
+      property="og:description"
+      content="Дубай за пределами открыток: места, карта, билеты и опыт путешественников."
+    />
+    <meta property="og:image" content="https://eljke.github.io/Travelling/images/hero-1280.webp" />
+    <meta property="og:url" content="https://eljke.github.io/Travelling/" />
+    <script>
+      try {
+        const theme = localStorage.getItem('travelling:theme')
+        document.documentElement.dataset.theme =
+          theme === 'light' || theme === 'dark' ? theme : 'system'
+      } catch {
+        document.documentElement.dataset.theme = 'system'
+      }
+    </script>
+    <title>Ваши путешествия — elsewhere</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <noscript>Для поиска мест и интерактивной карты включите JavaScript в браузере.</noscript>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
