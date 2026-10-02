@@ -208,6 +208,7 @@ export default function DestinationPage({ mapMode = false }: { mapMode?: boolean
             </button>
             <button
               className={`button favorite-filter ${filters.favorites ? 'active' : ''}`}
+              aria-label="Показать избранное"
               aria-pressed={filters.favorites}
               onClick={() => setFilter('favorites', !filters.favorites)}
             >

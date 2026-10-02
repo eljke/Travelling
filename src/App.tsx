@@ -163,24 +163,24 @@ function Shell() {
             }
           />
         </Routes>
+        <footer className="site-footer container">
+          <div>
+            <Link className="brand" to="/">
+              <Compass size={23} strokeWidth={1.5} />
+              {ui.brand}
+            </Link>
+            <p>Места, которые стоят вашего времени.</p>
+          </div>
+          <div>
+            <Link to={`${destinationPath}/sources`}>
+              {ui.sources}
+              <ArrowUpRight size={15} />
+            </Link>
+            <p>{ui.disclaimer}</p>
+          </div>
+          <span>Сделано для любопытства.</span>
+        </footer>
       </Suspense>
-      <footer className="site-footer container">
-        <div>
-          <Link className="brand" to="/">
-            <Compass size={23} strokeWidth={1.5} />
-            {ui.brand}
-          </Link>
-          <p>Места, которые стоят вашего времени.</p>
-        </div>
-        <div>
-          <Link to={`${destinationPath}/sources`}>
-            {ui.sources}
-            <ArrowUpRight size={15} />
-          </Link>
-          <p>{ui.disclaimer}</p>
-        </div>
-        <span>Сделано для любопытства.</span>
-      </footer>
     </>
   )
 }

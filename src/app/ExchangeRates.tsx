@@ -30,7 +30,8 @@ async function availableRates() {
 const cacheKey = 'travelling:rates:v1'
 function readCache() {
   try {
-    return ratesSchema.parse(JSON.parse(localStorage.getItem(cacheKey) ?? 'null'))
+    const cached = ratesSchema.parse(JSON.parse(localStorage.getItem(cacheKey) ?? 'null'))
+    return cached.effectiveAt <= moscowDay() && cached.fetchedAt <= moscowDay() ? cached : undefined
   } catch {
     return undefined
   }
