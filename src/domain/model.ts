@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { scheduleSchema } from './openingHours'
 
 const id = z.string().regex(/^[a-z0-9][a-z0-9-]*$/)
 const date = z.iso.date()
@@ -91,6 +92,7 @@ export const placeSchema = z.object({
   categories: z.array(z.enum(categories)).min(1),
   tags: z.array(z.string()),
   imageId: id,
+  gallery: z.array(z.object({ imageId: id, caption: z.string().min(1) })).default([]),
   imageNote: z.string().optional(),
   duration: z
     .object({
@@ -99,7 +101,13 @@ export const placeSchema = z.object({
       note: z.string(),
     })
     .refine((v) => v.maxMinutes >= v.minMinutes),
-  openingHours: z.object({ text: z.string(), checkedAt: date, sourceIds: references }),
+  openingHours: z.object({
+    text: z.string(),
+    checkedAt: date,
+    sourceIds: references,
+    schedule: scheduleSchema.optional(),
+    closedWeekdays: z.array(z.number().int().min(0).max(6)).optional(),
+  }),
   availability: z.object({
     status: z.enum(['open', 'temporarily-closed', 'check-dates']),
     note: z.string(),
@@ -157,8 +165,29 @@ export const destinationSchema = z
       featuredAreaComparisons: z.array(id),
     }),
     trip: z
-      .object({ destinationId: id, startDate: date, endDate: date })
-      .refine((v) => v.endDate >= v.startDate),
+      .object({
+        destinationId: id,
+        startDate: date,
+        endDate: date,
+        arrivalDate: date.optional(),
+        departureDate: date.optional(),
+        accommodation: z
+          .object({
+            name: z.string().min(1),
+            address: z.string(),
+            coordinates: coordinatesSchema,
+            website: url,
+            sourceIds: references,
+            checkedAt: date,
+          })
+          .optional(),
+      })
+      .refine(
+        (v) =>
+          v.endDate >= v.startDate &&
+          (!v.arrivalDate || v.arrivalDate <= v.startDate) &&
+          (!v.departureDate || v.departureDate >= v.endDate),
+      ),
     exchangeRate: z.object({
       baseCurrency: z.string().length(3),
       quoteCurrency: z.string().length(3),

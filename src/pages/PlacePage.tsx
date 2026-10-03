@@ -31,6 +31,9 @@ import Photo from '../shared/Photo'
 import PlaceCard, { FavoriteButton } from '../shared/PlaceCard'
 import LazyMap from '../features/map/LazyMap'
 import Sources from '../shared/Sources'
+import PlanButton from '../shared/PlanButton'
+import HotelBase from '../shared/HotelBase'
+import PhotoGallery from '../shared/PhotoGallery'
 
 function PaymentStatus({ payment }: { payment: PaymentSupport }) {
   return (
@@ -62,6 +65,7 @@ export default function PlacePage() {
   const location = useLocation()
   const navigate = useNavigate()
   const [selectedId, setSelectedId] = useState<string>()
+  const [russianPaymentOnly, setRussianPaymentOnly] = useState(false)
   if (!place)
     return (
       <main id="main" className="container empty">
@@ -70,6 +74,9 @@ export default function PlacePage() {
       </main>
     )
   const area = bundle.areas.find((a) => a.id === place.areaId)!
+  const offers = place.ticketProviders.filter(
+    (offer) => !russianPaymentOnly || offer.russianCardSupport.status === 'confirmed',
+  )
   const nearby = getNearbyPlaces(place, bundle.places)
   const image = images[place.imageId]
   const sourceIds = [
@@ -127,7 +134,13 @@ export default function PlacePage() {
       <div className="place-layout">
         <div className="place-story">
           <p className="place-lead">{place.shortDescription}</p>
+          <PlanButton place={place} bundle={bundle} />
+          <Link className="text-button" to={`/${destinationId}/photos?place=${place.id}`}>
+            Наши фото здесь · открыть или добавить →
+          </Link>
+          <HotelBase bundle={bundle} place={place} />
           <p className="place-description">{place.description}</p>
+          <PhotoGallery place={place} />
           {place.availability.status === 'temporarily-closed' && (
             <div className="availability-alert">
               <Info size={21} />
@@ -162,6 +175,7 @@ export default function PlacePage() {
               <span>Часы и доступ</span>
               <p>{place.openingHours.text}</p>
               <small>Проверено {formatDate(place.openingHours.checkedAt)}</small>
+              <Sources bundle={bundle} ids={place.openingHours.sourceIds} />
             </div>
           </div>
           {place.availability.status !== 'temporarily-closed' && (
@@ -215,10 +229,10 @@ export default function PlacePage() {
               </>
             ) : (
               <div className="unknown-review">
-                <p>Нет подтверждённого разбора нескольких русскоязычных отзывов по этому месту.</p>
+                <p>Для этого места ещё не собрали достаточно свежих отзывов.</p>
                 <p>
-                  Оценки и впечатления не подменяем редакционными советами. Для подготовки
-                  используйте официальные сведения и источники ниже.
+                  Пока можно посмотреть сайт места и источники ниже. Позже добавим впечатления
+                  посетителей.
                 </p>
               </div>
             )}
@@ -298,30 +312,48 @@ export default function PlacePage() {
           означает оплату всей суммы картой.
         </p>
         {place.ticketProviders.length ? (
-          <div className="provider-list">
-            {place.ticketProviders.map((offer) => (
-              <article className="provider-row" key={offer.providerId}>
-                <div>
-                  <h3>{bundle.providers.find((p) => p.id === offer.providerId)!.name}</h3>
-                  <small>
-                    {offer.linkType === 'catalog'
-                      ? 'Каталог предложений'
-                      : 'Страница объекта или билета'}
-                  </small>
-                </div>
-                <div className="provider-price">
-                  <strong>{offer.price ? formatPrice(offer.price) : 'Цена уточняется'}</strong>
-                  <small>{offer.price && formatRub(offer.price, bundle.exchangeRate)}</small>
-                </div>
-                <PaymentStatus payment={offer.russianCardSupport} />
-                <a className="button secondary" href={offer.url} target="_blank" rel="noreferrer">
-                  Проверить условия
-                  <ArrowUpRight size={16} />
-                </a>
-                {offer.price?.note && <p className="provider-price-note">{offer.price.note}</p>}
-              </article>
-            ))}
-          </div>
+          <>
+            <div className="ticket-controls">
+              <span>{offers.length} способов покупки</span>
+              <button
+                className="button secondary"
+                aria-pressed={russianPaymentOnly}
+                onClick={() => setRussianPaymentOnly(!russianPaymentOnly)}
+              >
+                Подтверждена карта РФ
+              </button>
+            </div>
+            {offers.length === 0 && (
+              <p className="unknown-review">
+                Для этого места нет предложений с подтверждённой оплатой картой РФ. Покажите все
+                способы и проверьте условия у продавца.
+              </p>
+            )}
+            <div className="provider-list">
+              {offers.map((offer) => (
+                <article className="provider-row" key={offer.providerId}>
+                  <div>
+                    <h3>{bundle.providers.find((p) => p.id === offer.providerId)!.name}</h3>
+                    <small>
+                      {offer.linkType === 'catalog'
+                        ? 'Предложения этого места'
+                        : 'Страница объекта или билета'}
+                    </small>
+                  </div>
+                  <div className="provider-price">
+                    <strong>{offer.price ? formatPrice(offer.price) : 'Цена уточняется'}</strong>
+                    <small>{offer.price && formatRub(offer.price, bundle.exchangeRate)}</small>
+                  </div>
+                  <PaymentStatus payment={offer.russianCardSupport} />
+                  <a className="button secondary" href={offer.url} target="_blank" rel="noreferrer">
+                    Открыть билет
+                    <ArrowUpRight size={16} />
+                  </a>
+                  {offer.price?.note && <p className="provider-price-note">{offer.price.note}</p>}
+                </article>
+              ))}
+            </div>
+          </>
         ) : (
           <div className="unknown-review">
             <p>
@@ -332,10 +364,10 @@ export default function PlacePage() {
           </div>
         )}
         <details className="other-providers">
-          <summary>Другие сервисы: проверка оплаты и поиск предложений</summary>
+          <summary>Поиск этого места в других сервисах</summary>
           <p>
-            Эти ссылки ведут на сервисы. Наличие билета именно на это место и на ваши даты не
-            подтверждено.
+            Прямая страница билета у этих продавцов пока не проверена. Ссылки ищут конкретное место
+            на сайте продавца; проверьте пакет и дату перед оплатой.
           </p>
           {bundle.providers
             .filter(
@@ -344,8 +376,12 @@ export default function PlacePage() {
             )
             .map((provider) => (
               <div className="other-provider" key={provider.id}>
-                <a href={provider.website} target="_blank" rel="noreferrer">
-                  {provider.name}
+                <a
+                  href={`https://www.google.com/search?${new URLSearchParams({ q: `site:${new URL(provider.website).hostname} ${place.name} ${bundle.destination.name} tickets` })}`}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Найти в {provider.name}
                   <ExternalLink size={15} />
                 </a>
                 <PaymentStatus payment={provider.russianCardSupport} />

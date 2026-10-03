@@ -25,6 +25,7 @@ import { usePreferences } from '../app/Preferences'
 import Photo from '../shared/Photo'
 import PlaceCard from '../shared/PlaceCard'
 import LazyMap from '../features/map/LazyMap'
+import HotelBase from '../shared/HotelBase'
 
 export default function DestinationPage({ mapMode = false }: { mapMode?: boolean }) {
   const { destinationId = '' } = useParams()
@@ -54,6 +55,8 @@ export default function DestinationPage({ mapMode = false }: { mapMode?: boolean
       return result.sort((a, b) => (a.pricing.amount ?? Infinity) - (b.pricing.amount ?? Infinity))
     if (filters.sort === 'nearby' && position)
       return sortByDistance(result, position).map((v) => v.place)
+    if (filters.sort === 'hotel' && bundle.trip.accommodation)
+      return sortByDistance(result, bundle.trip.accommodation.coordinates).map((v) => v.place)
     return result
   }, [bundle, filters, favorites, position])
   if (!bundle)
@@ -175,6 +178,7 @@ export default function DestinationPage({ mapMode = false }: { mapMode?: boolean
         </>
       )}
       <section className="catalog-section container">
+        {!mapMode && <HotelBase bundle={bundle} />}
         <div className="catalog-heading">
           <div>
             <span className="eyebrow">ВАШ ГОРОД. ВАШ ТЕМП.</span>
@@ -373,9 +377,10 @@ export default function DestinationPage({ mapMode = false }: { mapMode?: boolean
                   e.target.value === 'nearby' ? findLocation() : setFilter('sort', e.target.value)
                 }
               >
-                <option value="editorial">Выбор редакции</option>
+                <option value="editorial">Сначала знакомые места</option>
                 <option value="price">Сначала дешевле</option>
                 <option value="nearby">Ближе ко мне</option>
+                {bundle.trip.accommodation && <option value="hotel">Ближе к отелю</option>}
               </select>
             </label>
           </div>

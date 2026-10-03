@@ -12,6 +12,7 @@ export const destinations: Record<string, DestinationBundle> = Object.fromEntrie
     for (const imageId of [
       bundle.destination.heroImageId,
       ...bundle.places.map((place) => place.imageId),
+      ...bundle.places.flatMap((place) => place.gallery.map((photo) => photo.imageId)),
     ])
       if (!images[imageId]) throw new Error(`Unknown image ${imageId}`)
     return [bundle.destination.id, bundle]

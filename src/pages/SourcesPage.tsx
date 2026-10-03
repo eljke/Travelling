@@ -18,20 +18,23 @@ export default function SourcesPage() {
       </main>
     )
   const usedImages = [
-    ...new Set([bundle.destination.heroImageId, ...bundle.places.map((p) => p.imageId)]),
+    ...new Set([
+      bundle.destination.heroImageId,
+      ...bundle.places.flatMap((p) => [p.imageId, ...p.gallery.map((photo) => photo.imageId)]),
+    ]),
   ]
   return (
     <main className="sources-page container" id="main">
       <Link className="text-button" to={`/${destinationId}`}>
         <ArrowLeft size={17} />К местам
       </Link>
-      <span className="eyebrow">ПРОЗРАЧНОСТЬ ВМЕСТО ДОГАДОК</span>
+      <span className="eyebrow">ЧТО ПРОВЕРЕНО И ГДЕ ПОСМОТРЕТЬ</span>
       <h1>
         Источники
         <br />и актуальность.
       </h1>
       <p className="place-lead">
-        Каждое место — отправная точка для открытия, а не обещание цены или доступности.
+        Здесь собраны сайты мест, билеты и отзывы, которыми мы пользуемся при подготовке поездки.
       </p>
       <div className="sources-intro">
         <p>
@@ -48,8 +51,8 @@ export default function SourcesPage() {
         </p>
         <p>
           Географические точки обозначают объекты или прогулочные зоны, а не гарантированный вход.
-          Время посещения и выбор лучшего времени — редакционные ориентиры. Отзывы явно отделены от
-          официальных сведений; для части мест надёжной выборки нет.
+          Длительность помогает прикинуть день: можно задержаться или уйти раньше. Отзывы отделены
+          от официальных сведений; для части мест надёжной выборки нет.
         </p>
       </div>
       <section>

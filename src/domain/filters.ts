@@ -25,7 +25,7 @@ export function parseFilters(params: URLSearchParams): Filters {
   for (const key of ['q', 'area', 'category', 'price', 'duration', 'tag', 'sort'] as const)
     value[key] = params.get(key) ?? value[key]
   value.favorites = params.get('favorites') === '1'
-  if (!['editorial', 'price', 'nearby'].includes(value.sort)) value.sort = 'editorial'
+  if (!['editorial', 'price', 'nearby', 'hotel'].includes(value.sort)) value.sort = 'editorial'
   if (!['', 'free', 'under-100', '100-250', '250-plus'].includes(value.price)) value.price = ''
   if (!['', 'under-1', '1-2', '2-4', 'half-day'].includes(value.duration)) value.duration = ''
   return value

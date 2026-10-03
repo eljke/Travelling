@@ -8,10 +8,13 @@ import { ui } from './shared/labels'
 import type { Theme } from './shared/persistence'
 import HomePage from './pages/HomePage'
 import { ExchangeRates } from './app/ExchangeRates'
+import { PlaceHours } from './app/PlaceHours'
 
 const DestinationPage = lazy(() => import('./pages/DestinationPage'))
 const PlacePage = lazy(() => import('./pages/PlacePage'))
 const SourcesPage = lazy(() => import('./pages/SourcesPage'))
+const PlanPage = lazy(() => import('./pages/PlanPage'))
+const AlbumPage = lazy(() => import('./pages/AlbumPage'))
 const scrollPositions = new globalThis.Map<string, number>()
 function Shell() {
   const location = useLocation()
@@ -25,7 +28,7 @@ function Shell() {
     const title = place
       ? `${place.nameRu} · ${current.destination.name} — ${ui.brand}`
       : current
-        ? `${current.destination.name} · места и карта — ${ui.brand}`
+        ? `${current.destination.name} · ${location.pathname.endsWith('/plan') ? 'план поездки' : 'места и карта'} — ${ui.brand}`
         : `Ваши путешествия — ${ui.brand}`
     document.title = title
     document.querySelector('meta[property="og:title"]')?.setAttribute('content', title)
@@ -85,6 +88,12 @@ function Shell() {
             >
               <Map size={16} />
               <span>Карта</span>
+            </Link>
+            <Link
+              className={location.pathname.endsWith('/plan') ? 'active' : ''}
+              to={`${destinationPath}/plan`}
+            >
+              План
             </Link>
           </nav>
           <div className="header-actions">
@@ -153,6 +162,8 @@ function Shell() {
             element={<PlacePage key={location.pathname} />}
           />
           <Route path="/:destinationId/sources" element={<SourcesPage />} />
+          <Route path="/:destinationId/plan" element={<PlanPage key={location.pathname} />} />
+          <Route path="/:destinationId/photos" element={<AlbumPage key={location.pathname} />} />
           <Route
             path="*"
             element={
@@ -170,6 +181,7 @@ function Shell() {
               {ui.brand}
             </Link>
             <p>Места, которые стоят вашего времени.</p>
+            <Link to={`${destinationPath}/photos`}>Наши фото ↗</Link>
           </div>
           <div>
             <Link to={`${destinationPath}/sources`}>
@@ -188,11 +200,13 @@ export default function App() {
   return (
     <ErrorBoundary>
       <Preferences>
-        <ExchangeRates>
-          <HashRouter>
-            <Shell />
-          </HashRouter>
-        </ExchangeRates>
+        <PlaceHours>
+          <ExchangeRates>
+            <HashRouter>
+              <Shell />
+            </HashRouter>
+          </ExchangeRates>
+        </PlaceHours>
       </Preferences>
     </ErrorBoundary>
   )

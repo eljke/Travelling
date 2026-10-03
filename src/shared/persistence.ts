@@ -1,3 +1,26 @@
+import { z } from 'zod'
+import { itinerarySchema } from '../domain/itinerary'
+import type { Itinerary } from '../domain/itinerary'
+
+export const plansKey = 'travelling:plans:v1'
+export function readPlans(): Record<string, Itinerary> {
+  try {
+    return z
+      .record(z.string(), itinerarySchema)
+      .parse(JSON.parse(localStorage.getItem(plansKey) ?? '{}'))
+  } catch {
+    return {}
+  }
+}
+export function savePlans(plans: Record<string, Itinerary>): boolean {
+  try {
+    localStorage.setItem(plansKey, JSON.stringify(plans))
+    return true
+  } catch {
+    return false
+  }
+}
+
 export const favoritesKey = 'travelling:favorites:v1'
 export function readFavorites(): string[] {
   try {

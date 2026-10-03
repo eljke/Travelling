@@ -6,6 +6,7 @@ import { formatDuration, formatPrice, formatRub, formatDistance } from './format
 import { categoryLabels } from './labels'
 import Photo from './Photo'
 import { parseFilters, serializeFilters } from '../domain/filters'
+import PlanButton from './PlanButton'
 
 export function FavoriteButton({ place }: { place: Place }) {
   const { favorites, toggleFavorite } = usePreferences()
@@ -105,6 +106,7 @@ export default function PlaceCard({
           </Link>
         )}
       </div>
+      <PlanButton place={place} bundle={bundle} />
     </article>
   )
 }

@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "places": [
+    {
+      "placeId": "dubai-dubai-frame",
+      "text": "Ежедневно 08:00–21:00 по времени Дубая. В праздники и особые даты расписание может меняться.",
+      "checkedAt": "2026-10-03",
+      "sourceUrl": "https://www.dubaiframe.ae/en/plan-your-visit",
+      "schedule": {
+        "opens": "08:00",
+        "closes": "21:00",
+        "closedWeekdays": []
+      },
+      "closedWeekdays": []
+    },
+    {
+      "placeId": "dubai-ain-dubai",
+      "text": "Ежедневно 10:00–21:00 по времени Дубая. В праздники и особые даты расписание может меняться.",
+      "checkedAt": "2026-10-03",
+      "sourceUrl": "https://www.aindubai.com/en/plan-your-visit",
+      "schedule": {
+        "opens": "10:00",
+        "closes": "21:00",
+        "closedWeekdays": []
+      },
+      "closedWeekdays": []
+    },
+    {
+      "placeId": "dubai-green-planet",
+      "text": "Ежедневно 10:00–18:00 по времени Дубая. В праздники и особые даты расписание может меняться.",
+      "checkedAt": "2026-10-03",
+      "sourceUrl": "https://www.thegreenplanetdubai.com/en/parks-opening-hours",
+      "schedule": {
+        "opens": "10:00",
+        "closes": "18:00",
+        "closedWeekdays": []
+      },
+      "closedWeekdays": []
+    }
+  ]
+}

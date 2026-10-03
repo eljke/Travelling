@@ -27,6 +27,7 @@ jobs:
       - run: npm run format:check
       - run: npm test
       - run: npm run update:rates
+      - run: npm run update:hours
       - run: npm run build
       - run: npx playwright install --with-deps chromium
       - run: npm run test:e2e

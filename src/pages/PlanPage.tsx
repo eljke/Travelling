@@ -1,0 +1,529 @@
+import { useState } from 'react'
+import { Link, useParams, useSearchParams } from 'react-router-dom'
+import {
+  ArrowDown,
+  ArrowUp,
+  CalendarDays,
+  Map,
+  Plus,
+  Printer,
+  Share2,
+  Sparkles,
+  Trash2,
+} from 'lucide-react'
+import { useDestinationBundle } from '../app/ExchangeRates'
+import { usePreferences } from '../app/Preferences'
+import {
+  createItinerary,
+  fillFromFavorites,
+  itinerarySchema,
+  normalizeItinerary,
+  placeInDay,
+  summarizeDay,
+} from '../domain/itinerary'
+import type { Itinerary } from '../domain/itinerary'
+import { distanceBetween } from '../domain/geo'
+import { closedOnDate } from '../domain/openingHours'
+import HotelBase, { directionsUrl } from '../shared/HotelBase'
+import {
+  convertCurrency,
+  formatCurrency,
+  formatDate,
+  formatDistance,
+  formatDuration,
+  formatPrice,
+  formatTrip,
+} from '../shared/format'
+import Photo from '../shared/Photo'
+import RateStrip from '../shared/RateStrip'
+import LazyMap from '../features/map/LazyMap'
+
+export default function PlanPage() {
+  const { destinationId = '' } = useParams()
+  const bundle = useDestinationBundle(destinationId)
+  const { plans, savePlan, favorites } = usePreferences()
+  const [params, setParams] = useSearchParams()
+  const [selectedDate, setSelectedDate] = useState('')
+  const [dailyMinutes, setDailyMinutes] = useState(360)
+  const [message, setMessage] = useState('')
+  const [shareUrl, setShareUrl] = useState('')
+  const [showMap, setShowMap] = useState(false)
+  const [selectedId, setSelectedId] = useState<string>()
+  if (!bundle)
+    return (
+      <main className="container empty" id="main">
+        <h1>Направление не найдено</h1>
+        <Link to="/">Все путешествия</Link>
+      </main>
+    )
+
+  const encoded = params.get('plan')
+  let shared: Itinerary | undefined
+  if (encoded !== null) {
+    try {
+      if (encoded.length > 30000) throw new Error('Plan is too large')
+      shared = normalizeItinerary(itinerarySchema.parse(JSON.parse(encoded)), bundle)
+    } catch {
+      return (
+        <main className="container empty" id="main">
+          <h1>Не удалось открыть план</h1>
+          <p>Ссылка повреждена или использует неподдерживаемый формат.</p>
+          <Link className="button secondary" to={`/${destinationId}/plan`}>
+            Открыть мой план
+          </Link>
+        </main>
+      )
+    }
+  }
+  const plan = shared ?? plans[destinationId] ?? createItinerary(bundle)
+  const activeDay = plan.days.find((day) => day.date === selectedDate) ?? plan.days[0]
+  const placeById = new globalThis.Map(bundle.places.map((place) => [place.id, place]))
+  const scheduled = new Set(plan.days.flatMap((day) => day.placeIds))
+  const allPlaces = [...scheduled].map((id) => placeById.get(id)!)
+  const total = summarizeDay(allPlaces, bundle.exchangeRate.baseCurrency)
+  const pending = bundle.places.filter(
+    (place) => favorites.includes(place.id) && !scheduled.has(place.id),
+  )
+  const available = bundle.places.filter((place) => !scheduled.has(place.id))
+  const update = (next: Itinerary) => {
+    savePlan(destinationId, next)
+    setMessage('План обновлён.')
+    setShareUrl('')
+  }
+  const reorder = (date: string, index: number, direction: number) => {
+    update({
+      ...plan,
+      days: plan.days.map((day) => {
+        if (day.date !== date) return day
+        const placeIds = [...day.placeIds]
+        ;[placeIds[index], placeIds[index + direction]] = [
+          placeIds[index + direction],
+          placeIds[index],
+        ]
+        return { ...day, placeIds }
+      }),
+    })
+  }
+  const autoFill = () => {
+    const next = fillFromFavorites(plan, bundle, favorites, dailyMinutes)
+    update(next)
+    const added = next.days.flatMap((day) => day.placeIds).length - scheduled.size
+    setMessage(
+      added
+        ? `Добавлено мест: ${added}. Ваши прежние остановки сохранены. Проверьте часы работы и оставьте время на дорогу.`
+        : 'Ничего не добавлено: выберите места в избранном или увеличьте время на посещения. Закрытые места пропускаются.',
+    )
+  }
+  const share = async () => {
+    const url = new URL(window.location.href)
+    url.hash = `/${destinationId}/plan?${new URLSearchParams({ plan: JSON.stringify(plan) })}`
+    setShareUrl(url.href)
+    try {
+      await navigator.clipboard.writeText(url.href)
+      setMessage(
+        'Ссылка скопирована. Она содержит текущую копию плана; последующие изменения в неё не попадут.',
+      )
+    } catch {
+      setMessage('Скопируйте ссылку из поля ниже. Она содержит текущую копию плана.')
+    }
+  }
+  const budget = (summary: ReturnType<typeof summarizeDay>) => {
+    const prefix = summary.lowerBound || summary.unknownPrices ? 'от ' : ''
+    return `${prefix}${formatCurrency(summary.amount, bundle.exchangeRate.baseCurrency)}`
+  }
+  return (
+    <main className="plan-page container" id="main">
+      <Link className="text-button" to={`/${destinationId}`}>
+        ← К местам
+      </Link>
+      <div className="plan-heading">
+        <div>
+          <span className="eyebrow">ВАШ ГОРОД. ВАШ МАРШРУТ.</span>
+          <h1>План поездки.</h1>
+          <p>
+            {bundle.destination.nameRu} · {formatTrip(bundle.trip)}
+          </p>
+        </div>
+        <div className="plan-actions">
+          <button className="button secondary" onClick={() => void share()}>
+            <Share2 size={17} />
+            Поделиться
+          </button>
+          <button className="button secondary" onClick={() => window.print()}>
+            <Printer size={17} />
+            Печать / PDF
+          </button>
+        </div>
+      </div>
+      {shared && (
+        <div className="plan-notice">
+          <div>
+            <strong>Копия плана по ссылке</strong>
+            <p>
+              Ваш личный план сохранён отдельно. Чтобы редактировать эту копию, сохраните её себе.
+            </p>
+          </div>
+          <button
+            className="button dark-button"
+            onClick={() => {
+              savePlan(destinationId, shared)
+              setParams(new URLSearchParams(), { replace: true })
+              setMessage('Копия сохранена как ваш план.')
+            }}
+          >
+            {plans[destinationId]?.days.some((day) => day.placeIds.length)
+              ? 'Заменить мой план этой копией'
+              : 'Сохранить себе'}
+          </button>
+          <Link className="text-button" to={`/${destinationId}/plan`}>
+            Мой план
+          </Link>
+        </div>
+      )}
+      <HotelBase bundle={bundle} />
+      <div className="plan-summary">
+        <div>
+          <CalendarDays size={22} />
+          <span>
+            <strong>
+              {scheduled.size} мест / {plan.days.length} дней
+            </strong>
+            <small>Билеты на одного человека</small>
+          </span>
+        </div>
+        <div>
+          <strong>{budget(total)}</strong>
+          <small>
+            ≈{' '}
+            {formatCurrency(
+              convertCurrency(total.amount, bundle.exchangeRate.rate),
+              bundle.exchangeRate.quoteCurrency,
+            )}
+          </small>
+        </div>
+        <RateStrip bundle={bundle} />
+      </div>
+      <p className="fine-print plan-budget-note">
+        {total.unknownPrices > 0 &&
+          `Мест без цены в валюте поездки: ${total.unknownPrices}. Они не включены в сумму. `}
+        Бюджет учитывает входные билеты из каталога, без еды, дороги и дополнительных услуг. Цены
+        «от» дают нижнюю оценку; наличие билетов на даты поездки нужно проверить.
+      </p>
+      {!shared && (
+        <section className="plan-builder" aria-label="Автопланирование">
+          <div>
+            <Sparkles size={23} />
+            <div>
+              <h2>Из желаний — в маршрут.</h2>
+              <p>
+                Распределим избранное по дням: близкие места вместе, с учётом длительности. Добавим
+                к вашему плану, сохранив порядок уже выбранных остановок.
+              </p>
+            </div>
+          </div>
+          <div className="plan-actions">
+            <label>
+              Время на посещения в день
+              <select
+                value={dailyMinutes}
+                onChange={(event) => setDailyMinutes(Number(event.target.value))}
+              >
+                <option value={240}>4 часа · спокойно</option>
+                <option value={360}>6 часов · сбалансированно</option>
+                <option value={480}>8 часов · насыщенно</option>
+              </select>
+            </label>
+            <button
+              className="button dark-button"
+              onClick={autoFill}
+              disabled={
+                !pending.some((place) => place.availability.status !== 'temporarily-closed')
+              }
+            >
+              <Sparkles size={17} />
+              Дополнить из избранного
+            </button>
+          </div>
+        </section>
+      )}
+      <p className="plan-status" role="status" aria-live="polite">
+        {message}
+      </p>
+      {shareUrl && (
+        <label className="plan-share">
+          Ссылка на копию плана
+          <input
+            aria-label="Ссылка на план"
+            readOnly
+            value={shareUrl}
+            onFocus={(event) => event.target.select()}
+          />
+        </label>
+      )}
+      <div className="plan-days" role="group" aria-label="Дни поездки">
+        {plan.days.map((day, index) => (
+          <button
+            key={day.date}
+            className={`plan-day-tab ${day.date === activeDay.date ? 'active' : ''}`}
+            aria-pressed={day.date === activeDay.date}
+            onClick={() => {
+              setSelectedDate(day.date)
+              setSelectedId(undefined)
+            }}
+          >
+            <span>День {index + 1}</span>
+            <strong>{formatDate(day.date).replace(/ \d{4} г\.$/, '')}</strong>
+            <small>{day.placeIds.length} мест</small>
+          </button>
+        ))}
+      </div>
+      {plan.days.map((day, dayIndex) => {
+        const places = day.placeIds.map((id) => placeById.get(id)!)
+        const summary = summarizeDay(places, bundle.exchangeRate.baseCurrency)
+        return (
+          <section
+            className="plan-day"
+            key={day.date}
+            hidden={day.date !== activeDay.date}
+            aria-label={`День ${dayIndex + 1}`}
+          >
+            <div className="plan-day-heading">
+              <h2>
+                День {dayIndex + 1} · {formatDate(day.date)}
+              </h2>
+              {places.length > 0 && (
+                <p>
+                  {formatDuration(summary)} на посещения · {budget(summary)} ·{' '}
+                  {formatDistance(summary.distance)} между остановками по прямой
+                </p>
+              )}
+            </div>
+            {summary.maxMinutes > dailyMinutes && (
+              <p className="plan-warning">
+                Насыщенный день: посещения могут занять больше {dailyMinutes / 60} часов, ещё без
+                дороги и перерывов. Перенесите часть мест на другой день.
+              </p>
+            )}
+            {!places.length && (
+              <div className="plan-empty">
+                <CalendarDays size={32} />
+                <h3>День открыт для новых мест.</h3>
+                <p>Добавьте место ниже или соберите маршрут из избранного.</p>
+                <Link className="text-button" to={`/${destinationId}`}>
+                  Выбрать в каталоге →
+                </Link>
+              </div>
+            )}
+            <ol className="plan-stops">
+              {places.map((place, index) => (
+                <li className="plan-stop" key={place.id}>
+                  <span className="plan-stop-number">{index + 1}</span>
+                  <Link className="plan-stop-photo" to={`/${destinationId}/place/${place.slug}`}>
+                    <Photo imageId={place.imageId} alt={place.nameRu} />
+                  </Link>
+                  <div className="plan-stop-content">
+                    <span className="eyebrow">
+                      {bundle.areas.find((area) => area.id === place.areaId)!.name}
+                    </span>
+                    <h3>
+                      <Link to={`/${destinationId}/place/${place.slug}`}>{place.nameRu}</Link>
+                    </h3>
+                    <p>
+                      {formatDuration(place.duration)} · {formatPrice(place.pricing)}
+                    </p>
+                    <p className="fine-print">{place.bestTime.join(' ')}</p>
+                    {bundle.trip.accommodation && (
+                      <a
+                        className="text-button"
+                        href={directionsUrl(
+                          index
+                            ? places[index - 1].coordinates
+                            : bundle.trip.accommodation.coordinates,
+                          place.coordinates,
+                        )}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        {index ? 'От предыдущей остановки' : 'От отеля'} · маршрут на машине ↗
+                      </a>
+                    )}
+                    {closedOnDate(place, day.date) && (
+                      <p className="plan-warning">
+                        На этот день указано закрытие. Выберите другую дату.
+                      </p>
+                    )}
+                    {place.availability.status !== 'open' && (
+                      <p className="plan-warning">
+                        {place.availability.status === 'temporarily-closed'
+                          ? 'Временно закрыто. '
+                          : 'Проверьте даты. '}
+                        {place.availability.note}
+                      </p>
+                    )}
+                    {place.bookingRecommended && (
+                      <Link className="text-button" to={`/${destinationId}/place/${place.slug}`}>
+                        Рекомендуется бронирование →
+                      </Link>
+                    )}
+                    {index > 0 && (
+                      <small className="fine-print">
+                        От предыдущей остановки:{' '}
+                        {formatDistance(
+                          distanceBetween(places[index - 1].coordinates, place.coordinates),
+                        )}{' '}
+                        по прямой
+                      </small>
+                    )}
+                  </div>
+                  {!shared && (
+                    <div className="plan-stop-controls">
+                      <label className="sr-only" htmlFor={`day-${place.id}`}>
+                        День: {place.nameRu}
+                      </label>
+                      <select
+                        id={`day-${place.id}`}
+                        value={day.date}
+                        onChange={(event) => update(placeInDay(plan, place.id, event.target.value))}
+                      >
+                        {plan.days.map((target, index) => (
+                          <option key={target.date} value={target.date}>
+                            День {index + 1}
+                          </option>
+                        ))}
+                      </select>
+                      <div>
+                        <button
+                          className="button secondary"
+                          aria-label={`Выше: ${place.nameRu}`}
+                          disabled={index === 0}
+                          onClick={() => reorder(day.date, index, -1)}
+                        >
+                          <ArrowUp size={16} />
+                        </button>
+                        <button
+                          className="button secondary"
+                          aria-label={`Ниже: ${place.nameRu}`}
+                          disabled={index === places.length - 1}
+                          onClick={() => reorder(day.date, index, 1)}
+                        >
+                          <ArrowDown size={16} />
+                        </button>
+                        <button
+                          className="button secondary"
+                          aria-label={`Убрать из плана: ${place.nameRu}`}
+                          onClick={() => update(placeInDay(plan, place.id, ''))}
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </li>
+              ))}
+            </ol>
+            {places.length > 0 && bundle.trip.accommodation && (
+              <div className="plan-return">
+                <a
+                  className="text-button"
+                  href={directionsUrl(
+                    places.at(-1)!.coordinates,
+                    bundle.trip.accommodation.coordinates,
+                  )}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Вернуться в {bundle.trip.accommodation.name} ↗
+                </a>
+                <p className="fine-print">
+                  Выезд с возвращением:{' '}
+                  {formatDistance(
+                    summary.distance +
+                      distanceBetween(
+                        bundle.trip.accommodation.coordinates,
+                        places[0].coordinates,
+                      ) +
+                      distanceBetween(
+                        places.at(-1)!.coordinates,
+                        bundle.trip.accommodation.coordinates,
+                      ),
+                  )}{' '}
+                  по прямой. Объединяя соседние места в один день, можно избежать повторных выездов
+                  из отеля.
+                </p>
+              </div>
+            )}
+          </section>
+        )
+      })}
+      {!shared && (
+        <div className="plan-add">
+          <Plus size={20} />
+          <label>
+            Добавить место в день {plan.days.indexOf(activeDay) + 1}
+            <select
+              aria-label="Добавить место"
+              value=""
+              onChange={(event) => {
+                if (event.target.value) update(placeInDay(plan, event.target.value, activeDay.date))
+              }}
+            >
+              <option value="">Выберите из каталога</option>
+              {available.map((place) => (
+                <option key={place.id} value={place.id}>
+                  {place.nameRu}
+                  {place.availability.status === 'temporarily-closed' ? ' · временно закрыто' : ''}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+      )}
+      {pending.length > 0 && !shared && (
+        <div className="plan-pending">
+          <h3>Ещё в избранном · {pending.length}</h3>
+          <p className="fine-print">
+            Закрытые места и посещения, которые не помещаются в выбранное время, остаются здесь.
+            Можно добавить вручную.
+          </p>
+          <div>
+            {pending.map((place) => (
+              <button
+                className="button secondary"
+                key={place.id}
+                onClick={() => update(placeInDay(plan, place.id, activeDay.date))}
+              >
+                <Plus size={14} />
+                {place.nameRu}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+      {activeDay.placeIds.length > 0 && (
+        <div className="plan-map">
+          <button
+            className="button secondary"
+            aria-expanded={showMap}
+            onClick={() => setShowMap(!showMap)}
+          >
+            <Map size={17} />
+            {showMap ? 'Скрыть карту дня' : 'Показать карту дня'}
+          </button>
+          {showMap && (
+            <LazyMap
+              bundle={bundle}
+              places={activeDay.placeIds.map((id) => placeById.get(id)!)}
+              selectedId={selectedId}
+              onSelect={setSelectedId}
+            />
+          )}
+        </div>
+      )}
+      <p className="fine-print plan-footnote">
+        План хранится в этом браузере. Ссылка содержит отдельную копию без синхронизации. Время —
+        длительность посещений; расстояния — по прямой, без расчёта транспорта. Часы работы и
+        доступность смотрите на странице места.
+      </p>
+    </main>
+  )
+}

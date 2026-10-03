@@ -16,6 +16,16 @@ from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[1]
 QUERIES = {
+    'burj-deck': 'Вид со смотровой площадки Бурдж-Халифы, архивный снимок',
+    'burj-city': 'Панорама Дубая со смотровой площадки Бурдж-Халифы, архивный снимок',
+    'fountain-show': 'Вечернее шоу фонтанов Дубая, архивный снимок',
+    'frame-deck': 'Смотровая площадка Dubai Frame',
+    'frame-view': 'Вид из Dubai Frame на город',
+    'aquarium-tunnel': 'Dubai Aquarium и подводный зоопарк',
+    'palm-coast': 'Побережье Palm Jumeirah, архивный снимок',
+    'marina-skyline': 'Панорама Dubai Marina',
+    'mosque-courtyard': 'Полный вид мечети Джумейра',
+    'madinat-canals': 'Каналы Madinat Jumeirah, архивный снимок',
     'hero': 'Dubai skyline at night',
     'burj': 'Burj Khalifa',
     'mall': 'Dubai Mall',
@@ -55,6 +65,16 @@ QUERIES = {
     'hatta': 'Hatta dam',
 }
 SELECTED_FILES = {
+    'burj-deck': 'At The Top Burj Khalifa Dubai (157940823).jpeg',
+    'burj-city': 'Dubai- At The Top Burj Khalifa - 140515-2193-jikatu (15100351735).jpg',
+    'fountain-show': 'Dubai fountain show.jpg',
+    'frame-deck': 'The Dubai Frame Observation Deck in Dubai, United Arab Emirates.jpg',
+    'frame-view': 'Dubai Frame View-Dubai UAE-Andres Larin.jpg',
+    'aquarium-tunnel': 'Dubai Aquarium and underwater Zoo (Ank Kumar, Infosys) 06.jpg',
+    'palm-coast': 'Jumeirah Palm-Dubai4074.JPG',
+    'marina-skyline': 'Dubai Marina Skyline.jpg',
+    'mosque-courtyard': 'Jumeirah Mosque Full View.jpg',
+    'madinat-canals': 'Madinat Jumeirah dhow (3050971546).jpg',
     'hero': 'Dubai skyline unsplash.jpg',
     'burj': 'Burj Khalifa (worlds tallest building) and the Dubai skyline (25781049892).jpg',
     'mosque': 'Jumeira Mosque Dubai.jpg',

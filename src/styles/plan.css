@@ -1,0 +1,297 @@
+.plan-page {
+  padding-top: 30px;
+}
+.plan-heading,
+.plan-day-heading {
+  margin-block: 24px;
+}
+.plan-heading,
+.plan-summary,
+.plan-actions,
+.plan-builder > div,
+.plan-notice,
+.plan-add {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+.plan-heading {
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+.plan-heading h1 {
+  font-size: clamp(44px, 6vw, 76px);
+}
+.plan-heading p,
+.plan-builder p,
+.plan-day-heading p {
+  margin-top: 12px;
+  color: var(--muted);
+}
+.plan-actions {
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.plan-summary {
+  flex-wrap: wrap;
+  gap: 24px 50px;
+  border-block: 1px solid var(--line);
+  padding-block: 22px;
+}
+.plan-summary > div:first-child {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.plan-summary small,
+.plan-summary strong {
+  display: block;
+}
+.plan-summary small {
+  color: var(--muted);
+}
+.plan-budget-note,
+.plan-footnote {
+  margin-block: 18px;
+}
+.plan-builder {
+  background: var(--tint);
+  border-radius: var(--radius-media);
+  padding: 26px;
+  margin-top: 30px;
+}
+.plan-builder > div:first-child {
+  align-items: start;
+  max-width: 760px;
+}
+.plan-builder h2 {
+  font-size: 30px;
+}
+.plan-builder .plan-actions {
+  margin-top: 22px;
+  align-items: end;
+}
+.plan-page label {
+  display: block;
+  font-size: 12px;
+}
+.plan-page select,
+.plan-share input {
+  display: block;
+  min-height: 44px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-control);
+  padding: 9px 12px;
+  max-width: 100%;
+}
+.plan-page label select {
+  margin-top: 7px;
+}
+.plan-status {
+  margin-block: 18px;
+  color: var(--accent);
+}
+.plan-share input {
+  width: 100%;
+  margin-block: 8px 24px;
+}
+.plan-days {
+  display: flex;
+  overflow-x: auto;
+  gap: 10px;
+  padding: 6px 5px 15px;
+}
+.plan-day-tab {
+  text-align: left;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-control);
+  padding: 14px 20px;
+  min-width: 135px;
+  flex: 1 0 auto;
+}
+.plan-day-tab > * {
+  display: block;
+}
+.plan-day-tab span,
+.plan-day-tab small {
+  color: var(--muted);
+  font-size: 11px;
+}
+.plan-day-tab.active {
+  background: var(--tint);
+  border-color: var(--accent);
+}
+.plan-day-heading h2 {
+  font-size: clamp(25px, 3vw, 34px);
+}
+.plan-stops {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.plan-stop {
+  display: grid;
+  grid-template-columns: 32px 110px minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 18px;
+  border-bottom: 1px solid var(--line);
+  padding-block: 24px;
+}
+.plan-stop-number {
+  background: var(--tint);
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+}
+.plan-stop-photo img {
+  width: 110px;
+  height: 90px;
+  border-radius: var(--radius-media);
+}
+.plan-stop .eyebrow {
+  margin-bottom: 6px;
+}
+.plan-stop-content > p {
+  margin-top: 6px;
+}
+.plan-stop-content > small {
+  display: block;
+  margin-top: 8px;
+}
+.plan-stop-controls > div {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+}
+.plan-stop-controls .button {
+  padding: 9px;
+}
+.plan-stop-controls select {
+  width: 100%;
+}
+.plan-warning {
+  color: var(--warning);
+  font-size: 12px;
+}
+.plan-empty {
+  text-align: center;
+  background: var(--tint);
+  padding: 40px 20px;
+  border-radius: var(--radius-media);
+}
+.plan-empty h3 {
+  margin-block: 12px;
+}
+.plan-empty p {
+  color: var(--muted);
+}
+.plan-add {
+  margin-block: 26px;
+  padding: 22px;
+  border: 1px dashed var(--line);
+}
+.plan-add label {
+  min-width: 0;
+  flex: 1;
+}
+.plan-add select {
+  width: 100%;
+}
+.plan-pending > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-block: 18px;
+}
+.plan-map > .button {
+  margin-block: 20px;
+}
+.plan-button {
+  color: var(--accent);
+  margin-top: 8px;
+}
+.plan-notice {
+  flex-wrap: wrap;
+  background: var(--warm);
+  padding: 22px;
+  margin-block: 22px;
+}
+@media (max-width: 600px) {
+  .header-inner nav {
+    gap: 9px;
+  }
+  .plan-builder {
+    padding: 20px;
+  }
+  .plan-stop {
+    grid-template-columns: 25px minmax(0, 1fr);
+    gap: 14px;
+  }
+  .plan-stop-photo {
+    display: none;
+  }
+  .plan-stop-number {
+    width: 25px;
+    height: 25px;
+  }
+  .plan-stop-controls {
+    grid-column: 2;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .plan-stop-controls select {
+    width: auto;
+  }
+  .plan-stop-controls > div {
+    margin: 0;
+  }
+}
+@media print {
+  :root {
+    --bg: white;
+    --surface: white;
+    --ink: black;
+    --muted: #444;
+    --line: #ccc;
+    --tint: #eee;
+    --warning: #653c1e;
+  }
+  body:has(.plan-page) .site-header,
+  body:has(.plan-page) .site-footer,
+  body:has(.plan-page) .storage-message,
+  .plan-heading .plan-actions,
+  .plan-page > .text-button,
+  .plan-builder,
+  .plan-days,
+  .plan-stop-controls,
+  .plan-add,
+  .plan-pending,
+  .plan-share,
+  .plan-status,
+  .plan-notice,
+  .plan-map {
+    display: none;
+  }
+  .plan-page {
+    width: 100%;
+    padding: 0;
+  }
+  .plan-day[hidden] {
+    display: block;
+  }
+  .plan-stop {
+    break-inside: avoid;
+  }
+  .plan-stop-photo {
+    display: none;
+  }
+  .plan-stop {
+    grid-template-columns: 32px 1fr;
+  }
+}

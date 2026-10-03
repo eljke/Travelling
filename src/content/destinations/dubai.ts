@@ -1,3 +1,7 @@
+import { ticketLinks, ticketLinksCheckedAt } from './dubai-tickets'
+import { priceUpdates } from './dubai-prices'
+import { galleries } from './dubai-galleries'
+
 const checkedAt = '2026-10-02'
 const source = (id: string, title: string, url: string, type = 'official', note?: string) => ({
   id,
@@ -8,6 +12,14 @@ const source = (id: string, title: string, url: string, type = 'official', note?
   ...(note ? { note } : {}),
 })
 const sources = [
+  {
+    ...source(
+      'ja-palm-tree-court',
+      'JA Palm Tree Court • отель и расположение',
+      'https://www.jaresortshotels.com/dubai/ja-palm-tree-court',
+    ),
+    accessedAt: '2026-10-03',
+  },
   source(
     'burj',
     'At the Top • Silver, уровни 124/125',
@@ -1009,7 +1021,7 @@ const seeds: Seed[] = [
     image: 'aquaventure',
     short: 'День в воде у Atlantis: горки вместо городских улиц.',
     description:
-      'Большой аквапарк на внешнем полумесяце Пальмы. Пакеты, ростовые ограничения и дополнительные услуги проверяйте до покупки. Числовую цену без выбора даты не фиксируем: это динамический продукт.',
+      'Большой аквапарк у Atlantis на внешнем полумесяце Пальмы. Лучше ехать на целый день: горок много, а дорога из отеля занимает время. В цене ниже — стартовый дневной билет; доплаты, ограничения по росту и выбранную дату смотрим перед покупкой.',
     source: 'aquaventure',
     minutes: [300, 480],
     tags: ['kids', 'extreme', 'beach'],
@@ -1264,7 +1276,7 @@ const seeds: Seed[] = [
     image: 'terra',
     short: 'Интерактивный взгляд на то, как устроена живая планета.',
     description:
-      'Павильон Expo City рассказывает об экологии и устойчивости через иммерсивные пространства. Подходит для содержательной семейной остановки. Самостоятельный билет и комбинированные предложения отличаются; выбирайте по составу.',
+      'Павильон Expo City с интерактивными залами о природе, океане и нашей повседневной жизни. Можно зайти всей семьёй и потом прогуляться по Expo. Смотрите состав билета: самостоятельный вход и пакеты с другими павильонами отличаются.',
     source: 'terra',
     amount: 100,
     minutes: [90, 150],
@@ -1284,7 +1296,7 @@ const seeds: Seed[] = [
     image: 'ja',
     short: 'Курортный день в Jebel Ali, вдали от высотного города.',
     description:
-      'Частный пляж и бассейны JA Beach Hotel доступны гостям и по подтверждённому day pass. Официальное предложение описывает зачёт стоимости пропуска в выбранных ресторанах, но надёжную сумму и условия 6–10 октября подтвердить не удалось. Это не свободный городской пляж.',
+      'Наш спокойный день у моря без поездки в город. Для гостей JA Palm Tree Court доступ к пляжу и бассейнам зависит от тарифа проживания — уточним на ресепшене. Цены ниже относятся к day pass для внешних посетителей; нам отдельный пропуск может не понадобиться.',
     source: 'ja',
     extraSources: ['ja-hotel'],
     minutes: [240, 480],
@@ -1339,7 +1351,7 @@ const seeds: Seed[] = [
     image: 'motiongate',
     short: 'Кинематографические миры и американские горки рядом с JA.',
     description:
-      'Тематический парк Dubai Parks and Resorts с зонами по мотивам кино. Из Jebel Ali географически ближе, чем из центрального Дубая, но это отдельная поездка. Билеты на один и два парка отличаются; не переносим старую цену в каталог.',
+      'Тематический парк с зонами по мотивам кино и американскими горками. Из нашего отеля сюда ближе, чем из центрального Дубая. Лучше выделить большую часть дня; вечером можно погулять в соседнем Riverland. Билеты на один и два парка отличаются.',
     source: 'motiongate',
     minutes: [240, 420],
     tags: ['kids', 'extreme'],
@@ -1556,9 +1568,34 @@ for (const seed of seeds) {
     seed.imageNote = override.note
   }
 }
+sources.push(
+  ...ticketLinks.map(([slug, providerId, url]) => ({
+    ...source(
+      `ticket-${slug}-${providerId}`,
+      `${providerId} • ${seeds.find((seed) => seed.id === slug)!.name}`,
+      url,
+      'ticket-provider',
+      'Проверена страница конкретного предложения. Цена и наличие слотов на даты поездки не подтверждены.',
+    ),
+    accessedAt: ticketLinksCheckedAt,
+  })),
+)
+sources.push(
+  ...priceUpdates.map((update) => ({
+    ...source(
+      `price-${update.slug}`,
+      `Тариф • ${seeds.find((seed) => seed.id === update.slug)!.name}`,
+      update.url,
+      'official',
+      update.note,
+    ),
+    accessedAt: '2026-10-03',
+  })),
+)
 const places = seeds.map((s) => {
   const sourceIds = [s.source, ...(s.extraSources ?? [])]
-  const officialWebsite = sources.find((v) => v.id === s.source)!.url
+  const update = priceUpdates.find((update) => update.slug === s.id)
+  const officialWebsite = update?.url ?? sources.find((v) => v.id === s.source)!.url
   const pricing = price(
     s.free ? 0 : s.amount,
     s.id === 'dubai-aquarium' ? 'aquarium-guide' : s.source,
@@ -1588,8 +1625,22 @@ const places = seeds.map((s) => {
       { label: 'Ребёнок', type: 'child', amount: 69, sourceIds: ['skyviews'] },
       { label: 'Aquarium + Sky Views', type: 'combination', amount: 219, sourceIds: ['skyviews'] },
     ]
+  if (update)
+    Object.assign(pricing, {
+      amount: update.amount,
+      kind: update.amount === 0 ? 'free' : 'from',
+      note: update.note,
+      sourceIds: [`price-${s.id}`],
+      checkedAt: '2026-10-03',
+      variants: update.variants.map(([label, type, amount]) => ({
+        label,
+        type,
+        amount,
+        sourceIds: [`price-${s.id}`],
+      })),
+    })
   const offers =
-    s.free || s.availability === 'temporarily-closed'
+    pricing.kind === 'free' || s.availability === 'temporarily-closed'
       ? []
       : [
           {
@@ -1598,7 +1649,7 @@ const places = seeds.map((s) => {
             linkType: 'direct',
             price: pricing,
             russianCardSupport: officialPayment,
-            checkedAt,
+            checkedAt: pricing.checkedAt,
           },
         ]
   if (s.offer)
@@ -1621,6 +1672,21 @@ const places = seeds.map((s) => {
       russianCardSupport: s.offer[0] === 'sputnik8' ? sputnikPayment : tripsterPayment,
       checkedAt,
     })
+  for (const [slug, providerId, url, note] of ticketLinks) {
+    if (slug !== s.id || offers.some((offer) => offer.providerId === providerId)) continue
+    offers.push({
+      providerId,
+      url,
+      linkType: 'direct',
+      price: {
+        ...price(undefined, `ticket-${slug}-${providerId}`, note),
+        checkedAt: ticketLinksCheckedAt,
+      },
+      russianCardSupport: providers.find((provider) => provider.id === providerId)!
+        .russianCardSupport,
+      checkedAt: ticketLinksCheckedAt,
+    })
+  }
   return {
     id: `dubai-${s.id}`,
     slug: s.id,
@@ -1636,11 +1702,15 @@ const places = seeds.map((s) => {
     categories: [s.category],
     tags: s.tags,
     imageId: s.image,
+    gallery: galleries[s.id] ?? [],
     ...(s.imageNote ? { imageNote: s.imageNote } : {}),
     duration: {
       minMinutes: s.minutes[0],
       maxMinutes: s.minutes[1],
-      note: 'Редакционный ориентир для визита, включая возможное ожидание; для Хатты — с дорогой.',
+      note:
+        s.area === 'hatta'
+          ? 'На этот выезд лучше выделить целый день: здесь учтена и дорога.'
+          : 'Примерно столько стоит заложить на прогулку и возможное ожидание. Можно задержаться, если понравится.',
     },
     openingHours: {
       text: s.hours ?? 'Расписание на выбранную дату не подтверждено. Проверьте официальный сайт.',
@@ -1780,7 +1850,21 @@ export default {
     featuredAreaId: 'jebel-ali',
     featuredAreaComparisons: ['downtown', 'marina'],
   },
-  trip: { destinationId: 'dubai', startDate: '2026-10-06', endDate: '2026-10-10' },
+  trip: {
+    destinationId: 'dubai',
+    startDate: '2026-10-06',
+    endDate: '2026-10-10',
+    arrivalDate: '2026-10-05',
+    departureDate: '2026-10-11',
+    accommodation: {
+      name: 'JA Palm Tree Court',
+      address: 'JA The Resort, Jebel Ali, Sheikh Zayed Road, Exit 13',
+      coordinates: { lat: 24.9873835, lng: 55.0219208 },
+      website: 'https://www.jaresortshotels.com/dubai/ja-palm-tree-court',
+      sourceIds: ['ja-palm-tree-court'],
+      checkedAt: '2026-10-03',
+    },
+  },
   exchangeRate: {
     baseCurrency: 'AED',
     quoteCurrency: 'RUB',

@@ -4,6 +4,7 @@ import { destinations } from '../content/registry'
 import { fetchDailyRates, moscowDay, ratesSchema, ratesSourceUrl } from '../domain/exchangeRates'
 import type { DailyRates } from '../domain/exchangeRates'
 import { assetUrl } from '../shared/format'
+import { usePlaceHours } from './PlaceHours'
 
 async function availableRates() {
   let bundled: DailyRates | undefined
@@ -98,8 +99,41 @@ export function useExchangeRates() {
 }
 export function useDestinationBundle(id: string) {
   const { data } = useExchangeRates()
+  const hours = usePlaceHours()
   return useMemo(() => {
-    const bundle = destinations[id]
+    const original = destinations[id]
+    if (!original) return original
+    const updates = hours.places.filter((update) =>
+      original.places.some((place) => place.id === update.placeId),
+    )
+    const bundle = {
+      ...original,
+      places: original.places.map((place) => {
+        const update = updates.find((update) => update.placeId === place.id)
+        return update
+          ? {
+              ...place,
+              openingHours: {
+                text: update.text,
+                checkedAt: update.checkedAt,
+                sourceIds: [`hours-${place.id}`],
+                schedule: update.schedule,
+                closedWeekdays: update.closedWeekdays,
+              },
+            }
+          : place
+      }),
+      sources: [
+        ...original.sources,
+        ...updates.map((update) => ({
+          id: `hours-${update.placeId}`,
+          type: 'official' as const,
+          title: 'Официальное расписание • автоматическая проверка',
+          url: update.sourceUrl,
+          accessedAt: update.checkedAt,
+        })),
+      ],
+    }
     if (!bundle || !data || bundle.exchangeRate.quoteCurrency !== 'RUB') return bundle
     const rate = data.rates[bundle.exchangeRate.baseCurrency]
     if (!rate) return bundle
@@ -125,5 +159,5 @@ export function useDestinationBundle(id: string) {
         },
       ],
     }
-  }, [id, data])
+  }, [id, data, hours])
 }

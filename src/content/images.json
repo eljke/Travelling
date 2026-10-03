@@ -405,5 +405,115 @@
     "sourceUrl": "https://commons.wikimedia.org/wiki/File:Jebel_Ali_Palm_Tree_Court_Pool_2012_-_panoramio.jpg",
     "checkedAt": "2026-10-02",
     "adaptation": "Resized and converted to WebP"
+  },
+  "burj-deck": {
+    "src": "images/burj-deck-1280.webp",
+    "small": "images/burj-deck-640.webp",
+    "alt": "Вид со смотровой площадки Бурдж-Халифы, архивный снимок",
+    "author": "Ravi Kumar",
+    "license": "CC BY 3.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/3.0",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:At_The_Top_Burj_Khalifa_Dubai_(157940823).jpeg",
+    "checkedAt": "2026-10-03",
+    "adaptation": "Resized and converted to WebP"
+  },
+  "burj-city": {
+    "src": "images/burj-city-1280.webp",
+    "small": "images/burj-city-640.webp",
+    "alt": "Панорама Дубая со смотровой площадки Бурдж-Халифы, архивный снимок",
+    "author": "Jimmy Baikovicius from Montevideo, Uruguay",
+    "license": "CC BY-SA 2.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Dubai-_At_The_Top_Burj_Khalifa_-_140515-2193-jikatu_(15100351735).jpg",
+    "checkedAt": "2026-10-03",
+    "adaptation": "Resized and converted to WebP"
+  },
+  "fountain-show": {
+    "src": "images/fountain-show-1280.webp",
+    "small": "images/fountain-show-640.webp",
+    "alt": "Вечернее шоу фонтанов Дубая, архивный снимок",
+    "author": "Amzexplorersfamily",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Dubai_fountain_show.jpg",
+    "checkedAt": "2026-10-03",
+    "adaptation": "Resized and converted to WebP"
+  },
+  "frame-deck": {
+    "src": "images/frame-deck-1280.webp",
+    "small": "images/frame-deck-640.webp",
+    "alt": "Смотровая площадка Dubai Frame",
+    "author": "Richard N Horne",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:The_Dubai_Frame_Observation_Deck_in_Dubai,_United_Arab_Emirates.jpg",
+    "checkedAt": "2026-10-03",
+    "adaptation": "Resized and converted to WebP"
+  },
+  "frame-view": {
+    "src": "images/frame-view-1280.webp",
+    "small": "images/frame-view-640.webp",
+    "alt": "Вид из Dubai Frame на город",
+    "author": "Saaremees",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Dubai_Frame_View-Dubai_UAE-Andres_Larin.jpg",
+    "checkedAt": "2026-10-03",
+    "adaptation": "Resized and converted to WebP"
+  },
+  "aquarium-tunnel": {
+    "src": "images/aquarium-tunnel-1280.webp",
+    "small": "images/aquarium-tunnel-640.webp",
+    "alt": "Dubai Aquarium и подводный зоопарк",
+    "author": "Ank Kumar",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Dubai_Aquarium_and_underwater_Zoo_(Ank_Kumar,_Infosys)_06.jpg",
+    "checkedAt": "2026-10-03",
+    "adaptation": "Resized and converted to WebP"
+  },
+  "palm-coast": {
+    "src": "images/palm-coast-1280.webp",
+    "small": "images/palm-coast-640.webp",
+    "alt": "Побережье Palm Jumeirah, архивный снимок",
+    "author": "Diego Delso",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Jumeirah_Palm-Dubai4074.JPG",
+    "checkedAt": "2026-10-03",
+    "adaptation": "Resized and converted to WebP"
+  },
+  "marina-skyline": {
+    "src": "images/marina-skyline-1280.webp",
+    "small": "images/marina-skyline-640.webp",
+    "alt": "Панорама Dubai Marina",
+    "author": "Norlando Pobre",
+    "license": "CC BY 2.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/2.0",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Dubai_Marina_Skyline.jpg",
+    "checkedAt": "2026-10-03",
+    "adaptation": "Resized and converted to WebP"
+  },
+  "mosque-courtyard": {
+    "src": "images/mosque-courtyard-1280.webp",
+    "small": "images/mosque-courtyard-640.webp",
+    "alt": "Полный вид мечети Джумейра",
+    "author": "ZI Jony",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Jumeirah_Mosque_Full_View.jpg",
+    "checkedAt": "2026-10-03",
+    "adaptation": "Resized and converted to WebP"
+  },
+  "madinat-canals": {
+    "src": "images/madinat-canals-1280.webp",
+    "small": "images/madinat-canals-640.webp",
+    "alt": "Каналы Madinat Jumeirah, архивный снимок",
+    "author": "Peter Dowley from Dubai, United Arab Emirates",
+    "license": "CC BY 2.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/2.0",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Madinat_Jumeirah_dhow_(3050971546).jpg",
+    "checkedAt": "2026-10-03",
+    "adaptation": "Resized and converted to WebP"
   }
 }
