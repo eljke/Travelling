@@ -40,7 +40,7 @@ test('opens an empty day without changing a shared plan', async ({ page }) => {
   await overview
     .getByRole('button', { name: 'Открыть маршрут на 9 октября 2026 г.', exact: true })
     .click()
-  await expect(page.locator('.plan-picker h2')).toContainText('9 октября')
+  await expect(page.locator('.plan-picker > h2')).toContainText('9 октября')
   await page.getByRole('button', { name: 'Поделиться', exact: true }).click()
   const link = await page.getByLabel('Ссылка на план', { exact: true }).inputValue()
   await page.goto(link)

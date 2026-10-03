@@ -12,6 +12,7 @@ import {
   summarizeTrip,
 } from '../../src/domain/itinerary'
 import { tripProposal } from '../../src/domain/tripProposal'
+import { ticketChecks } from '../../src/domain/families'
 import {
   closedOnDate,
   openBySchedule,
@@ -21,6 +22,46 @@ import {
 
 const dubai = destinations.dubai
 describe('trip plan', () => {
+  it('moves manual visit settings while keeping purchases on their original date', () => {
+    const sky = dubai.places.find((place) => place.slug === 'sky-views')!
+    const fountain = dubai.places.find((place) => place.slug === 'dubai-fountain')!
+    let plan = placeInDay(createItinerary(dubai), sky.id, '2026-10-06')
+    plan = placeInDay(plan, fountain.id, '2026-10-07')
+    plan.days[0].settings = {
+      ...defaultRouteSettings,
+      visits: { [sky.id]: 100 },
+      waits: { [sky.id]: 35 },
+      slots: { [sky.id]: '12:00' },
+      ticketChecks: { [`${sky.id}:family-1`]: { adults: 4, children: 0, slot: '12:00' } },
+    }
+    plan.days[1].settings = {
+      ...defaultRouteSettings,
+      visits: { [fountain.id]: 60, [sky.id]: 15 },
+      waits: { [sky.id]: 0 },
+      slots: { [fountain.id]: '19:00', [sky.id]: '10:00' },
+      buffer: 20,
+    }
+    const before = structuredClone(plan)
+    const preview = compareDays(plan, sky, dubai)[1]
+    const moved = placeInDay(plan, sky.id, '2026-10-07', dubai)
+    expect(moved.days[1].placeIds).toEqual(preview.insertion.placeIds)
+    const settings = moved.days[1].settings!
+    expect(settings.visits).toEqual({ [fountain.id]: 60, [sky.id]: 100 })
+    expect(settings.waits[sky.id]).toBe(35)
+    expect(settings.slots).toEqual({ [fountain.id]: '19:00', [sky.id]: '12:00' })
+    expect(settings.buffer).toBe(20)
+    expect(ticketChecks(sky.id, 'family-1', settings)[0].checked).toBe(false)
+    expect(ticketChecks(sky.id, 'family-1', moved.days[0].settings!)[0].checked).toBe(true)
+    expect(preview.insertion.route!.stops.find((stop) => stop.place.id === sky.id)).toMatchObject({
+      visitMinutes: 100,
+      queueMinutes: 35,
+      visitStart: 12 * 60,
+    })
+    expect(placeInDay(moved, sky.id, '2026-10-06', dubai).days[0].settings!.visits[sky.id]).toBe(
+      100,
+    )
+    expect(plan).toEqual(before)
+  })
   it('recommends a nearby day without changing existing visits or bookings', () => {
     const plan = tripProposal(dubai).plan
     const sky = dubai.places.find((place) => place.slug === 'sky-views')!

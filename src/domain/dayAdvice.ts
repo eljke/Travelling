@@ -1,5 +1,7 @@
 import type { DestinationBundle, Place } from './model'
 import type { Itinerary } from './itinerary'
+import { prepareDayMove, previewInsertion } from './itinerary'
+import { ticketChecks } from './families'
 import { clockTime, defaultRouteSettings, evaluateRoute, optimizeDay } from './dayRoute'
 import { closedOnDate } from './openingHours'
 import { distanceBetween } from './geo'
@@ -108,27 +110,35 @@ export function dayAdvice(
     }
   }
   for (const place of places) {
-    if (settings.slots[place.id]) continue
-    const remaining = improve(places.filter((row) => row.id !== place.id))
+    if (
+      settings.slots[place.id] ||
+      ticketChecks(place.id, 'both', settings).some((check) => check.checked)
+    )
+      continue
+    const remaining = evaluateRoute(
+      places.filter((row) => row.id !== place.id),
+      bundle,
+      day.date,
+      settings,
+    )
     if (!remaining.fits) continue
     for (const target of otherDays.filter((target) => target.date !== day.date)) {
       if (closedOnDate(place, target.date)) continue
-      const config = target.settings ?? defaultRouteSettings
-      const targetPlaces = target.placeIds.map((id) => bundle.places.find((row) => row.id === id)!)
-      const next = improve([...targetPlaces, place], config, target.date)
+      const prepared = prepareDayMove(day, target, place.id)
+      const insertion = previewInsertion(prepared, place, bundle)
+      const next = insertion.route!
       if (!next.fits) continue
       advice.push({
         title: `Перенести «${place.nameRu}» на другой день`,
-        note: `Оба дня помещаются в выбранное время. В другой день возвращение ≈ ${clockTime(next.returnAt)}. Посещения с уже указанным временем билета не переносим.`,
+        note: `Оба дня помещаются в выбранное время. В другой день возвращение ≈ ${clockTime(next.returnAt)}. Ваше время на месте и запас на очередь сохраняются. Места с указанным временем входа или отмеченными купленными билетами не переносим.`,
         day: { ...day, placeIds: remaining.stops.map((stop) => stop.place.id) },
         route: remaining,
         move: {
           placeId: place.id,
           date: target.date,
           target: {
-            ...target,
-            settings: config,
-            placeIds: next.stops.map((stop) => stop.place.id),
+            ...prepared,
+            placeIds: insertion.placeIds,
           },
         },
       })

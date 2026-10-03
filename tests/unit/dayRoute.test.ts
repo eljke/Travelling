@@ -20,6 +20,36 @@ const dubai = destinations.dubai
 const place = (slug: string) => dubai.places.find((place) => place.slug === slug)!
 const date = '2026-10-08'
 describe('day route', () => {
+  it('keeps manual duration in move advice and leaves purchased visits in place', () => {
+    const source = {
+      ...createItinerary(dubai).days[0],
+      placeIds: ['dubai-dubai-mall'],
+      settings: {
+        ...defaultRouteSettings,
+        end: '14:00',
+        visits: { 'dubai-dubai-mall': 120 },
+        waits: { 'dubai-dubai-mall': 20 },
+      },
+    }
+    const target = createItinerary(dubai).days[1]
+    const suggestion = dayAdvice(source, dubai, [target]).find(
+      (row) => row.move?.placeId === 'dubai-dubai-mall',
+    )!
+    expect(suggestion.move!.target.settings!.visits['dubai-dubai-mall']).toBe(120)
+    expect(suggestion.move!.target.settings!.waits['dubai-dubai-mall']).toBe(20)
+    const sky = {
+      ...source,
+      placeIds: ['dubai-sky-views'],
+      settings: {
+        ...defaultRouteSettings,
+        end: '12:00',
+        ticketChecks: { 'dubai-sky-views:family-1': { adults: 4, children: 0 } },
+      },
+    }
+    expect(
+      dayAdvice(sky, dubai, [target]).some((row) => row.move?.placeId === 'dubai-sky-views'),
+    ).toBe(false)
+  })
   it('aligns two fountain shows after preparing at the waterfront', () => {
     const fountain = place('dubai-fountain')
     const route = evaluateRoute([fountain], dubai, date, defaultRouteSettings)

@@ -669,9 +669,12 @@ export default function PlanPage() {
                       <select
                         id={`day-${place.id}`}
                         value={day.date}
-                        onChange={(event) =>
+                        onChange={(event) => {
                           update(placeInDay(plan, place.id, event.target.value, bundle))
-                        }
+                          setMessage(
+                            'Место перенесено. Время на месте, очередь и час входа сохранены; билеты на новую дату нужно проверить.',
+                          )
+                        }}
                       >
                         {plan.days.map((target, index) => (
                           <option key={target.date} value={target.date}>

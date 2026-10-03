@@ -97,7 +97,12 @@ export function placeInDay(
   date: string,
   bundle?: DestinationBundle,
 ): Itinerary {
-  const target = plan.days.find((day) => day.date === date)
+  const destination = plan.days.find((day) => day.date === date)
+  const source = plan.days.find((day) => day.placeIds.includes(placeId))
+  const target =
+    source && destination && source.date !== date
+      ? prepareDayMove(source, destination, placeId)
+      : destination
   const insertion =
     bundle && target
       ? previewInsertion(
@@ -109,7 +114,7 @@ export function placeInDay(
   return {
     ...plan,
     days: plan.days.map((day) => ({
-      ...day,
+      ...(day.date === date ? target! : day),
       placeIds:
         day.date === date && insertion
           ? insertion.placeIds
@@ -121,15 +126,39 @@ export function placeInDay(
   }
 }
 
+export function prepareDayMove(
+  source: Itinerary['days'][number],
+  target: Itinerary['days'][number],
+  placeId: string,
+) {
+  const from = source.settings ?? defaultRouteSettings
+  const to = target.settings ?? defaultRouteSettings
+  const inherit = <T>(current: Record<string, T>, previous: Record<string, T>) => ({
+    ...Object.fromEntries(Object.entries(current).filter(([id]) => id !== placeId)),
+    ...(previous[placeId] !== undefined ? { [placeId]: previous[placeId] } : {}),
+  })
+  return {
+    ...target,
+    settings: {
+      ...to,
+      visits: inherit(to.visits, from.visits),
+      waits: inherit(to.waits, from.waits),
+      slots: inherit(to.slots, from.slots),
+    },
+  }
+}
+
 export function compareDays(plan: Itinerary, place: Place, bundle: DestinationBundle) {
+  const source = plan.days.find((day) => day.placeIds.includes(place.id))
   const options = plan.days.map((day) => {
     const places = day.placeIds.map((id) => bundle.places.find((row) => row.id === id)!)
-    const insertion = previewInsertion(day, place, bundle)
+    const target = source && source.date !== day.date ? prepareDayMove(source, day, place.id) : day
+    const insertion = previewInsertion(target, place, bundle)
     const current = bundle.trip.accommodation
       ? evaluateRoute(places, bundle, day.date, day.settings ?? defaultRouteSettings)
       : undefined
     return {
-      day,
+      day: target,
       places,
       insertion,
       closed: closedOnDate(place, day.date),
@@ -146,6 +175,7 @@ export function compareDays(plan: Itinerary, place: Place, bundle: DestinationBu
     .filter(
       (option) =>
         !option.closed &&
+        !option.day.placeIds.includes(place.id) &&
         option.insertion.fits &&
         option.nearest !== undefined &&
         option.addedTravel! <= 30,

@@ -1,5 +1,34 @@
 import { test, expect } from '@playwright/test'
 
+test('keeps manual visit time, queue and entry time when a stop moves between days', async ({
+  page,
+}) => {
+  await page.goto('/#/dubai/place/sky-views')
+  await page
+    .locator('.place-story')
+    .getByRole('button', { name: 'В план: Sky Views', exact: true })
+    .click()
+  await page
+    .getByRole('dialog')
+    .getByRole('button', { name: /День 1/ })
+    .click()
+  await page.getByRole('link', { name: 'План', exact: true }).click()
+  await page.getByLabel('Время на месте: Sky Views', { exact: true }).fill('100')
+  await page.getByLabel('Запас на очередь: Sky Views', { exact: true }).fill('35')
+  await page.getByLabel('Вход по билету: Sky Views', { exact: true }).fill('12:00')
+  await page.getByLabel('День: Sky Views', { exact: true }).selectOption('2026-10-07')
+  await page
+    .getByRole('group', { name: 'Дни поездки', exact: true })
+    .getByRole('button', { name: /День 2/ })
+    .click()
+  await expect(page.getByLabel('Время на месте: Sky Views', { exact: true })).toHaveValue('100')
+  await expect(page.getByLabel('Запас на очередь: Sky Views', { exact: true })).toHaveValue('35')
+  await expect(page.getByLabel('Вход по билету: Sky Views', { exact: true })).toHaveValue('12:00')
+  await page.reload()
+  await expect(page.getByLabel('Время на месте: Sky Views', { exact: true })).toHaveValue('100')
+  await expect(page.getByLabel('Вход по билету: Sky Views', { exact: true })).toHaveValue('12:00')
+})
+
 test('compares days with photos and adds an overflowing place to the nearby day', async ({
   page,
 }) => {
