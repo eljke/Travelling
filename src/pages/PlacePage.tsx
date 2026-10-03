@@ -35,6 +35,10 @@ import Sources from '../shared/Sources'
 import PlanButton from '../shared/PlanButton'
 import HotelBase from '../shared/HotelBase'
 import PhotoGallery from '../shared/PhotoGallery'
+import FamilyBudgetControl from '../shared/FamilyBudgetControl'
+import { familyTicketPrice, families } from '../domain/families'
+import { defaultRouteSettings } from '../domain/dayRoute'
+import { usePreferences } from '../app/Preferences'
 
 function PaymentStatus({ payment }: { payment: PaymentSupport }) {
   return (
@@ -67,6 +71,7 @@ export default function PlacePage() {
   const navigate = useNavigate()
   const [selectedId, setSelectedId] = useState<string>()
   const [russianPaymentOnly, setRussianPaymentOnly] = useState(false)
+  const { budgetScope } = usePreferences()
   if (!place)
     return (
       <main id="main" className="container empty">
@@ -75,6 +80,13 @@ export default function PlacePage() {
       </main>
     )
   const area = bundle.areas.find((a) => a.id === place.areaId)!
+  const familyPrice = familyTicketPrice(
+    place,
+    budgetScope,
+    defaultRouteSettings,
+    bundle.trip.startDate,
+    bundle.exchangeRate.baseCurrency,
+  )
   const offers = place.ticketProviders.filter(
     (offer) => !russianPaymentOnly || offer.russianCardSupport.status === 'confirmed',
   )
@@ -144,10 +156,12 @@ export default function PlacePage() {
       <div className="place-layout">
         <div className="place-story">
           <p className="place-lead">{place.shortDescription}</p>
-          <PlanButton place={place} bundle={bundle} />
-          <Link className="text-button" to={`/${destinationId}/photos?place=${place.id}`}>
-            Наши фото здесь · открыть или добавить →
-          </Link>
+          <div className="place-actions">
+            <PlanButton place={place} bundle={bundle} />
+            <Link className="text-button" to={`/${destinationId}/photos?place=${place.id}`}>
+              Наши фото здесь · открыть или добавить →
+            </Link>
+          </div>
           <HotelBase bundle={bundle} place={place} />
           <p className="place-description">{place.description}</p>
           <PhotoGallery place={place} />
@@ -280,6 +294,19 @@ export default function PlacePage() {
           </details>
         </div>
         <aside className="booking-panel">
+          <FamilyBudgetControl />
+          {!familyPrice.unknown && (
+            <p className="booking-family-price">
+              <strong>{families[budgetScope].label}</strong>
+              <br />
+              {place.pricing.kind === 'from' ? 'От ' : ''}
+              {formatMoney(familyPrice.amount, bundle.exchangeRate)}
+              {place.pricing.unit === 'group'
+                ? ' · наша доля группового пакета'
+                : ' · входные билеты'}
+              {familyPrice.childEstimated ? ' · ребёнку пока взрослый тариф' : ''}
+            </p>
+          )}
           <span className="eyebrow">ВАШ ВИЗИТ</span>
           <div className="booking-price">
             <strong>{formatPrice(place.pricing)}</strong>

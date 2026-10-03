@@ -6,6 +6,7 @@ import type { Itinerary } from '../domain/itinerary'
 import { usePreferences } from '../app/Preferences'
 import { closedOnDate } from '../domain/openingHours'
 import { distanceBetween } from '../domain/geo'
+import { familyRouteBudget, families } from '../domain/families'
 import { clockTime, defaultRouteSettings, evaluateRoute } from '../domain/dayRoute'
 import { formatDate, formatDuration, formatMoney, formatPrice, formatRub } from './format'
 import { categoryLabels } from './labels'
@@ -25,7 +26,7 @@ export default function PlacePicker({
   excludedIds?: string[]
   day?: Itinerary['days'][number]
 }) {
-  const { favorites } = usePreferences()
+  const { favorites, budgetScope } = usePreferences()
   const [query, setQuery] = useState('')
   const [category, setCategory] = useState('')
   const [savedOnly, setSavedOnly] = useState(false)
@@ -193,6 +194,16 @@ export default function PlacePicker({
       <div className="picker-grid">
         {mapPlaces.map((place) => {
           const preview = previews?.get(place.id)
+          const budget =
+            preview && day
+              ? familyRouteBudget(
+                  preview,
+                  budgetScope,
+                  day.settings ?? defaultRouteSettings,
+                  day.date,
+                  bundle.exchangeRate.baseCurrency,
+                )
+              : undefined
           const closed = Boolean(day && closedOnDate(place, day.date))
           const selected = selectedId === place.id
           return (
@@ -226,11 +237,12 @@ export default function PlacePicker({
                     <p>
                       {preview.unknownPrices || place.pricing.kind === 'from' ? 'От ' : '≈ '}
                       {formatMoney(
-                        preview.ticketCost + preview.cost,
+                        budget!.ticketCost + budget!.cost,
                         bundle.exchangeRate,
-                        preview.ticketCost + preview.highCost,
+                        budget!.ticketCost + budget!.highCost,
                       )}{' '}
-                      на всех за день{preview.unknownPrices ? ' · часть цен неизвестна' : ''}
+                      за день · {families[budgetScope].label}
+                      {preview.unknownPrices ? ' · часть цен неизвестна' : ''}
                     </p>
                   </div>
                 )}

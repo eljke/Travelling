@@ -16,6 +16,8 @@ import { formatMoney } from './format'
 import { directionsUrl } from './HotelBase'
 import { dayAdvice } from '../domain/dayAdvice'
 import { formatDate } from './format'
+import { usePreferences } from '../app/Preferences'
+import { familyRouteBudget, families, hasFamilyComposition } from '../domain/families'
 
 function Leg({
   leg,
@@ -84,6 +86,7 @@ export default function DayRoutePlanner({
   onMove?: (current: Itinerary['days'][number], target: Itinerary['days'][number]) => void
 }) {
   const [message, setMessage] = useState('')
+  const { budgetScope } = usePreferences()
   const settings = day.settings ?? defaultRouteSettings
   const places = useMemo(
     () => day.placeIds.map((id) => bundle.places.find((place) => place.id === id)!),
@@ -106,6 +109,13 @@ export default function DayRoutePlanner({
     setMessage('Настройки сохранены. Можно пересчитать порядок остановок.')
   }
   const validTime = toMinutes(settings.end) > toMinutes(settings.start)
+  const budget = familyRouteBudget(
+    route,
+    budgetScope,
+    settings,
+    day.date,
+    bundle.exchangeRate.baseCurrency,
+  )
   const advice = useMemo(
     () =>
       !readOnly && validTime && bundle.trip.accommodation ? dayAdvice(day, bundle, otherDays) : [],
@@ -309,7 +319,20 @@ export default function DayRoutePlanner({
                   <strong>В этот день: возврат ≈ {clockTime(suggestion.route.returnAt)}</strong> ·
                   дорога и билеты от{' '}
                   {formatMoney(
-                    suggestion.route.cost + suggestion.route.ticketCost,
+                    familyRouteBudget(
+                      suggestion.route,
+                      budgetScope,
+                      suggestion.day.settings ?? defaultRouteSettings,
+                      suggestion.day.date,
+                      bundle.exchangeRate.baseCurrency,
+                    ).cost +
+                      familyRouteBudget(
+                        suggestion.route,
+                        budgetScope,
+                        suggestion.day.settings ?? defaultRouteSettings,
+                        suggestion.day.date,
+                        bundle.exchangeRate.baseCurrency,
+                      ).ticketCost,
                     bundle.exchangeRate,
                   )}
                   {suggestion.route.unknownPrices > 0 && ' · часть цен неизвестна'}
@@ -339,13 +362,13 @@ export default function DayRoutePlanner({
       )}
       <div className="route-budget">
         <div>
-          <span>Транспорт на всех</span>
-          <strong>≈ {formatMoney(route.cost, bundle.exchangeRate, route.highCost)}</strong>
+          <span>Наша доля транспорта</span>
+          <strong>≈ {formatMoney(budget.cost, bundle.exchangeRate, budget.highCost)}</strong>
           <small>Дорога ≈ {route.travelMinutes} мин</small>
         </div>
         <div>
-          <span>Билеты на всех</span>
-          <strong>от {formatMoney(route.ticketCost, bundle.exchangeRate)}</strong>
+          <span>Наши билеты</span>
+          <strong>от {formatMoney(budget.ticketCost, bundle.exchangeRate)}</strong>
           <small>
             {route.unknownPrices
               ? `Без цены: ${route.unknownPrices} мест`
@@ -354,10 +377,17 @@ export default function DayRoutePlanner({
         </div>
         <div>
           <span>День без еды и покупок</span>
-          <strong>от {formatMoney(route.cost + route.ticketCost, bundle.exchangeRate)}</strong>
+          <strong>от {formatMoney(budget.cost + budget.ticketCost, bundle.exchangeRate)}</strong>
           <small>Тарифы «от» и оценки дороги</small>
         </div>
       </div>
+      <p className="fine-print">
+        {hasFamilyComposition(settings)
+          ? families[budgetScope].label
+          : 'Весь выезд по составу, заданному вручную'}
+        . Участки дороги и сравнение транспорта ниже показывают полную стоимость машины или поездки
+        на всех пассажиров.
+      </p>
       {settings.adults === 5 && settings.children === 1 && (
         <details className="route-assumptions">
           <summary>Разделить бюджет между двумя семьями</summary>

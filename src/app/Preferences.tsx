@@ -12,6 +12,16 @@ import type { Theme } from '../shared/persistence'
 import { normalizeItinerary } from '../domain/itinerary'
 import type { Itinerary } from '../domain/itinerary'
 import { destinations } from '../content/registry'
+import type { BudgetScope } from '../domain/families'
+const budgetKey = 'travelling:budget-family:v1'
+function readBudgetScope(): BudgetScope {
+  try {
+    const value = localStorage.getItem(budgetKey)
+    return value === 'family-2' || value === 'both' ? value : 'family-1'
+  } catch {
+    return 'family-1'
+  }
+}
 
 function loadPlans() {
   return Object.fromEntries(
@@ -29,16 +39,30 @@ const PreferencesContext = createContext<{
   storageMessage: string
   plans: Record<string, Itinerary>
   savePlan: (destinationId: string, plan: Itinerary) => void
+  budgetScope: BudgetScope
+  setBudgetScope: (scope: BudgetScope) => void
 } | null>(null)
 export function Preferences({ children }: { children: ReactNode }) {
   const [favorites, setFavorites] = useState(readFavorites)
   const [theme, setTheme] = useState(readTheme)
   const [storageMessage, setStorageMessage] = useState('')
   const [plans, setPlans] = useState(loadPlans)
+  const [budgetScope, setScope] = useState(readBudgetScope)
+  const setBudgetScope = (scope: BudgetScope) => {
+    setScope(scope)
+    try {
+      localStorage.setItem(budgetKey, scope)
+    } catch {
+      setStorageMessage(
+        'Выбор семьи действует до закрытия страницы: браузер не разрешил сохранение.',
+      )
+    }
+  }
   useEffect(() => {
     const handler = (event: StorageEvent) => {
       if (event.key === 'travelling:favorites:v1') setFavorites(readFavorites())
       if (event.key === plansKey || event.key === null) setPlans(loadPlans())
+      if (event.key === budgetKey || event.key === null) setScope(readBudgetScope())
     }
     window.addEventListener('storage', handler)
     return () => window.removeEventListener('storage', handler)
@@ -74,7 +98,17 @@ export function Preferences({ children }: { children: ReactNode }) {
   }
   return (
     <PreferencesContext.Provider
-      value={{ favorites, toggleFavorite, theme, setTheme, storageMessage, plans, savePlan }}
+      value={{
+        favorites,
+        toggleFavorite,
+        theme,
+        setTheme,
+        storageMessage,
+        plans,
+        savePlan,
+        budgetScope,
+        setBudgetScope,
+      }}
     >
       {children}
     </PreferencesContext.Provider>

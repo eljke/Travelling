@@ -7,6 +7,9 @@ import { categoryLabels } from './labels'
 import Photo from './Photo'
 import { parseFilters, serializeFilters } from '../domain/filters'
 import PlanButton from './PlanButton'
+import { familyTicketPrice, families } from '../domain/families'
+import { defaultRouteSettings } from '../domain/dayRoute'
+import { formatMoney } from './format'
 
 export function FavoriteButton({ place }: { place: Place }) {
   const { favorites, toggleFavorite } = usePreferences()
@@ -36,6 +39,14 @@ export default function PlaceCard({
   distance?: number
 }) {
   const [params] = useSearchParams()
+  const { budgetScope } = usePreferences()
+  const ticket = familyTicketPrice(
+    place,
+    budgetScope,
+    defaultRouteSettings,
+    bundle.trip.startDate,
+    bundle.exchangeRate.baseCurrency,
+  )
   const mapParams = serializeFilters(parseFilters(params))
   mapParams.set('selected', place.id)
   const area = bundle.areas.find((a) => a.id === place.areaId)!
@@ -107,6 +118,13 @@ export default function PlaceCard({
         )}
       </div>
       <PlanButton place={place} bundle={bundle} />
+      {!ticket.unknown && (
+        <p className="card-family-budget">
+          {families[budgetScope].label}: {place.pricing.kind === 'from' ? 'от ' : ''}
+          {formatMoney(ticket.amount, bundle.exchangeRate)}
+          {place.pricing.unit === 'group' ? ' · доля пакета' : ' · билеты'}
+        </p>
+      )}
     </article>
   )
 }

@@ -61,6 +61,7 @@ test('splits one safari package and includes a confirmed hotel transfer', async 
     .click()
   await page.getByRole('link', { name: 'План', exact: true }).click()
   const planner = page.getByRole('region', { name: 'Маршрут на день' })
+  await page.getByLabel('Чьи расходы показать', { exact: true }).selectOption('both')
   await expect(planner.locator('.route-budget')).toContainText('1 000')
   await planner.getByText('Как считаем дорогу и деньги', { exact: true }).click()
   await planner.getByLabel('Оператор подтвердил забор из JA в этом пакете').check()

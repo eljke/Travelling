@@ -39,13 +39,15 @@ import PlacePicker from '../shared/PlacePicker'
 import RateStrip from '../shared/RateStrip'
 import LazyMap from '../features/map/LazyMap'
 import DayRoutePlanner from '../shared/DayRoutePlanner'
-import { defaultRouteSettings, groupTicketPrice } from '../domain/dayRoute'
+import { defaultRouteSettings } from '../domain/dayRoute'
+import { familyTicketPrice, families } from '../domain/families'
+import FamilyBudgetControl from '../shared/FamilyBudgetControl'
 import { dubaiDayIdeas } from '../content/dayIdeas'
 
 export default function PlanPage() {
   const { destinationId = '' } = useParams()
   const bundle = useDestinationBundle(destinationId)
-  const { plans, savePlan, favorites } = usePreferences()
+  const { plans, savePlan, favorites, budgetScope } = usePreferences()
   const [params, setParams] = useSearchParams()
   const [dailyMinutes, setDailyMinutes] = useState(720)
   const [message, setMessage] = useState('')
@@ -90,8 +92,9 @@ export default function PlanPage() {
       day.placeIds.reduce(
         (amount, id) =>
           amount +
-          groupTicketPrice(
+          familyTicketPrice(
             placeById.get(id)!,
+            budgetScope,
             day.settings ?? defaultRouteSettings,
             day.date,
             bundle.exchangeRate.baseCurrency,
@@ -173,6 +176,11 @@ export default function PlanPage() {
           </button>
         </div>
       </div>
+      <FamilyBudgetControl />
+      <p className="fine-print">
+        Бюджеты ниже: {families[budgetScope].label}. Число пассажиров в настройках маршрута
+        описывает весь выезд.
+      </p>
       {shared && (
         <div className="plan-notice">
           <div>
@@ -206,7 +214,7 @@ export default function PlanPage() {
             <strong>
               {scheduled.size} мест / {plan.days.length} дней
             </strong>
-            <small>Билеты на всю компанию · по настройкам дней</small>
+            <small>Билеты · {families[budgetScope].label} · по настройкам дней</small>
           </span>
         </div>
         <div>
@@ -309,8 +317,9 @@ export default function PlanPage() {
         summary.amount = places.reduce(
           (sum, place) =>
             sum +
-            groupTicketPrice(
+            familyTicketPrice(
               place,
+              budgetScope,
               day.settings ?? defaultRouteSettings,
               day.date,
               bundle.exchangeRate.baseCurrency,

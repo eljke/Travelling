@@ -19,6 +19,7 @@ import type { Coordinates } from '../domain/model'
 import { parseFilters, serializeFilters, defaultFilters, filterPlaces } from '../domain/filters'
 import type { Filters } from '../domain/filters'
 import { sortByDistance, distanceBetween } from '../domain/geo'
+import FamilyBudgetControl from '../shared/FamilyBudgetControl'
 import { formatTrip, formatDistance } from '../shared/format'
 import { categoryLabels, tagLabels, ui } from '../shared/labels'
 import { usePreferences } from '../app/Preferences'
@@ -371,6 +372,7 @@ export default function DestinationPage({
             {locationMessage}
           </p>
         )}
+        <FamilyBudgetControl />
         {filters.sort === 'nearby' && !position && (
           <p className="status-message">
             Нажмите «Рядом со мной», чтобы отсортировать места по вашему положению. Геопозиция не

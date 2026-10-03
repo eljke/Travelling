@@ -1,6 +1,54 @@
 .family-home {
   padding-top: 28px;
 }
+.family-budget-control {
+  margin: 20px 0;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-media);
+  background: var(--tint);
+}
+.family-budget-control label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+}
+.family-budget-control select {
+  padding: 12px;
+  width: 100%;
+  max-width: 400px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+}
+.family-budget-control p {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.6;
+  margin-bottom: 0;
+}
+.card-family-budget {
+  font-size: 11px;
+  line-height: 1.6;
+  padding: 10px 0;
+  color: var(--muted);
+  margin: 0;
+  border-top: 1px solid var(--line);
+}
+.place-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px 24px;
+  margin: 16px 0;
+}
+.place-actions .plan-button {
+  margin: 0;
+}
 .family-hero {
   position: relative;
   isolation: isolate;
