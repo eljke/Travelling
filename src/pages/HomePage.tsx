@@ -78,6 +78,9 @@ export default function HomePage() {
               Посмотреть карту
               <ArrowUpRight size={18} />
             </Link>
+            <Link className="button family-outline" to={`${path}/plan?idea=minmax`}>
+              Посмотреть minmax на 6–10 октября <ArrowRight size={18} />
+            </Link>
           </div>
         </div>
         <aside className="family-ticket">

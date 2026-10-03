@@ -42,6 +42,7 @@ import DayRoutePlanner from '../shared/DayRoutePlanner'
 import { defaultRouteSettings, evaluateRoute } from '../domain/dayRoute'
 import { familyTicketPrice, families } from '../domain/families'
 import FamilyBudgetControl from '../shared/FamilyBudgetControl'
+import TripProposal from '../shared/TripProposal'
 import { dubaiDayIdeas } from '../content/dayIdeas'
 
 export default function PlanPage() {
@@ -207,6 +208,14 @@ export default function PlanPage() {
         </div>
       )}
       <HotelBase bundle={bundle} />
+      {!shared && destinationId === 'dubai' && bundle.trip.startDate === '2026-10-06' && (
+        <TripProposal
+          bundle={bundle}
+          plan={plan}
+          onApply={update}
+          expanded={params.get('idea') === 'minmax'}
+        />
+      )}
       <div className="plan-summary">
         <div>
           <CalendarDays size={22} />

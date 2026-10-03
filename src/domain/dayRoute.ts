@@ -21,6 +21,7 @@ export const routeSettingsSchema = z.object({
   hotelBeachIncluded: z.boolean().default(true),
   safariTransferConfirmed: z.boolean().default(false),
   nolCardsOwned: z.boolean().default(false),
+  abraRoundTrip: z.boolean().default(true),
 })
 export type RouteSettings = z.infer<typeof routeSettingsSchema>
 export const defaultRouteSettings: RouteSettings = routeSettingsSchema.parse({ childAge: 11 })
@@ -233,6 +234,7 @@ export function groupTicketPrice(
       childEstimated: false,
     }
   let adult = place.pricing.amount!
+  if (place.slug === 'creek-abra' && settings.abraRoundTrip) adult *= 2
   if (place.slug === 'ja-beach' && [0, 5, 6].includes(new Date(`${date}T12:00:00Z`).getUTCDay()))
     adult = 200
   const child =
@@ -277,9 +279,11 @@ export function evaluateRoute(
     let queueMinutes = settings.waits[place.id] ?? estimateQueue(place, date, slot ?? time)
     let visitMinutes =
       settings.visits[place.id] ??
-      (place.areaId === 'hatta'
-        ? 180
-        : Math.round((place.duration.minMinutes + place.duration.maxMinutes) / 2))
+      (place.slug === 'creek-abra' && settings.abraRoundTrip
+        ? 30
+        : place.areaId === 'hatta'
+          ? 180
+          : Math.round((place.duration.minMinutes + place.duration.maxMinutes) / 2))
     const arriveBy = Math.min(
       slot === undefined ? Infinity : slot - queueMinutes,
       sessions ? (slot ?? toMinutes(sessions.at(-1)!)) - 30 : Infinity,
