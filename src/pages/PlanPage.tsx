@@ -37,6 +37,9 @@ import {
 import Photo from '../shared/Photo'
 import RateStrip from '../shared/RateStrip'
 import LazyMap from '../features/map/LazyMap'
+import DayRoutePlanner from '../shared/DayRoutePlanner'
+import { defaultRouteSettings, groupTicketPrice } from '../domain/dayRoute'
+import { dubaiDayIdeas } from '../content/dayIdeas'
 
 export default function PlanPage() {
   const { destinationId = '' } = useParams()
@@ -81,6 +84,22 @@ export default function PlanPage() {
   const scheduled = new Set(plan.days.flatMap((day) => day.placeIds))
   const allPlaces = [...scheduled].map((id) => placeById.get(id)!)
   const total = summarizeDay(allPlaces, bundle.exchangeRate.baseCurrency)
+  total.amount = plan.days.reduce(
+    (sum, day) =>
+      sum +
+      day.placeIds.reduce(
+        (amount, id) =>
+          amount +
+          groupTicketPrice(
+            placeById.get(id)!,
+            day.settings ?? defaultRouteSettings,
+            day.date,
+            bundle.exchangeRate.baseCurrency,
+          ).amount,
+        0,
+      ),
+    0,
+  )
   const pending = bundle.places.filter(
     (place) => favorites.includes(place.id) && !scheduled.has(place.id),
   )
@@ -188,7 +207,7 @@ export default function PlanPage() {
             <strong>
               {scheduled.size} мест / {plan.days.length} дней
             </strong>
-            <small>Билеты на одного человека</small>
+            <small>Билеты на всю компанию · по настройкам дней</small>
           </span>
         </div>
         <div>
@@ -279,7 +298,26 @@ export default function PlanPage() {
       </div>
       {plan.days.map((day, dayIndex) => {
         const places = day.placeIds.map((id) => placeById.get(id)!)
+        const settings = day.settings ?? defaultRouteSettings
+        const updateSettings = (next: Partial<typeof settings>) =>
+          update({
+            ...plan,
+            days: plan.days.map((saved) =>
+              saved.date === day.date ? { ...saved, settings: { ...settings, ...next } } : saved,
+            ),
+          })
         const summary = summarizeDay(places, bundle.exchangeRate.baseCurrency)
+        summary.amount = places.reduce(
+          (sum, place) =>
+            sum +
+            groupTicketPrice(
+              place,
+              day.settings ?? defaultRouteSettings,
+              day.date,
+              bundle.exchangeRate.baseCurrency,
+            ).amount,
+          0,
+        )
         return (
           <section
             className="plan-day"
@@ -303,6 +341,60 @@ export default function PlanPage() {
                 Насыщенный день: посещения могут занять больше {dailyMinutes / 60} часов, ещё без
                 дороги и перерывов. Перенесите часть мест на другой день.
               </p>
+            )}
+            {!shared && destinationId === 'dubai' && (
+              <details className="day-ideas" open={!places.length}>
+                <summary>Идеи на этот день · близкие места вместе</summary>
+                <div>
+                  {dubaiDayIdeas.map((idea) => {
+                    const candidates = idea.slugs.map((slug) =>
+                      bundle.places.find((place) => place.slug === slug)!,
+                    )
+                    const closed = candidates.some((place) => closedOnDate(place, day.date))
+                    const available = candidates.filter((place) => !scheduled.has(place.id))
+                    return (
+                      <article key={idea.title}>
+                        <h3>{idea.title}</h3>
+                        <p>{idea.description}</p>
+                        <button
+                          className="button secondary"
+                          disabled={closed || !available.length}
+                          onClick={() => {
+                            update(
+                              available.reduce(
+                                (next, place) => placeInDay(next, place.id, day.date),
+                                plan,
+                              ),
+                            )
+                            setMessage(
+                              `Добавлено мест: ${available.length}. Остановки из других дней сохранены. Теперь можно оптимизировать день.`,
+                            )
+                          }}
+                        >
+                          {closed
+                            ? 'Не подходит на эту дату'
+                            : !available.length
+                              ? 'Уже в плане'
+                              : `Добавить ${available.length} места`}
+                        </button>
+                      </article>
+                    )
+                  })}
+                </div>
+              </details>
+            )}
+            {places.length > 0 && bundle.trip.accommodation && (
+              <DayRoutePlanner
+                day={day}
+                bundle={bundle}
+                readOnly={Boolean(shared)}
+                onChange={(next) =>
+                  update({
+                    ...plan,
+                    days: plan.days.map((saved) => (saved.date === next.date ? next : saved)),
+                  })
+                }
+              />
             )}
             {!places.length && (
               <div className="plan-empty">
@@ -332,6 +424,49 @@ export default function PlanPage() {
                       {formatDuration(place.duration)} · {formatPrice(place.pricing)}
                     </p>
                     <p className="fine-print">{place.bestTime.join(' ')}</p>
+                    {!shared && (
+                      <div className="stop-timing">
+                        <label>
+                          Вход по билету, если он уже куплен
+                          <input
+                            aria-label={`Вход по билету: ${place.nameRu}`}
+                            type="time"
+                            value={settings.slots[place.id] ?? ''}
+                            onChange={(event) => {
+                              const slots = { ...settings.slots }
+                              if (event.target.value) slots[place.id] = event.target.value
+                              else delete slots[place.id]
+                              updateSettings({ slots })
+                            }}
+                          />
+                        </label>
+                        <label>
+                          Время на месте, мин
+                          <input
+                            aria-label={`Время на месте: ${place.nameRu}`}
+                            type="number"
+                            min="15"
+                            max="720"
+                            step="15"
+                            value={
+                              settings.visits[place.id] ??
+                              (place.areaId === 'hatta'
+                                ? 180
+                                : Math.round(
+                                    (place.duration.minMinutes + place.duration.maxMinutes) / 2,
+                                  ))
+                            }
+                            onChange={(event) => {
+                              const value = Number(event.target.value)
+                              if (Number.isInteger(value) && value >= 15 && value <= 720)
+                                updateSettings({
+                                  visits: { ...settings.visits, [place.id]: value },
+                                })
+                            }}
+                          />
+                        </label>
+                      </div>
+                    )}
                     {bundle.trip.accommodation && (
                       <a
                         className="text-button"
@@ -521,8 +656,8 @@ export default function PlanPage() {
       )}
       <p className="fine-print plan-footnote">
         План хранится в этом браузере. Ссылка содержит отдельную копию без синхронизации. Время —
-        длительность посещений; расстояния — по прямой, без расчёта транспорта. Часы работы и
-        доступность смотрите на странице места.
+        оценка посещений и дороги. Реальное время в пути, доступность транспорта и билеты проверяем
+        перед выездом.
       </p>
     </main>
   )

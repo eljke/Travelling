@@ -2,10 +2,19 @@ import { z } from 'zod'
 import type { DestinationBundle, Place } from './model'
 import { distanceBetween } from './geo'
 import { closedOnDate } from './openingHours'
+import { routeSettingsSchema } from './dayRoute'
 
 export const itinerarySchema = z.object({
   version: z.literal(1),
-  days: z.array(z.object({ date: z.iso.date(), placeIds: z.array(z.string()).max(100) })).max(366),
+  days: z
+    .array(
+      z.object({
+        date: z.iso.date(),
+        placeIds: z.array(z.string()).max(100),
+        settings: routeSettingsSchema.optional(),
+      }),
+    )
+    .max(366),
 })
 export type Itinerary = z.infer<typeof itinerarySchema>
 
@@ -26,6 +35,7 @@ export function normalizeItinerary(plan: Itinerary, bundle: DestinationBundle): 
     version: 1,
     days: createItinerary(bundle).days.map((day) => ({
       ...day,
+      settings: plan.days.find((saved) => saved.date === day.date)?.settings,
       placeIds: plan.days
         .filter((saved) => saved.date === day.date)
         .flatMap((saved) =>

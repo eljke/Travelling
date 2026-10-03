@@ -1,0 +1,383 @@
+import { z } from 'zod'
+import type { Coordinates, DestinationBundle, Place } from './model'
+import { distanceBetween } from './geo'
+import { closedOnDate } from './openingHours'
+
+const time = z.string().regex(/^(?:[01]\d|2[0-3]):[0-5]\d$/)
+export const routeSettingsSchema = z.object({
+  start: time.default('09:00'),
+  end: time.default('22:00'),
+  adults: z.number().int().min(1).max(12).default(5),
+  childAge: z.number().int().min(0).max(17).optional(),
+  children: z.number().int().min(0).max(6).default(1),
+  preference: z.enum(['balanced', 'fast', 'cheap']).default('balanced'),
+  taxi: z.enum(['max', 'standard']).default('max'),
+  perKm: z.number().min(1).max(10).default(2.23),
+  buffer: z.number().int().min(0).max(90).default(30),
+  breakMinutes: z.number().int().min(0).max(120).default(45),
+  slots: z.record(z.string(), time).default({}),
+  visits: z.record(z.string(), z.number().int().min(15).max(720)).default({}),
+})
+export type RouteSettings = z.infer<typeof routeSettingsSchema>
+export const defaultRouteSettings: RouteSettings = routeSettingsSchema.parse({ childAge: 11 })
+export const toMinutes = (time: string) => Number(time.slice(0, 2)) * 60 + Number(time.slice(3))
+export const clockTime = (minutes: number) =>
+  `${String(Math.floor(minutes / 60) % 24).padStart(2, '0')}:${String(minutes % 60).padStart(2, '0')}${minutes >= 1440 ? ' +1 день' : ''}`
+
+// Place-level access distances include station exits and indoor approaches, not just map points.
+const metroAccess: Record<string, { station: number; walk: number }> = {
+  'ibn-battuta-mall': { station: 0, walk: 5 },
+  'dubai-marina-walk': { station: 3, walk: 25 },
+  'dubai-marina-mall': { station: 3, walk: 12 },
+  'mall-of-the-emirates': { station: 8, walk: 8 },
+  'ski-dubai': { station: 8, walk: 10 },
+  'burj-khalifa': { station: 13, walk: 25 },
+  'dubai-mall': { station: 13, walk: 25 },
+  'dubai-aquarium': { station: 13, walk: 30 },
+  'dubai-fountain': { station: 13, walk: 30 },
+  'sky-views': { station: 13, walk: 7 },
+  'dubai-opera': { station: 13, walk: 18 },
+  'museum-of-the-future': { station: 15, walk: 8 },
+  difc: { station: 14, walk: 12 },
+}
+const stationNames: Record<number, string> = {
+  0: 'Ibn Battuta',
+  3: 'DMCC',
+  8: 'Mall of the Emirates',
+  13: 'Burj Khalifa / Dubai Mall',
+  14: 'Financial Centre',
+  15: 'Emirates Towers',
+}
+// Conservative estimate from JA to the metro; road geometry and traffic require live directions.
+const ibnBattuta: Coordinates = { lat: 25.0441, lng: 55.1182 }
+export type TravelLeg = {
+  mode: 'taxi' | 'walk' | 'metro' | 'tram'
+  minutes: number
+  cost: number
+  highCost: number
+  detail: string
+  origin: Coordinates
+  destination: Coordinates
+}
+type StopPoint = { coordinates: Coordinates; slug?: string; areaId?: string }
+function taxiLeg(a: StopPoint, b: StopPoint, settings: RouteSettings): TravelLeg {
+  const straight = distanceBetween(a.coordinates, b.coordinates)
+  const km = straight * (straight > 15 ? 1.3 : 1.55)
+  const cars = Math.ceil((settings.adults + settings.children) / (settings.taxi === 'max' ? 6 : 4))
+  const low = Math.ceil(Math.max(12, 9 + km * settings.perKm) * cars)
+  return {
+    mode: 'taxi',
+    minutes: Math.ceil((km / (straight > 15 ? 55 : 30)) * 60 + 10),
+    cost: low,
+    highCost: Math.ceil(low * 1.35 + 12 * cars),
+    detail: `${cars} ${settings.taxi === 'max' ? 'Hala Max (до 6 пассажиров)' : 'обычное такси (до 4 пассажиров)'}. Запас на подачу и городской участок включён.`,
+    origin: a.coordinates,
+    destination: b.coordinates,
+  }
+}
+export function travelOptions(a: StopPoint, b: StopPoint, settings: RouteSettings): TravelLeg[] {
+  const taxi = taxiLeg(a, b, settings)
+  const options = [taxi]
+  const distance = distanceBetween(a.coordinates, b.coordinates)
+  // Short walks only within a connected destination area; never across the Creek or Palm water.
+  if (
+    a.areaId &&
+    a.areaId === b.areaId &&
+    [
+      'downtown',
+      'marina',
+      'city-walk',
+      'jebel-ali',
+      'al-barsha',
+      'gardens',
+      'old-dubai',
+      'deira',
+      'difc',
+    ].includes(a.areaId) &&
+    distance < 0.9
+  ) {
+    options.push({
+      mode: 'walk',
+      minutes: Math.max(7, Math.ceil(((distance * 1.6) / 3.5) * 60)),
+      cost: 0,
+      highCost: 0,
+      detail: 'Пешком внутри района; заложен запас на переходы и выходы. Проверьте путь на карте.',
+      origin: a.coordinates,
+      destination: b.coordinates,
+    })
+  }
+  const from = a.slug ? metroAccess[a.slug] : undefined
+  const to = b.slug ? metroAccess[b.slug] : undefined
+  const isHotel = (point: StopPoint) =>
+    !point.slug && distanceBetween(point.coordinates, { lat: 24.9873835, lng: 55.0219208 }) < 0.2
+  if ((from && to && from.station !== to.station) || (isHotel(a) && to) || (from && isHotel(b))) {
+    const hotelLeg = isHotel(a)
+      ? taxiLeg(a, { coordinates: ibnBattuta }, settings)
+      : isHotel(b)
+        ? taxiLeg({ coordinates: ibnBattuta }, b, settings)
+        : undefined
+    const start = from?.station ?? 0
+    const end = to?.station ?? 0
+    const stationCount = Math.abs(start - end)
+    // Highest Silver fare avoids undercounting zones and transfers; cards are separate.
+    const fare = 7.5 * (settings.adults + settings.children)
+    options.push({
+      mode: 'metro',
+      minutes:
+        (from?.walk ?? 0) +
+        (to?.walk ?? 0) +
+        Math.ceil(stationCount * 2.6) +
+        10 +
+        (hotelLeg?.minutes ?? 0),
+      cost: Math.ceil(fare + (hotelLeg?.cost ?? 0)),
+      highCost: Math.ceil(fare + (hotelLeg?.highCost ?? 0)),
+      detail: `${hotelLeg ? `${settings.taxi === 'max' ? 'Hala Max' : 'Такси'} между отелем и Ibn Battuta + ` : ''}красная линия: ${stationNames[start]} → ${stationNames[end]}. До 7,50 AED на пассажира; подходы и ожидание включены.`,
+      origin: a.coordinates,
+      destination: b.coordinates,
+    })
+  }
+  if (a.areaId === 'marina' && b.areaId === 'marina' && distance >= 0.9 && distance < 3) {
+    options.push({
+      mode: 'tram',
+      minutes: Math.ceil(((distance * 1.5) / 15) * 60 + 24),
+      cost: 3 * (settings.adults + settings.children),
+      highCost: 3 * (settings.adults + settings.children),
+      detail:
+        'Трамвай в районе Marina / JBR: оценка с подходом и ожиданием, 3 AED на пассажира. Остановку и направление уточните по маршруту.',
+      origin: a.coordinates,
+      destination: b.coordinates,
+    })
+  }
+  return options
+}
+function legScore(leg: TravelLeg, preference: RouteSettings['preference']) {
+  return preference === 'fast'
+    ? leg.minutes
+    : preference === 'cheap'
+      ? leg.cost + leg.minutes * 0.12
+      : leg.minutes + leg.cost * 0.45
+}
+function chooseLeg(
+  a: StopPoint,
+  b: StopPoint,
+  settings: RouteSettings,
+  departure: number,
+  date: string,
+  arriveBy = Infinity,
+): TravelLeg {
+  const weekday = new Date(`${date}T12:00:00Z`).getUTCDay()
+  const options = travelOptions(a, b, settings).filter(
+    (option) =>
+      ['walk', 'taxi'].includes(option.mode) ||
+      (departure >= (weekday === 0 ? 8 : 6) * 60 && departure + option.minutes <= 23 * 60),
+  )
+  const timely = options.filter((option) => departure + option.minutes <= arriveBy)
+  return (timely.length ? timely : options).sort(
+    (left, right) => legScore(left, settings.preference) - legScore(right, settings.preference),
+  )[0]
+}
+export function groupTicketPrice(
+  place: Place,
+  settings: RouteSettings,
+  date: string,
+  currency = 'AED',
+) {
+  if (place.pricing.kind === 'unknown' || place.pricing.currency !== currency)
+    return { amount: 0, unknown: true, childEstimated: false }
+  let adult = place.pricing.amount!
+  if (place.slug === 'ja-beach' && [0, 5, 6].includes(new Date(`${date}T12:00:00Z`).getUTCDay()))
+    adult = 200
+  const child =
+    settings.childAge === undefined
+      ? undefined
+      : place.pricing.childPrices?.find(
+          (price) => settings.childAge! >= price.minAge && settings.childAge! <= price.maxAge,
+        )
+  return {
+    amount: adult * settings.adults + (child?.amount ?? adult) * settings.children,
+    unknown: false,
+    childEstimated: settings.children > 0 && !child && adult > 0,
+  }
+}
+export type DayRoute = ReturnType<typeof evaluateRoute>
+export function evaluateRoute(
+  places: Place[],
+  bundle: DestinationBundle,
+  date: string,
+  settings: RouteSettings,
+) {
+  const hotel = bundle.trip.accommodation!
+  const start = toMinutes(settings.start)
+  const deadline = toMinutes(settings.end)
+  const hotelPoint: StopPoint = {
+    coordinates: hotel.coordinates,
+    ...(distanceBetween(hotel.coordinates, { lat: 24.9873835, lng: 55.0219208 }) < 0.2
+      ? { areaId: 'jebel-ali' }
+      : {}),
+  }
+  let time = start
+  let previous: StopPoint = hotelPoint
+  let pause = 0
+  const stops = places.map((place, index) => {
+    const fixedTime = settings.slots[place.id]
+    const slot = fixedTime ? toMinutes(fixedTime) : undefined
+    const schedule = place.openingHours.schedule
+    const sessions = place.openingHours.sessions
+    const visitMinutes =
+      settings.visits[place.id] ??
+      (place.areaId === 'hatta'
+        ? 180
+        : Math.round((place.duration.minMinutes + place.duration.maxMinutes) / 2))
+    const arriveBy = Math.min(
+      slot ?? Infinity,
+      sessions ? (slot ?? toMinutes(sessions.at(-1)!)) - 30 : Infinity,
+      schedule && schedule.opens < schedule.closes
+        ? toMinutes(schedule.closes) - visitMinutes
+        : Infinity,
+    )
+    const leg = chooseLeg(previous, place, settings, time, date, arriveBy)
+    const departure = time
+    time += leg.minutes
+    const arrival = time
+    const session = sessions?.map(toMinutes).find((minute) => minute >= time + 30)
+    if (session !== undefined) time = session
+    if (schedule && schedule.opens < schedule.closes)
+      time = Math.max(time, toMinutes(schedule.opens))
+    if (place.slug === 'dubai-fountain') time = Math.max(time, 18 * 60)
+    const missedSlot = slot !== undefined && time > slot
+    if (slot !== undefined) time = Math.max(time, slot)
+    const visitStart = time
+    time += visitMinutes
+    const end = time
+    const warnings: string[] = []
+    if (closedOnDate(place, date)) warnings.push('На этот день указано закрытие.')
+    if (missedSlot)
+      warnings.push(
+        `Вход по билету в ${fixedTime} не помещается в маршрут: приезжаем позже или место ещё не открыто.`,
+      )
+    if (sessions && slot !== undefined && !sessions.includes(fixedTime!))
+      warnings.push('Вход по билету не помещается в опубликованные сеансы. Проверьте время.')
+    if (sessions && session === undefined)
+      warnings.push('Посещение не помещается в опубликованные сеансы с регистрацией за 30 минут.')
+    if (schedule && schedule.opens < schedule.closes && time > toMinutes(schedule.closes))
+      warnings.push('Посещение не помещается в опубликованные часы работы.')
+    if (!schedule && !sessions && !fixedTime)
+      warnings.push('Часы и время входа нужно подтвердить; в расчёте нет закреплённого слота.')
+    if (index === Math.floor((places.length - 1) / 2)) {
+      pause = settings.breakMinutes
+      time += pause
+    }
+    previous = place
+    return {
+      place,
+      leg,
+      departure,
+      arrival,
+      visitStart,
+      end,
+      visitMinutes,
+      pauseAfter: end === time ? 0 : pause,
+      warnings,
+    }
+  })
+  const returnLeg = places.length
+    ? chooseLeg(previous, hotelPoint, settings, time, date, deadline - settings.buffer)
+    : {
+        mode: 'taxi' as const,
+        minutes: 0,
+        cost: 0,
+        highCost: 0,
+        detail: '',
+        origin: hotel.coordinates,
+        destination: hotel.coordinates,
+      }
+  const returnAt = time + returnLeg.minutes
+  const legs = [...stops.map((stop) => stop.leg), returnLeg]
+  const tickets = places.map((place) =>
+    groupTicketPrice(place, settings, date, bundle.exchangeRate.baseCurrency),
+  )
+  const cost = legs.reduce((sum, leg) => sum + leg.cost, 0)
+  const highCost = legs.reduce((sum, leg) => sum + leg.highCost, 0)
+  const violations = stops.filter((stop) =>
+    stop.warnings.some(
+      (warning) => warning.includes('закрытие') || warning.includes('не помещается'),
+    ),
+  ).length
+  return {
+    stops,
+    returnLeg,
+    returnDeparture: time,
+    returnAt,
+    cost,
+    highCost,
+    ticketCost: tickets.reduce((sum, ticket) => sum + ticket.amount, 0),
+    unknownPrices: tickets.filter((ticket) => ticket.unknown).length,
+    childEstimates: tickets.filter((ticket) => ticket.childEstimated).length,
+    travelMinutes: legs.reduce((sum, leg) => sum + leg.minutes, 0),
+    walkingMinutes: legs
+      .filter((leg) => leg.mode === 'walk')
+      .reduce((sum, leg) => sum + leg.minutes, 0),
+    slack: deadline - returnAt,
+    violations,
+    fits: returnAt + settings.buffer <= deadline && violations === 0,
+    score:
+      Math.max(0, returnAt + settings.buffer - deadline) * 1000 +
+      violations * 100000 +
+      (settings.preference === 'cheap'
+        ? cost + (returnAt - start) * 0.12
+        : returnAt - start + cost * (settings.preference === 'fast' ? 0.02 : 0.45)),
+  }
+}
+export function optimizeDay(
+  places: Place[],
+  bundle: DestinationBundle,
+  date: string,
+  settings: RouteSettings,
+): DayRoute {
+  const evaluate = (order: Place[]) => evaluateRoute(order, bundle, date, settings)
+  if (places.length < 2) return evaluate(places)
+  let best = evaluate(places)
+  // Small daily selections permit checking every order, including opening-hour waits.
+  if (places.length <= 7) {
+    const visit = (order: Place[], remaining: Place[]) => {
+      if (!remaining.length) {
+        const route = evaluate(order)
+        if (route.score < best.score) best = route
+        return
+      }
+      remaining.forEach((place, index) =>
+        visit(
+          [...order, place],
+          remaining.filter((_, other) => other !== index),
+        ),
+      )
+    }
+    visit([], places)
+  } else {
+    const remaining = [...places]
+    const order: Place[] = []
+    let origin = bundle.trip.accommodation!.coordinates
+    while (remaining.length) {
+      remaining.sort(
+        (a, b) => distanceBetween(origin, a.coordinates) - distanceBetween(origin, b.coordinates),
+      )
+      const place = remaining.shift()!
+      order.push(place)
+      origin = place.coordinates
+    }
+    const candidate = evaluate(order)
+    if (candidate.score < best.score) best = candidate
+    for (let pass = 0; pass < 2; pass++)
+      for (let i = 0; i < best.stops.length - 1; i++)
+        for (let j = i + 1; j < best.stops.length; j++) {
+          const order = best.stops.map((stop) => stop.place)
+          const next = evaluate([
+            ...order.slice(0, i),
+            ...order.slice(i, j + 1).reverse(),
+            ...order.slice(j + 1),
+          ])
+          if (next.score < best.score) best = next
+        }
+  }
+  return best
+}
