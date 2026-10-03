@@ -1,6 +1,7 @@
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 import { destinations, images } from './src/content/registry'
+import packageInfo from './package.json'
 
 const covers = Object.fromEntries(
   Object.values(destinations).map((bundle) => [
@@ -10,6 +11,7 @@ const covers = Object.fromEntries(
 )
 
 export default defineConfig({
+  define: { 'import.meta.env.VITE_APP_VERSION': JSON.stringify(packageInfo.version) },
   plugins: [
     react(),
     {

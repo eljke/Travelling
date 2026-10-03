@@ -15,6 +15,7 @@ const PlacePage = lazy(() => import('./pages/PlacePage'))
 const SourcesPage = lazy(() => import('./pages/SourcesPage'))
 const PlanPage = lazy(() => import('./pages/PlanPage'))
 const AlbumPage = lazy(() => import('./pages/AlbumPage'))
+const UpdatesPage = lazy(() => import('./pages/UpdatesPage'))
 const scrollPositions = new globalThis.Map<string, number>()
 function Shell() {
   const location = useLocation()
@@ -164,6 +165,7 @@ function Shell() {
           <Route path="/:destinationId/sources" element={<SourcesPage />} />
           <Route path="/:destinationId/plan" element={<PlanPage key={location.pathname} />} />
           <Route path="/:destinationId/photos" element={<AlbumPage key={location.pathname} />} />
+          <Route path="/updates" element={<UpdatesPage />} />
           <Route
             path="*"
             element={
@@ -190,7 +192,9 @@ function Shell() {
             </Link>
             <p>{ui.disclaimer}</p>
           </div>
-          <span>Сделано для любопытства.</span>
+          <Link className="site-version" to="/updates">
+            v{import.meta.env.VITE_APP_VERSION} · Что нового
+          </Link>
         </footer>
       </Suspense>
     </>
