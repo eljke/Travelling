@@ -15,6 +15,7 @@ describe('plan copies', () => {
       nolCardsOwned: true,
       slots: { 'dubai-dubai-mall': '11:30' },
       visits: { 'dubai-dubai-mall': 120 },
+      breakAfter: 'dubai-dubai-mall',
       waits: { 'dubai-dubai-mall': 15 },
       ticketChecks: { 'dubai-dubai-frame:family-1': { adults: 4, children: 0, slot: '12:00' } },
     }

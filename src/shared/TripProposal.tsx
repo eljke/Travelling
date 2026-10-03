@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import type { DestinationBundle } from '../domain/model'
 import type { Itinerary } from '../domain/itinerary'
-import { tripProposal } from '../domain/tripProposal'
+import { tripProposal, type DowntownExtra } from '../domain/tripProposal'
 import { clockTime } from '../domain/dayRoute'
 import { familyRouteBudget, families } from '../domain/families'
 import { usePreferences } from '../app/Preferences'
@@ -22,11 +22,12 @@ export default function TripProposal({
 }) {
   const [resortFirst, setResortFirst] = useState(false)
   const [aquarium, setAquarium] = useState(false)
+  const [downtownExtra, setDowntownExtra] = useState<DowntownExtra>('city-walk')
   const [previous, setPrevious] = useState<Itinerary>()
   const { budgetScope } = usePreferences()
   const proposal = useMemo(
-    () => tripProposal(bundle, resortFirst, aquarium),
-    [bundle, resortFirst, aquarium],
+    () => tripProposal(bundle, resortFirst, aquarium, downtownExtra),
+    [bundle, resortFirst, aquarium, downtownExtra],
   )
   const budgets = proposal.days.map(({ day, route }) =>
     familyRouteBudget(
@@ -44,9 +45,9 @@ export default function TripProposal({
     <details className="trip-proposal" open={expanded || undefined}>
       <summary>Наш minmax · 6–10 октября · хорошие впечатления без лишних поездок</summary>
       <p>
-        Все обязательные места, одна смотровая и два сада. Близкие прогулки вместе; дорогие
-        дополнения выбираем по интересу. Выезды с 10:00, возвращение до 22:00 с запасом, очередями и
-        перерывом на еду.
+        Все обязательные места, Рамка и два сада. На Dubai Mall — шесть часов. Близкие прогулки
+        вместе; дорогие дополнения выбираем по интересу. Выезды с 10:00, возвращение до 22:00 с
+        запасом, очередями и перерывом на еду.
       </p>
       <aside className="arrival-idea">
         <h3>5 октября · знакомимся с JA после заезда</h3>
@@ -77,6 +78,18 @@ export default function TripProposal({
           >
             <option value="10">10 октября · город начинаем 6-го</option>
             <option value="6">6 октября · город начинаем 7-го</option>
+          </select>
+        </label>
+        <label>
+          С чем совместим Dubai Mall
+          <select
+            value={downtownExtra}
+            onChange={(event) => setDowntownExtra(event.target.value as DowntownExtra)}
+          >
+            <option value="city-walk">City Walk · прогулка вечером около часа</option>
+            <option value="sky-views">Sky Views · смотровая утром, по билету</option>
+            <option value="none">Только молл и фонтаны · больше свободного времени</option>
+            <option value="both">City Walk + Sky Views · проверим, поместятся ли</option>
           </select>
         </label>
         <label>
@@ -126,8 +139,9 @@ export default function TripProposal({
             </p>
             {!route.fits && (
               <p className="plan-warning">
-                С текущими часами или запасами день не укладывается. Применение отключено; можно
-                собрать свой вариант ниже.
+                Возвращение около {clockTime(route.returnAt)}, а с резервом {day.settings!.buffer}{' '}
+                мин нужно быть в отеле до {day.settings!.end}. Молл, еду и очереди не сокращаем.
+                Выберите одно дополнение или только молл с фонтанами.
               </p>
             )}
             {route.stops.some((stop) => stop.warnings.length) && (

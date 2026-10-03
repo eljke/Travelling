@@ -56,6 +56,7 @@ export function formatDuration(duration: { minMinutes: number; maxMinutes: numbe
   const { minMinutes: min, maxMinutes: max } = duration
   const number = (v: number) =>
     new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 1 }).format(v)
+  if (min === max) return max < 60 ? `${min} мин` : `${number(max / 60)} ч`
   return max < 60 ? `${min}–${max} мин` : `${number(min / 60)}–${number(max / 60)} ч`
 }
 export function formatCoordinates(point: Coordinates) {

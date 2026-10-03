@@ -15,6 +15,7 @@ export const routeSettingsSchema = z.object({
   perKm: z.number().min(1).max(10).default(2.23),
   buffer: z.number().int().min(0).max(90).default(30),
   breakMinutes: z.number().int().min(0).max(120).default(45),
+  breakAfter: z.string().optional(),
   slots: z.record(z.string(), time).default({}),
   visits: z.record(z.string(), z.number().int().min(15).max(720)).default({}),
   waits: z.record(z.string(), z.number().int().min(0).max(240)).default({}),
@@ -287,6 +288,8 @@ export function evaluateRoute(
   let previous: StopPoint = hotelPoint
   let pause = 0
   let usedTransit = settings.nolCardsOwned
+  const selectedBreak = places.findIndex((place) => place.id === settings.breakAfter)
+  const breakIndex = selectedBreak < 0 ? Math.floor((places.length - 1) / 2) : selectedBreak
   const stops = places.map((place, index) => {
     const fixedTime = includedSafari ? undefined : settings.slots[place.id]
     const slot = fixedTime ? toMinutes(fixedTime) : undefined
@@ -368,7 +371,7 @@ export function evaluateRoute(
       warnings.push('Посещение не помещается в опубликованные часы работы.')
     if (!schedule && !sessions && !fixedTime)
       warnings.push('Часы и время входа нужно подтвердить; в расчёте нет закреплённого слота.')
-    if (index === Math.floor((places.length - 1) / 2) && !includedSafari) {
+    if (index === breakIndex && !includedSafari) {
       pause = settings.breakMinutes
       time += pause
     }

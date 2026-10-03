@@ -14,7 +14,7 @@ test('builds a day for six, optimizes it and retains limits', async ({ page }) =
   )
   await expect(planner.getByRole('combobox', { name: 'Такси', exact: true })).toHaveValue('max')
   await planner.getByRole('button', { name: 'Оптимизировать день', exact: true }).click()
-  await expect(page.locator('.plan-stop:visible')).toHaveCount(4)
+  await expect(page.locator('.plan-stop:visible')).toHaveCount(2)
   await expect(planner.locator('.route-result')).toContainText('Укладываемся')
   await expect(planner.locator('.route-timeline')).toContainText(
     '10:00 · Выезд из JA Palm Tree Court',
@@ -23,7 +23,7 @@ test('builds a day for six, optimizes it and retains limits', async ({ page }) =
   await expect(planner.locator('.route-result')).toContainText('Нужно сократить день')
   await page.reload()
   await expect(page.getByLabel('Вернуться в отель до', { exact: true })).toHaveValue('10:00')
-  await expect(page.locator('.plan-stop:visible')).toHaveCount(4)
+  await expect(page.locator('.plan-stop:visible')).toHaveCount(2)
 })
 
 test('respects seasonal dates and booked admission', async ({ page }) => {

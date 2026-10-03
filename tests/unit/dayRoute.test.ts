@@ -20,6 +20,24 @@ const dubai = destinations.dubai
 const place = (slug: string) => dubai.places.find((place) => place.slug === slug)!
 const date = '2026-10-08'
 describe('day route', () => {
+  it('keeps a meal at the chosen place when stops are reordered or removed', () => {
+    const places = ['dubai-mall', 'dubai-fountain', 'city-walk'].map(place)
+    const settings = {
+      ...defaultRouteSettings,
+      visits: { 'dubai-city-walk': 60 },
+      breakAfter: 'dubai-dubai-mall',
+    }
+    const route = evaluateRoute(places, dubai, date, settings)
+    expect(route.fits).toBe(true)
+    expect(route.stops[0].visitMinutes).toBe(360)
+    expect(route.stops[0].pauseAfter).toBe(45)
+    expect(route.stops[1].pauseAfter).toBe(0)
+    const reordered = optimizeDay(places, dubai, date, settings)
+    expect(reordered.stops.find((stop) => stop.place.slug === 'dubai-mall')!.pauseAfter).toBe(45)
+    expect(reordered.stops.reduce((sum, stop) => sum + stop.pauseAfter, 0)).toBe(45)
+    const removed = evaluateRoute(places.slice(1), dubai, date, settings)
+    expect(removed.stops.reduce((sum, stop) => sum + stop.pauseAfter, 0)).toBe(45)
+  })
   it('walks between connected places but takes a taxi to keep a tight booking', () => {
     const places = [place('dubai-mall'), place('souk-al-bahar')]
     expect(evaluateRoute(places, dubai, '2026-10-06', defaultRouteSettings).stops[1].leg.mode).toBe(
@@ -28,6 +46,7 @@ describe('day route', () => {
     const booked = evaluateRoute(places, dubai, '2026-10-06', {
       ...defaultRouteSettings,
       slots: { 'dubai-souk-al-bahar': '15:00' },
+      visits: { 'dubai-dubai-mall': 180 },
     })
     expect(booked.stops[1].leg.mode).toBe('taxi')
     expect(booked.stops[1].visitStart).toBe(toMinutes('15:00'))
@@ -37,7 +56,11 @@ describe('day route', () => {
     const day = {
       ...createItinerary(dubai).days[0],
       placeIds: ['dubai-dubai-mall', 'dubai-dubai-fountain'],
-      settings: { ...defaultRouteSettings, slots: { 'dubai-dubai-fountain': '18:30' } },
+      settings: {
+        ...defaultRouteSettings,
+        slots: { 'dubai-dubai-fountain': '18:30' },
+        visits: { 'dubai-dubai-mall': 180 },
+      },
     }
     const before = evaluateRoute(
       day.placeIds.map((id) => dubai.places.find((row) => row.id === id)!),
@@ -124,13 +147,13 @@ describe('day route', () => {
     expect(booked.stops[0].warnings.join(' ')).toContain('Вход по билету')
   })
   it('suggests realistic shorter visits without cutting queues or breaks', () => {
-    const mall = place('dubai-mall')
-    const settings = { ...defaultRouteSettings, end: '15:30', preference: 'fast' as const }
-    const day = { date, placeIds: [mall.id], settings }
-    expect(evaluateRoute([mall], dubai, date, settings).fits).toBe(false)
+    const walk = place('dubai-marina-walk')
+    const settings = { ...defaultRouteSettings, end: '13:30', preference: 'fast' as const }
+    const day = { date, placeIds: [walk.id], settings }
+    expect(evaluateRoute([walk], dubai, date, settings).fits).toBe(false)
     const shorter = dayAdvice(day, dubai).find((advice) => advice.title.includes('короче'))!
     expect(shorter.route.fits).toBe(true)
-    expect(shorter.day.settings!.visits[mall.id]).toBeGreaterThanOrEqual(mall.duration.minMinutes)
+    expect(shorter.day.settings!.visits[walk.id]).toBeGreaterThanOrEqual(walk.duration.minMinutes)
     expect(shorter.day.settings!.breakMinutes).toBe(settings.breakMinutes)
     expect(shorter.day.settings!.waits).toEqual(settings.waits)
     expect(day.settings.visits).toEqual({})
@@ -223,7 +246,7 @@ describe('day route', () => {
     ).toBeGreaterThan(0)
   })
   it('improves order without dropping stops or breaking return time', () => {
-    const stops = ['dubai-mall', 'dubai-marina-walk', 'dubai-aquarium'].map(place)
+    const stops = ['mall-of-the-emirates', 'dubai-marina-walk', 'dubai-aquarium'].map(place)
     const before = evaluateRoute(stops, dubai, date, defaultRouteSettings)
     const after = optimizeDay(stops, dubai, date, defaultRouteSettings)
     expect(after.score).toBeLessThanOrEqual(before.score)

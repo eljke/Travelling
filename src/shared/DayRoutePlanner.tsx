@@ -268,6 +268,26 @@ export default function DayRoutePlanner({
               ))}
             </select>
           </label>
+          {places.length > 0 && settings.breakMinutes > 0 && (
+            <label>
+              Когда поедим
+              <select
+                value={
+                  places.some((place) => place.id === settings.breakAfter)
+                    ? settings.breakAfter
+                    : ''
+                }
+                onChange={(event) => update({ breakAfter: event.target.value || undefined })}
+              >
+                <option value="">В середине маршрута</option>
+                {places.map((place) => (
+                  <option key={place.id} value={place.id}>
+                    После: {place.nameRu}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
         </div>
       )}
       <p className="fine-print">

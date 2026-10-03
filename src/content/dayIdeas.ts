@@ -2,8 +2,8 @@ export const dubaiDayIdeas = [
   {
     title: 'Downtown за один выезд',
     description:
-      'Burj Khalifa, аквариум, молл и вечерние фонтаны. Все главные остановки в одном районе.',
-    slugs: ['burj-khalifa', 'dubai-aquarium', 'dubai-mall', 'dubai-fountain'],
+      'Шесть часов в Dubai Mall, вечерние фонтаны и вид на Бурдж-Халифу с набережной. Дорога и еда — отдельно; подъём на башню и платный аквариум можно добавить по желанию.',
+    slugs: ['dubai-mall', 'dubai-fountain'],
   },
   {
     title: 'Марина и море',

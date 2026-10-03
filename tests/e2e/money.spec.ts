@@ -6,14 +6,14 @@ test('shows rubles for ticket variants, day budgets and transport', async ({ pag
   await page.goto('/#/dubai/plan')
   await page
     .locator('.day-ideas:visible article')
-    .filter({ hasText: 'Downtown за один выезд' })
+    .filter({ hasText: 'Марина и море' })
     .getByRole('button')
     .click()
   await expect(page.locator('.route-options:visible button').first()).toContainText('₽')
   await expect(page.locator('.route-budget:visible > div').first()).toContainText('₽')
   await expect(page.locator('.route-leg:visible').first()).toContainText('₽')
   await expect(
-    page.locator('.plan-stop:visible').filter({ hasText: 'Бурдж-Халифа' }),
+    page.locator('.plan-stop:visible').filter({ hasText: 'Колесо Ain Dubai' }),
   ).toContainText('₽')
   await page.setViewportSize({ width: 360, height: 844 })
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(

@@ -26,17 +26,21 @@ test('keeps a separate queue buffer and offers a shorter viable day', async ({ p
   )
   await page.getByRole('button', { name: 'Убрать из плана: Дубайская рамка', exact: true }).click()
   const picker = page.locator('.plan-picker')
-  await picker.getByLabel('Поиск места').fill('Дубай Молл')
-  await picker.getByRole('button', { name: 'Добавить: Дубай Молл', exact: true }).click()
-  await page.getByLabel('Вернуться в отель до', { exact: true }).fill('15:30')
+  await picker.getByLabel('Поиск места').fill('Набережная Дубай Марины')
+  await picker
+    .getByRole('button', { name: 'Добавить: Набережная Дубай Марины', exact: true })
+    .click()
+  await page.getByLabel('Вернуться в отель до', { exact: true }).fill('13:30')
   const shorter = page
     .getByRole('region', { name: 'Как улучшить день' })
     .locator('article')
     .filter({ hasText: 'Сделать часть посещений короче' })
-  await expect(shorter).toContainText('180 → 120 мин')
+  await expect(shorter).toContainText('90 → 60 мин')
   await shorter.getByRole('button', { name: 'Применить вариант', exact: true }).click()
   await expect(page.locator('.route-result:visible')).toContainText('Укладываемся')
-  await expect(page.getByLabel('Время на месте: Дубай Молл', { exact: true })).toHaveValue('120')
+  await expect(
+    page.getByLabel('Время на месте: Набережная Дубай Марины', { exact: true }),
+  ).toHaveValue('60')
 })
 
 test('offers a nearby walk during a long wait and retains the booked time', async ({ page }) => {
@@ -47,6 +51,7 @@ test('offers a nearby walk during a long wait and retains the booked time', asyn
     await picker.getByRole('button', { name: `Добавить: ${name}`, exact: true }).click()
   }
   await page.getByLabel('Вход по билету: Фонтаны Дубая', { exact: true }).fill('18:30')
+  await page.getByLabel('Время на месте: Дубай Молл', { exact: true }).fill('180')
   const suggestion = page
     .getByRole('region', { name: 'Как улучшить день' })
     .locator('article')
