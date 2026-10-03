@@ -1,4 +1,48 @@
-export const ticketLinks = [
+export const ticketLinks: ReadonlyArray<
+  readonly [string, string, string, string, number?, string?]
+> = [
+  [
+    'aya-universe',
+    'trip-com',
+    'https://ru.trip.com/things-to-do/detail/102771585/',
+    'На 6 октября: вход без трансфера, с 3 лет один тариф. Без возврата и изменения даты. Это текущий пакет, старое предложение со скидкой уже перенаправляет в каталог.',
+    3802.54,
+    'RUB',
+  ],
+  [
+    'the-view-at-the-palm',
+    'trip-com',
+    'https://ru.trip.com/things-to-do/detail/103874472/',
+    'На 6 октября: обычный вход на 52 этаж, 10:00–15:30. Дети 3–12 лет — 1 572 ₽. Закат, VIP и Next Level — другие пакеты. Без возврата и изменения даты.',
+    2297.53,
+    'RUB',
+  ],
+  [
+    'aquaventure',
+    'trip-com',
+    'https://ru.trip.com/things-to-do/detail/102796383/',
+    'На 6 октября: аквапарк без аквариума, тариф с 3 лет. Встреча в Atlantis в 10:00 — из JA нужно выехать раньше обычного. Ваучер отправляют через WhatsApp. Без возврата и изменения даты; условия хранения вещей проверьте у продавца.',
+    5029.15,
+    'RUB',
+  ],
+  [
+    'dubai-frame',
+    'trip-com',
+    'https://www.trip.com/travel-guide/attraction/dubai/dubai-frame-46832162?curr=AED&locale=en-XX',
+    'Страница самой Рамки с предложениями. Сравните вход без трансфера и детский тариф: цену конкретного пакета на дату поездки пока не фиксируем.',
+  ],
+  [
+    'miracle-garden',
+    'trip-com',
+    'https://ru.trip.com/travel-guide/attraction/dubai/dubai-miracle-garden-15053335?curr=RUB&locale=ru-RU&poiType=3&scene=ticket',
+    'Страница самого сада. На 3 октября сезон ещё не открыт и отдельный входной билет не показан; цены экскурсий не сравниваем с обычным входом. Наличие на 8–10 октября проверяйте после открытия продаж.',
+  ],
+  [
+    'butterfly-garden',
+    'trip-com',
+    'https://www.trip.com/travel-guide/attraction/dubai/dubai-butterfly-garden-33067608',
+    'Страница самого Butterfly Garden. Выбирайте входной билет; экскурсии с трансфером и пакеты с Miracle Garden сравнивайте отдельно. Цена на дату поездки пока не подтверждена.',
+  ],
   [
     'burj-khalifa',
     'klook',
@@ -113,6 +157,6 @@ export const ticketLinks = [
     'https://www.klook.com/en-US/activity/9651-legoland-dubai-ticket-dubai/',
     'LEGOLAND Dubai; аквапарк не следует считать включённым без проверки пакета.',
   ],
-] as const
+]
 
 export const ticketLinksCheckedAt = '2026-10-03'

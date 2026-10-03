@@ -482,6 +482,9 @@ export default function PlacePage() {
                   <div className="provider-price">
                     <strong>{offer.price ? formatPrice(offer.price) : 'Цена уточняется'}</strong>
                     <small>{offer.price && formatRub(offer.price, bundle.exchangeRate)}</small>
+                    {offer.price?.amount !== undefined && (
+                      <small>Цена проверена {formatDate(offer.price.checkedAt)}</small>
+                    )}
                   </div>
                   <PaymentStatus payment={offer.russianCardSupport} />
                   <a className="button secondary" href={offer.url} target="_blank" rel="noreferrer">

@@ -1626,13 +1626,15 @@ for (const seed of seeds) {
   }
 }
 sources.push(
-  ...ticketLinks.map(([slug, providerId, url]) => ({
+  ...ticketLinks.map(([slug, providerId, url, note, amount]) => ({
     ...source(
       `ticket-${slug}-${providerId}`,
-      `${providerId} • ${seeds.find((seed) => seed.id === slug)!.name}`,
+      `${providerId} • ${[...seeds, ...extraPlaces].find((seed) => seed.id === slug)!.name}`,
       url,
       'ticket-provider',
-      'Проверена страница конкретного предложения. Цена и наличие слотов на даты поездки не подтверждены.',
+      amount === undefined
+        ? `Проверена страница места или предложения; цена пакета на дату поездки не подтверждена. ${note}`
+        : `Проверены выбранная дата, пакет и отображаемая цена. ${note}`,
     ),
     accessedAt: ticketLinksCheckedAt,
   })),
@@ -1785,14 +1787,15 @@ const places = [...seeds, ...extraPlaces].map((s) => {
       russianCardSupport: s.offer[0] === 'sputnik8' ? sputnikPayment : tripsterPayment,
       checkedAt,
     })
-  for (const [slug, providerId, url, note] of ticketLinks) {
+  for (const [slug, providerId, url, note, amount, currency = 'AED'] of ticketLinks) {
     if (slug !== s.id || offers.some((offer) => offer.providerId === providerId)) continue
     offers.push({
       providerId,
       url,
       linkType: 'direct',
       price: {
-        ...price(undefined, `ticket-${slug}-${providerId}`, note),
+        ...price(amount, `ticket-${slug}-${providerId}`, note),
+        currency,
         checkedAt: ticketLinksCheckedAt,
       },
       russianCardSupport: providers.find((provider) => provider.id === providerId)!
