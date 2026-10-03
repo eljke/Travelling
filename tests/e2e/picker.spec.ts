@@ -1,5 +1,42 @@
 import { test, expect } from '@playwright/test'
 
+test('compares days with photos and adds an overflowing place to the nearby day', async ({
+  page,
+}) => {
+  await page.goto('/#/dubai/plan?idea=minmax')
+  await page.getByRole('button', { name: 'Применить minmax на все пять дней', exact: true }).click()
+  const picker = page.locator('.plan-picker')
+  await picker.getByLabel('Поиск места').fill('Sky Views')
+  const card = picker.locator('[data-place-id="dubai-sky-views"]')
+  await expect(card).toContainText('Нужно скорректировать день')
+  await card.getByRole('button', { name: 'В план: Sky Views', exact: true }).click()
+  const dialog = page.getByRole('dialog', { name: 'Выбрать день: Sky Views', exact: true })
+  const recommended = dialog.locator('.day-choice.recommended')
+  await expect(recommended).toContainText('9 октября')
+  await expect(recommended).toContainText('По пути')
+  await expect(recommended).toContainText('₽')
+  await expect(recommended.locator('img')).toBeVisible()
+  await expect(dialog.getByRole('button', { name: /День 1/ })).toContainText(
+    'Нужно скорректировать день',
+  )
+  expect(await dialog.evaluate((node) => node.scrollWidth <= node.clientWidth)).toBe(true)
+  await page.keyboard.press('Escape')
+  await expect(dialog).not.toBeVisible()
+  await expect(page.locator('.plan-stop:visible')).toHaveCount(3)
+  await card.getByRole('button', { name: 'В план: Sky Views', exact: true }).click()
+  await recommended.click()
+  await expect(page.getByRole('region', { name: 'День 4', exact: true })).toBeFocused()
+  await expect(page.locator('.plan-stops:visible')).toContainText('Sky Views')
+  await page.reload()
+  await expect(page.locator('.plan-stops:visible')).toContainText('Sky Views')
+  await page
+    .getByRole('group', { name: 'Дни поездки', exact: true })
+    .getByRole('button', { name: /День 1/ })
+    .click()
+  await expect(page.getByLabel('Время на месте: Дубай Молл', { exact: true })).toHaveValue('360')
+  await expect(page.getByLabel('Время на месте: Фонтаны Дубая', { exact: true })).toHaveValue('45')
+})
+
 test('adds a daytime stop before an evening visit using the displayed preview', async ({
   page,
 }) => {

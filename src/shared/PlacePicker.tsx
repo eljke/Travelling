@@ -14,6 +14,7 @@ import { categoryLabels } from './labels'
 import Photo from './Photo'
 import LazyMap from '../features/map/LazyMap'
 import { sortRecommended } from '../domain/filters'
+import PlanButton from './PlanButton'
 
 export default function PlacePicker({
   bundle,
@@ -21,12 +22,14 @@ export default function PlacePicker({
   selectedId,
   excludedIds = [],
   day,
+  onSelectDay,
 }: {
   bundle: DestinationBundle
   onSelect: (id: string) => void
   selectedId?: string
   excludedIds?: string[]
   day?: Itinerary['days'][number]
+  onSelectDay?: (date: string) => void
 }) {
   const { favorites, budgetScope } = usePreferences()
   const [query, setQuery] = useState('')
@@ -256,6 +259,14 @@ export default function PlacePicker({
                     {selected && <Check size={16} />}
                     {selected ? 'Выбрано' : day ? `На ${formatDate(day.date)}` : 'Выбрать место'}
                   </button>
+                  {day && onSelectDay && (!insertion?.fits || closed) && (
+                    <PlanButton
+                      place={place}
+                      bundle={bundle}
+                      onAdded={onSelectDay}
+                      label="Подобрать другой день"
+                    />
+                  )}
                   <Link
                     className="text-button"
                     to={`/${bundle.destination.id}/place/${place.slug}`}

@@ -3,6 +3,7 @@ import { destinations } from '../../src/content/registry'
 import { defaultRouteSettings, evaluateRoute } from '../../src/domain/dayRoute'
 import {
   createItinerary,
+  compareDays,
   fillFromFavorites,
   normalizeItinerary,
   placeInDay,
@@ -20,6 +21,32 @@ import {
 
 const dubai = destinations.dubai
 describe('trip plan', () => {
+  it('recommends a nearby day without changing existing visits or bookings', () => {
+    const plan = tripProposal(dubai).plan
+    const sky = dubai.places.find((place) => place.slug === 'sky-views')!
+    const before = structuredClone(plan)
+    const options = compareDays(plan, sky, dubai)
+    expect(options).toHaveLength(5)
+    const recommended = options.find((option) => option.recommended)!
+    expect(recommended.day.date).toBe('2026-10-09')
+    expect(recommended.insertion.fits).toBe(true)
+    expect(recommended.addedTravel).toBeLessThanOrEqual(30)
+    expect(options[0].insertion.fits).toBe(false)
+    const added = placeInDay(plan, sky.id, recommended.day.date, dubai)
+    expect(added.days[3].placeIds).toEqual(recommended.insertion.placeIds)
+    expect(added.days[0]).toEqual(plan.days[0])
+    expect(added.days[3].settings).toEqual(plan.days[3].settings)
+    expect(plan).toEqual(before)
+    const garden = dubai.places.find((place) => place.slug === 'miracle-garden')!
+    expect(
+      compareDays(createItinerary(dubai), garden, dubai)
+        .slice(0, 2)
+        .every((option) => option.closed && !option.recommended),
+    ).toBe(true)
+    expect(
+      compareDays(createItinerary(dubai), sky, dubai).some((option) => option.recommended),
+    ).toBe(false)
+  })
   it('moves stops without duplicates and removes invalid shared places', () => {
     const empty = createItinerary(dubai)
     expect(empty.days.map((day) => day.date)).toEqual([

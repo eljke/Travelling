@@ -121,6 +121,39 @@ export function placeInDay(
   }
 }
 
+export function compareDays(plan: Itinerary, place: Place, bundle: DestinationBundle) {
+  const options = plan.days.map((day) => {
+    const places = day.placeIds.map((id) => bundle.places.find((row) => row.id === id)!)
+    const insertion = previewInsertion(day, place, bundle)
+    const current = bundle.trip.accommodation
+      ? evaluateRoute(places, bundle, day.date, day.settings ?? defaultRouteSettings)
+      : undefined
+    return {
+      day,
+      places,
+      insertion,
+      closed: closedOnDate(place, day.date),
+      addedTravel:
+        insertion.route && current
+          ? insertion.route.travelMinutes - current.travelMinutes
+          : undefined,
+      nearest: places.length
+        ? Math.min(...places.map((row) => distanceBetween(row.coordinates, place.coordinates)))
+        : undefined,
+    }
+  })
+  const recommended = options
+    .filter(
+      (option) =>
+        !option.closed &&
+        option.insertion.fits &&
+        option.nearest !== undefined &&
+        option.addedTravel! <= 30,
+    )
+    .sort((a, b) => a.addedTravel! - b.addedTravel! || a.nearest! - b.nearest!)[0]
+  return options.map((option) => ({ ...option, recommended: option === recommended }))
+}
+
 export function summarizeDay(places: Place[], currency: string) {
   return {
     minMinutes: places.reduce((sum, place) => sum + place.duration.minMinutes, 0),

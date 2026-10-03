@@ -175,7 +175,9 @@
   font-size: 26px;
 }
 .day-picker-dialog {
-  width: min(500px, calc(100% - 32px));
+  width: min(640px, calc(100% - 32px));
+  max-height: calc(100dvh - 32px);
+  overflow-y: auto;
   border: 1px solid var(--line);
   border-radius: var(--radius-media);
   padding: 24px;
@@ -185,10 +187,95 @@
 .day-picker-dialog::backdrop {
   background: #0009;
 }
-.day-picker-dialog > div {
+.day-picker-dialog .day-choice-list {
   display: grid;
   gap: 10px;
   margin: 18px 0;
+}
+.day-picker-place {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.day-picker-place > img,
+.day-picker-place > .photo-fallback {
+  width: 100px;
+  height: 72px;
+  object-fit: cover;
+  border-radius: var(--radius-control);
+}
+.day-picker-place > .photo-fallback,
+.day-choice-places > .photo-fallback {
+  flex-shrink: 0;
+  padding: 8px;
+  overflow: hidden;
+}
+.day-picker-place > .photo-fallback > span,
+.day-choice-places > .photo-fallback > span {
+  font-size: 12px;
+  line-height: 1.3;
+}
+.day-picker-place > .photo-fallback > small,
+.day-choice-places > .photo-fallback > small {
+  display: none;
+}
+.day-choice {
+  display: grid;
+  gap: 10px;
+  width: 100%;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-media);
+  background: var(--surface);
+  color: var(--ink);
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+}
+.day-choice.recommended {
+  border-color: var(--accent);
+  background: var(--tint);
+}
+.day-choice:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+.day-choice-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.day-choice-badge {
+  background: var(--accent);
+  color: var(--on-accent);
+  border-radius: 20px;
+  padding: 4px 10px;
+  font-size: 12px;
+}
+.day-choice-places {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+}
+.day-choice-places > img,
+.day-choice-places > .photo-fallback {
+  flex: 0 0 64px;
+  width: 64px;
+  height: 48px;
+  object-fit: cover;
+  border-radius: var(--radius-control);
+}
+.day-choice small {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
+}
+.day-choice-status {
+  font-size: 13px;
+  color: var(--accent);
 }
 .people-editor {
   min-width: 0;

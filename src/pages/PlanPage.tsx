@@ -750,6 +750,18 @@ export default function PlanPage() {
             bundle={bundle}
             day={activeDay}
             excludedIds={[...scheduled]}
+            onSelectDay={(date) => {
+              setDayToOpen(date)
+              setParams(
+                (current) => {
+                  const next = new URLSearchParams(current)
+                  next.set('day', date)
+                  return next
+                },
+                { replace: true },
+              )
+              setMessage(`Место добавлено на ${formatDate(date)}. Остальные дни сохранены.`)
+            }}
             onSelect={(id) => {
               update(placeInDay(plan, id, activeDay.date, bundle))
               setMessage(
