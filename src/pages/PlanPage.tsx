@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
 import {
   ArrowDown,
@@ -44,6 +44,7 @@ import { familyTicketPrice, families } from '../domain/families'
 import FamilyBudgetControl from '../shared/FamilyBudgetControl'
 import TripProposal from '../shared/TripProposal'
 import PlanPrint from '../shared/PlanPrint'
+import TripOverview from '../shared/TripOverview'
 import '../styles/print.css'
 import { dubaiDayIdeas } from '../content/dayIdeas'
 
@@ -57,6 +58,17 @@ export default function PlanPage() {
   const [shareUrl, setShareUrl] = useState('')
   const [showMap, setShowMap] = useState(false)
   const [selectedId, setSelectedId] = useState<string>()
+  const [dayToOpen, setDayToOpen] = useState('')
+  useEffect(() => {
+    if (!dayToOpen || params.get('day') !== dayToOpen) return
+    const frame = requestAnimationFrame(() => {
+      const section = document.getElementById(`plan-day-${dayToOpen}`)!
+      section.focus({ preventScroll: true })
+      section.scrollIntoView({ block: 'start' })
+      setDayToOpen('')
+    })
+    return () => cancelAnimationFrame(frame)
+  }, [dayToOpen, params])
   if (!bundle)
     return (
       <main className="container empty" id="main">
@@ -219,27 +231,49 @@ export default function PlanPage() {
           expanded={params.get('idea') === 'minmax'}
         />
       )}
-      <div className="plan-summary">
-        <div>
-          <CalendarDays size={22} />
-          <span>
-            <strong>
-              {scheduled.size} мест / {plan.days.length} дней
-            </strong>
-            <small>Билеты · {families[budgetScope].label} · по настройкам дней</small>
-          </span>
-        </div>
-        <div>
-          <strong>{budget(total)}</strong>
-        </div>
-        <RateStrip bundle={bundle} />
-      </div>
-      <p className="fine-print plan-budget-note">
-        {total.unknownPrices > 0 &&
-          `Мест без цены в валюте поездки: ${total.unknownPrices}. Они не включены в сумму. `}
-        Бюджет учитывает входные билеты из каталога, без еды, дороги и дополнительных услуг. Цены
-        «от» дают нижнюю оценку; наличие билетов на даты поездки нужно проверить.
-      </p>
+      {bundle.trip.accommodation ? (
+        <TripOverview
+          bundle={bundle}
+          plan={plan}
+          scope={budgetScope}
+          activeDate={activeDay.date}
+          onSelect={(date) => {
+            setDayToOpen(date)
+            setParams(
+              (current) => {
+                const next = new URLSearchParams(current)
+                next.set('day', date)
+                return next
+              },
+              { replace: true },
+            )
+          }}
+        />
+      ) : (
+        <>
+          <div className="plan-summary">
+            <div>
+              <CalendarDays size={22} />
+              <span>
+                <strong>
+                  {scheduled.size} мест / {plan.days.length} дней
+                </strong>
+                <small>Билеты · {families[budgetScope].label} · по настройкам дней</small>
+              </span>
+            </div>
+            <div>
+              <strong>{budget(total)}</strong>
+            </div>
+            <RateStrip bundle={bundle} />
+          </div>
+          <p className="fine-print plan-budget-note">
+            {total.unknownPrices > 0 &&
+              `Мест без цены в валюте поездки: ${total.unknownPrices}. Они не включены в сумму. `}
+            Бюджет учитывает входные билеты из каталога, без еды, дороги и дополнительных услуг.
+            Цены «от» дают нижнюю оценку; наличие билетов на даты поездки нужно проверить.
+          </p>
+        </>
+      )}
       {!shared && (
         <section className="plan-builder" aria-label="Автопланирование">
           <div>
@@ -341,6 +375,8 @@ export default function PlanPage() {
         return (
           <section
             className="plan-day"
+            id={`plan-day-${day.date}`}
+            tabIndex={-1}
             key={day.date}
             hidden={day.date !== activeDay.date}
             aria-label={`День ${dayIndex + 1}`}

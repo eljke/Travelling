@@ -7,7 +7,9 @@ import {
   normalizeItinerary,
   placeInDay,
   summarizeDay,
+  summarizeTrip,
 } from '../../src/domain/itinerary'
+import { tripProposal } from '../../src/domain/tripProposal'
 import {
   closedOnDate,
   openBySchedule,
@@ -80,6 +82,64 @@ describe('trip plan', () => {
       unknownPrices: 1,
       lowerBound: true,
     })
+  })
+})
+describe('trip overview', () => {
+  it('combines daily tickets and return transport for both families', () => {
+    const plan = tripProposal(dubai).plan
+    const first = summarizeTrip(plan, dubai, 'family-1')
+    const second = summarizeTrip(plan, dubai, 'family-2')
+    const both = summarizeTrip(plan, dubai, 'both')
+    expect(first.ticketCost + second.ticketCost).toBeCloseTo(both.ticketCost)
+    expect(first.transportCost + second.transportCost).toBeCloseTo(both.transportCost)
+    expect(first.transportHighCost + second.transportHighCost).toBeCloseTo(both.transportHighCost)
+    expect(both.plannedDays).toBe(5)
+    expect(both.needsChanges).toBe(0)
+    expect(both.transportCost).toBeGreaterThan(0)
+    for (const { settings, route, minutes } of both.days) {
+      expect(Object.values(minutes).reduce((sum, value) => sum + value, 0)).toBe(
+        route.returnAt - Number(settings.start.slice(0, 2)) * 60 - Number(settings.start.slice(3)),
+      )
+    }
+    expect(both.days[4].budget.ticketCost + both.days[4].budget.cost).toBe(0)
+    expect(both.days[4].lowerBound).toBe(false)
+  })
+  it('leaves empty days unpriced and flags unknown tickets and invalid hours', () => {
+    const empty = createItinerary(dubai)
+    expect(summarizeTrip(empty, dubai, 'family-1')).toMatchObject({
+      plannedDays: 0,
+      ticketCost: 0,
+      transportCost: 0,
+      travelMinutes: 0,
+      needsChanges: 0,
+    })
+    const unknown = dubai.places.find((place) => place.pricing.kind === 'unknown')!
+    const plan = placeInDay(empty, unknown.id, empty.days[0].date)
+    plan.days[0].settings = { ...defaultRouteSettings, start: '10:00', end: '10:00' }
+    expect(summarizeTrip(plan, dubai, 'family-1')).toMatchObject({
+      plannedDays: 1,
+      ticketCost: 0,
+      unknownPrices: 1,
+      lowerBound: true,
+      needsChanges: 1,
+    })
+  })
+  it('reflects saved visits and identifies trips with a different party', () => {
+    const plan = placeInDay(createItinerary(dubai), 'dubai-dubai-mall', '2026-10-06')
+    plan.days[0].settings = {
+      ...defaultRouteSettings,
+      adults: 4,
+      children: 0,
+      visits: { 'dubai-dubai-mall': 90 },
+      waits: { 'dubai-dubai-mall': 10 },
+    }
+    const summary = summarizeTrip(plan, dubai, 'family-2')
+    expect(summary.days[0]).toMatchObject({
+      differentParty: true,
+      minutes: { visits: 90, queues: 10 },
+    })
+    expect(summary.transportCost).toBe(summary.days[0].route.cost)
+    expect(plan.days[0].settings.nolCardsOwned).toBe(false)
   })
 })
 describe('official hours', () => {

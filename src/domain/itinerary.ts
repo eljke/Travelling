@@ -2,6 +2,8 @@ import { z } from 'zod'
 import type { DestinationBundle, Place } from './model'
 import { distanceBetween } from './geo'
 import { closedOnDate } from './openingHours'
+import { familyRouteBudget, familyTicketPrice, hasFamilyComposition } from './families'
+import type { BudgetScope } from './families'
 import {
   routeSettingsSchema,
   defaultRouteSettings,
@@ -85,6 +87,72 @@ export function summarizeDay(places: Place[], currency: string) {
         sum + (index ? distanceBetween(places[index - 1].coordinates, place.coordinates) : 0),
       0,
     ),
+  }
+}
+
+export function summarizeTrip(plan: Itinerary, bundle: DestinationBundle, scope: BudgetScope) {
+  const places = new Map(bundle.places.map((place) => [place.id, place]))
+  const days = plan.days.map((day) => {
+    const settings = day.settings ?? defaultRouteSettings
+    const route = evaluateRoute(
+      day.placeIds.map((id) => places.get(id)!),
+      bundle,
+      day.date,
+      settings,
+    )
+    const budget = familyRouteBudget(
+      route,
+      scope,
+      settings,
+      day.date,
+      bundle.exchangeRate.baseCurrency,
+    )
+    const minutes = {
+      visits: route.stops.reduce((sum, stop) => sum + stop.visitMinutes, 0),
+      travel: route.travelMinutes,
+      queues: route.stops.reduce((sum, stop) => sum + stop.queueMinutes, 0),
+      waiting: route.stops.reduce(
+        (sum, stop) => sum + stop.visitStart - stop.arrival - stop.queueMinutes,
+        0,
+      ),
+      breaks: route.stops.reduce((sum, stop) => sum + stop.pauseAfter, 0),
+    }
+    return {
+      day,
+      settings,
+      route,
+      budget,
+      minutes,
+      needsChanges:
+        day.placeIds.length > 0 &&
+        (!route.fits || toMinutes(settings.end) <= toMinutes(settings.start)),
+      differentParty: day.placeIds.length > 0 && !hasFamilyComposition(settings),
+      lowerBound:
+        route.unknownPrices > 0 ||
+        route.stops.some(
+          (stop) =>
+            stop.place.pricing.kind === 'from' &&
+            familyTicketPrice(
+              stop.place,
+              scope,
+              settings,
+              day.date,
+              bundle.exchangeRate.baseCurrency,
+            ).amount > 0,
+        ),
+    }
+  })
+  return {
+    days,
+    ticketCost: days.reduce((sum, day) => sum + day.budget.ticketCost, 0),
+    transportCost: days.reduce((sum, day) => sum + day.budget.cost, 0),
+    transportHighCost: days.reduce((sum, day) => sum + day.budget.highCost, 0),
+    travelMinutes: days.reduce((sum, day) => sum + day.minutes.travel, 0),
+    queueMinutes: days.reduce((sum, day) => sum + day.minutes.queues, 0),
+    unknownPrices: days.reduce((sum, day) => sum + day.route.unknownPrices, 0),
+    lowerBound: days.some((day) => day.lowerBound),
+    plannedDays: days.filter((day) => day.day.placeIds.length).length,
+    needsChanges: days.filter((day) => day.needsChanges).length,
   }
 }
 
