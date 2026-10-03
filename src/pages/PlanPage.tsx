@@ -400,6 +400,19 @@ export default function PlanPage() {
                 day={day}
                 bundle={bundle}
                 readOnly={Boolean(shared)}
+                otherDays={shared ? [] : plan.days}
+                onMove={(current, target) =>
+                  update({
+                    ...plan,
+                    days: plan.days.map((saved) =>
+                      saved.date === current.date
+                        ? current
+                        : saved.date === target.date
+                          ? target
+                          : saved,
+                    ),
+                  })
+                }
                 onChange={(next) =>
                   update({
                     ...plan,
@@ -479,6 +492,24 @@ export default function PlanPage() {
                                 if (Number.isInteger(value) && value >= 15 && value <= 720)
                                   updateSettings({
                                     visits: { ...settings.visits, [place.id]: value },
+                                  })
+                              }}
+                            />
+                          </label>
+                          <label>
+                            Запас на очередь, мин
+                            <input
+                              aria-label={`Запас на очередь: ${place.nameRu}`}
+                              type="number"
+                              min="0"
+                              max="240"
+                              step="5"
+                              value={settings.waits[place.id] ?? place.queue?.minutes ?? 0}
+                              onChange={(event) => {
+                                const value = Number(event.target.value)
+                                if (Number.isInteger(value) && value >= 0 && value <= 240)
+                                  updateSettings({
+                                    waits: { ...settings.waits, [place.id]: value },
                                   })
                               }}
                             />

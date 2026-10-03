@@ -195,6 +195,21 @@ export default function PlacePage() {
             </p>
           )}
           <section className="review-section">
+            {place.queue && (
+              <div className="queue-note">
+                <h2>Очереди и время.</h2>
+                <p>
+                  <strong>В маршрут добавляем {place.queue.minutes} мин на ожидание.</strong> На
+                  само посещение — {formatDuration(place.duration)}.
+                </p>
+                <p>{place.queue.note}</p>
+                <p className="fine-print">
+                  Это наш запас для планирования, не текущая длина очереди и не обещание времени
+                  входа. В плане его можно изменить.
+                </p>
+                <Sources bundle={bundle} ids={place.queue.sourceIds} />
+              </div>
+            )}
             <span className="eyebrow">ВПЕЧАТЛЕНИЯ ПОСЕТИТЕЛЕЙ · РУССКИЕ ОТЗЫВЫ В ПРИОРИТЕТЕ</span>
             <h2>Что говорят после визита.</h2>
             {place.reviewInsights ? (

@@ -17,6 +17,7 @@ export const routeSettingsSchema = z.object({
   breakMinutes: z.number().int().min(0).max(120).default(45),
   slots: z.record(z.string(), time).default({}),
   visits: z.record(z.string(), z.number().int().min(15).max(720)).default({}),
+  waits: z.record(z.string(), z.number().int().min(0).max(240)).default({}),
   hotelBeachIncluded: z.boolean().default(true),
   safariTransferConfirmed: z.boolean().default(false),
 })
@@ -237,16 +238,17 @@ export function evaluateRoute(
     const slot = fixedTime ? toMinutes(fixedTime) : undefined
     const schedule = place.openingHours.schedule
     const sessions = place.openingHours.sessions
+    const queueMinutes = settings.waits[place.id] ?? place.queue?.minutes ?? 0
     let visitMinutes =
       settings.visits[place.id] ??
       (place.areaId === 'hatta'
         ? 180
         : Math.round((place.duration.minMinutes + place.duration.maxMinutes) / 2))
     const arriveBy = Math.min(
-      slot ?? Infinity,
+      slot === undefined ? Infinity : slot - queueMinutes,
       sessions ? (slot ?? toMinutes(sessions.at(-1)!)) - 30 : Infinity,
       schedule && schedule.opens < schedule.closes
-        ? toMinutes(schedule.closes) - visitMinutes
+        ? toMinutes(schedule.closes) - visitMinutes - queueMinutes
         : Infinity,
     )
     const leg = chooseLeg(previous, place, settings, time, date, arriveBy)
@@ -274,6 +276,8 @@ export function evaluateRoute(
     if (schedule && schedule.opens < schedule.closes)
       time = Math.max(time, toMinutes(schedule.opens))
     if (place.slug === 'dubai-fountain') time = Math.max(time, 18 * 60)
+    const queueStart = time
+    time += queueMinutes
     const missedSlot = slot !== undefined && time > slot
     if (slot !== undefined) time = Math.max(time, slot)
     const visitStart = time
@@ -310,6 +314,8 @@ export function evaluateRoute(
       visitStart,
       end,
       visitMinutes,
+      queueMinutes,
+      queueStart,
       pauseAfter: end === time ? 0 : pause,
       warnings,
     }

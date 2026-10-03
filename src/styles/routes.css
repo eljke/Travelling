@@ -77,6 +77,36 @@
   padding: 26px;
   margin-bottom: 28px;
 }
+.route-advice {
+  padding: 18px;
+  margin: 20px 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-media);
+}
+.route-advice > div {
+  display: grid;
+  gap: 14px;
+}
+.route-advice article {
+  background: var(--tint);
+  border-radius: 8px;
+  padding: 16px;
+}
+.route-advice h4 {
+  margin: 0 0 8px;
+  font-size: 16px;
+}
+.route-advice p {
+  font-size: 13px;
+  line-height: 1.7;
+}
+.queue-note {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-media);
+  padding: 24px;
+  margin-bottom: 32px;
+  background: var(--tint);
+}
 .route-title {
   display: flex;
   gap: 15px;

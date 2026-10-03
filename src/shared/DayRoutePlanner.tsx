@@ -14,6 +14,8 @@ import {
 import type { RouteSettings, TravelLeg } from '../domain/dayRoute'
 import { formatMoney } from './format'
 import { directionsUrl } from './HotelBase'
+import { dayAdvice } from '../domain/dayAdvice'
+import { formatDate } from './format'
 
 function Leg({
   leg,
@@ -71,11 +73,15 @@ export default function DayRoutePlanner({
   bundle,
   readOnly,
   onChange,
+  otherDays = [],
+  onMove,
 }: {
   day: Itinerary['days'][number]
   bundle: DestinationBundle
   readOnly: boolean
   onChange: (day: Itinerary['days'][number]) => void
+  otherDays?: Itinerary['days']
+  onMove?: (current: Itinerary['days'][number], target: Itinerary['days'][number]) => void
 }) {
   const [message, setMessage] = useState('')
   const settings = day.settings ?? defaultRouteSettings
@@ -100,6 +106,11 @@ export default function DayRoutePlanner({
     setMessage('Настройки сохранены. Можно пересчитать порядок остановок.')
   }
   const validTime = toMinutes(settings.end) > toMinutes(settings.start)
+  const advice = useMemo(
+    () =>
+      !readOnly && validTime && bundle.trip.accommodation ? dayAdvice(day, bundle, otherDays) : [],
+    [readOnly, validTime, bundle, day, otherDays],
+  )
   if (!bundle.trip.accommodation) return null
   return (
     <section className="day-route" aria-label="Маршрут на день">
@@ -283,6 +294,49 @@ export default function DayRoutePlanner({
           </p>
         </div>
       </div>
+      {advice.length > 0 && (
+        <section className="route-advice" aria-label="Как улучшить день">
+          <h3>Как сделать день удобнее</h3>
+          <div>
+            {advice.map((suggestion) => (
+              <article key={suggestion.title}>
+                <h4>
+                  {suggestion.title}
+                  {suggestion.move && ` · ${formatDate(suggestion.move.date)}`}
+                </h4>
+                <p>{suggestion.note}</p>
+                <p>
+                  <strong>В этот день: возврат ≈ {clockTime(suggestion.route.returnAt)}</strong> ·
+                  дорога и билеты от{' '}
+                  {formatMoney(
+                    suggestion.route.cost + suggestion.route.ticketCost,
+                    bundle.exchangeRate,
+                  )}
+                  {suggestion.route.unknownPrices > 0 && ' · часть цен неизвестна'}
+                </p>
+                <button
+                  type="button"
+                  className="button secondary"
+                  onClick={() => {
+                    if (suggestion.move && onMove) onMove(suggestion.day, suggestion.move.target)
+                    else onChange(suggestion.day)
+                    setMessage('Вариант применён. Проверьте новый порядок и время.')
+                  }}
+                >
+                  Применить вариант
+                </button>
+              </article>
+            ))}
+          </div>
+        </section>
+      )}
+      {!route.fits && validTime && !readOnly && !advice.length && (
+        <p className="fine-print">
+          Не нашли вариант, который сохраняет разумное время посещений. Проверьте закреплённые
+          билеты и часы; можно вручную перенести место на другой день. Очереди и отдых автоматически
+          не сокращаем.
+        </p>
+      )}
       <div className="route-budget">
         <div>
           <span>Транспорт на всех</span>
@@ -368,9 +422,16 @@ export default function DayRoutePlanner({
                 arrival={stop.arrival}
                 fx={bundle.exchangeRate}
               />
-              {stop.visitStart > stop.arrival && (
+              {stop.visitStart - stop.queueMinutes > stop.arrival && (
                 <p className="route-wait">
-                  Пауза до {clockTime(stop.visitStart)}: ждём открытия или вечернего визита.
+                  Ожидание открытия или времени входа:{' '}
+                  {stop.visitStart - stop.queueMinutes - stop.arrival} мин.
+                </p>
+              )}
+              {stop.queueMinutes > 0 && (
+                <p className="route-wait">
+                  Запас на очередь: {stop.queueMinutes} мин, отдельно от посещения. Это оценка для
+                  плана.
                 </p>
               )}
               <div className="route-visit">

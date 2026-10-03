@@ -111,6 +111,15 @@ export const placeSchema = z.object({
   imageId: id.optional(),
   gallery: z.array(z.object({ imageId: id, caption: z.string().min(1) })).default([]),
   imageNote: z.string().optional(),
+  queue: z
+    .object({
+      minutes: z.number().int().min(0).max(180),
+      peakMinutes: z.number().int().min(0).max(240),
+      note: z.string().min(1),
+      sourceIds: references,
+      checkedAt: date,
+    })
+    .optional(),
   duration: z
     .object({
       minMinutes: z.number().positive(),

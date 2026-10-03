@@ -12,11 +12,46 @@ import {
 import { closedOnDate } from '../../src/domain/openingHours'
 import { createItinerary, normalizeItinerary } from '../../src/domain/itinerary'
 import { dubaiDayIdeas } from '../../src/content/dayIdeas'
+import { dayAdvice } from '../../src/domain/dayAdvice'
 
 const dubai = destinations.dubai
 const place = (slug: string) => dubai.places.find((place) => place.slug === slug)!
 const date = '2026-10-08'
 describe('day route', () => {
+  it('counts the queue separately and keeps it before booked admission', () => {
+    const frame = place('dubai-frame')
+    const settings = { ...defaultRouteSettings, preference: 'fast' as const, breakMinutes: 0 }
+    const without = evaluateRoute([frame], dubai, date, { ...settings, waits: { [frame.id]: 0 } })
+    const withQueue = evaluateRoute([frame], dubai, date, settings)
+    expect(withQueue.returnAt - without.returnAt).toBe(45)
+    expect(withQueue.stops[0].visitMinutes).toBe(without.stops[0].visitMinutes)
+    const booked = evaluateRoute([frame], dubai, date, {
+      ...settings,
+      slots: { [frame.id]: clockTime(without.stops[0].arrival + 10) },
+    })
+    expect(booked.fits).toBe(false)
+    expect(booked.stops[0].warnings.join(' ')).toContain('Вход по билету')
+  })
+  it('suggests realistic shorter visits without cutting queues or breaks', () => {
+    const mall = place('dubai-mall')
+    const settings = { ...defaultRouteSettings, end: '15:30', preference: 'fast' as const }
+    const day = { date, placeIds: [mall.id], settings }
+    expect(evaluateRoute([mall], dubai, date, settings).fits).toBe(false)
+    const shorter = dayAdvice(day, dubai).find((advice) => advice.title.includes('короче'))!
+    expect(shorter.route.fits).toBe(true)
+    expect(shorter.day.settings!.visits[mall.id]).toBeGreaterThanOrEqual(mall.duration.minMinutes)
+    expect(shorter.day.settings!.breakMinutes).toBe(settings.breakMinutes)
+    expect(shorter.day.settings!.waits).toEqual(settings.waits)
+    expect(day.settings.visits).toEqual({})
+  })
+  it('does not move booked visits to another day', () => {
+    const frame = place('dubai-frame')
+    const settings = { ...defaultRouteSettings, end: '11:00', slots: { [frame.id]: '12:00' } }
+    const day = { date, placeIds: [frame.id], settings }
+    expect(dayAdvice(day, dubai, createItinerary(dubai).days).some((advice) => advice.move)).toBe(
+      false,
+    )
+  })
   it('uses existing places in every day idea', () => {
     expect(
       dubaiDayIdeas

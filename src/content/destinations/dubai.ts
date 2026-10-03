@@ -1,6 +1,7 @@
 import { ticketLinks, ticketLinksCheckedAt } from './dubai-tickets'
 import { priceUpdates } from './dubai-prices'
 import { galleries, placePhotos } from './dubai-galleries'
+import { queues } from './dubai-queues'
 import { extraAreas, extraPlaces } from './dubai-extra'
 import hoursSnapshot from '../../../public/place-hours.json'
 import { hoursFeedSchema } from '../../domain/openingHours'
@@ -1767,14 +1768,16 @@ const places = [...seeds, ...extraPlaces].map((s) => {
     tags: s.tags,
     imageId: s.id in placePhotos ? placePhotos[s.id].imageId : s.image,
     gallery: galleries[s.id] ?? [],
+    queue: queues[s.id]?.queue,
     ...((s.id in placePhotos ? placePhotos[s.id].note : s.imageNote)
       ? { imageNote: s.id in placePhotos ? placePhotos[s.id].note : s.imageNote }
       : {}),
     duration: {
-      minMinutes: s.minutes[0],
-      maxMinutes: s.minutes[1],
-      note:
-        s.area === 'desert'
+      minMinutes: (queues[s.id]?.minutes ?? s.minutes)[0],
+      maxMinutes: (queues[s.id]?.minutes ?? s.minutes)[1],
+      note: queues[s.id]
+        ? 'Время на месте без очереди. Запас на вход и подъём указан отдельно и добавляется в маршрут.'
+        : s.area === 'desert'
           ? 'Около шести часов на весь тур: дорога, программа и ужин. Время забора согласуем с оператором.'
           : s.area === 'hatta'
             ? 'На этот выезд лучше выделить целый день: здесь учтена и дорога.'
