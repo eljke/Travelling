@@ -51,6 +51,12 @@ export function needsTicket(place: Place, settings: RouteSettings, date: string)
   const price = groupTicketPrice(place, settings, date)
   return place.pricing.kind !== 'free' && (price.unknown || price.amount > 0)
 }
+export function hasTicketCommitment(placeId: string, settings: RouteSettings) {
+  return (
+    Boolean(settings.slots[placeId]) ||
+    Object.keys(settings.ticketChecks).some((key) => key.startsWith(`${placeId}:`))
+  )
+}
 export function familyTicketPrice(
   place: Place,
   scope: BudgetScope,

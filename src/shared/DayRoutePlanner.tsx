@@ -21,7 +21,7 @@ import { formatDate } from './format'
 import { usePreferences } from '../app/Preferences'
 import { familyRouteBudget, families, hasFamilyComposition } from '../domain/families'
 
-function Leg({
+export function Leg({
   leg,
   departure,
   arrival,

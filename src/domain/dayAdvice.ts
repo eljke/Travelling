@@ -1,7 +1,7 @@
 import type { DestinationBundle, Place } from './model'
 import type { Itinerary } from './itinerary'
 import { prepareDayMove, previewInsertion } from './itinerary'
-import { ticketChecks } from './families'
+import { hasTicketCommitment } from './families'
 import { clockTime, defaultRouteSettings, evaluateRoute, optimizeDay } from './dayRoute'
 import { closedOnDate } from './openingHours'
 import { distanceBetween } from './geo'
@@ -85,6 +85,7 @@ export function dayAdvice(
       (stop) =>
         !['desert', 'hatta'].includes(stop.place.areaId) &&
         !stop.place.openingHours.sessions &&
+        !hasTicketCommitment(stop.place.id, settings) &&
         stop.visitMinutes > stop.place.duration.minMinutes &&
         settings.visits[stop.place.id] === undefined,
     )
@@ -110,11 +111,7 @@ export function dayAdvice(
     }
   }
   for (const place of places) {
-    if (
-      settings.slots[place.id] ||
-      ticketChecks(place.id, 'both', settings).some((check) => check.checked)
-    )
-      continue
+    if (hasTicketCommitment(place.id, settings)) continue
     const remaining = evaluateRoute(
       places.filter((row) => row.id !== place.id),
       bundle,

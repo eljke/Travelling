@@ -89,6 +89,7 @@ export type TravelLeg = {
   destination: Coordinates
 }
 type StopPoint = { coordinates: Coordinates; slug?: string; areaId?: string }
+export type RouteOrigin = StopPoint & { name: string }
 function taxiLeg(a: StopPoint, b: StopPoint, settings: RouteSettings): TravelLeg {
   const straight = distanceBetween(a.coordinates, b.coordinates)
   const km = straight * (straight > 15 ? 1.3 : 1.55)
@@ -274,12 +275,16 @@ export function evaluateRoute(
   bundle: DestinationBundle,
   date: string,
   settings: RouteSettings,
+  origin?: RouteOrigin,
 ) {
   const hotel = bundle.trip.accommodation!
   const start = toMinutes(settings.start)
   const deadline = toMinutes(settings.end)
   const includedSafari =
-    places.length === 1 && places[0].areaId === 'desert' && settings.safariTransferConfirmed
+    !origin &&
+    places.length === 1 &&
+    places[0].areaId === 'desert' &&
+    settings.safariTransferConfirmed
   const hotelPoint: StopPoint = {
     coordinates: hotel.coordinates,
     ...(distanceBetween(hotel.coordinates, { lat: 24.9873835, lng: 55.0219208 }) < 0.2
@@ -287,7 +292,7 @@ export function evaluateRoute(
       : {}),
   }
   let time = start
-  let previous: StopPoint = hotelPoint
+  let previous: StopPoint = origin ?? hotelPoint
   let pause = 0
   let usedTransit = settings.nolCardsOwned
   const selectedBreak = places.findIndex((place) => place.id === settings.breakAfter)
@@ -417,26 +422,30 @@ export function evaluateRoute(
       warnings,
     }
   })
-  const returnLeg = places.length
-    ? chooseLeg(
-        previous,
-        hotelPoint,
-        { ...settings, nolCardsOwned: usedTransit },
-        time,
-        date,
-        deadline - settings.buffer,
-      )
-    : {
-        mode: 'taxi' as const,
-        minutes: 0,
-        cost: 0,
-        highCost: 0,
-        detail: '',
-        origin: hotel.coordinates,
-        destination: hotel.coordinates,
-      }
+  const returnLeg =
+    places.length || origin
+      ? chooseLeg(
+          previous,
+          hotelPoint,
+          { ...settings, nolCardsOwned: usedTransit },
+          time,
+          date,
+          deadline - settings.buffer,
+        )
+      : {
+          mode: 'taxi' as const,
+          minutes: 0,
+          cost: 0,
+          highCost: 0,
+          detail: '',
+          origin: hotel.coordinates,
+          destination: hotel.coordinates,
+        }
   const returnAt = time + returnLeg.minutes
-  if (includedSafari)
+  if (
+    includedSafari ||
+    (!places.length && origin?.areaId === 'desert' && settings.safariTransferConfirmed)
+  )
     Object.assign(returnLeg, {
       mode: 'tour',
       cost: 0,

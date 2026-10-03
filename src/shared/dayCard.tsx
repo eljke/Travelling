@@ -8,7 +8,7 @@ import {
   hoursReminder,
   toMinutes,
 } from '../domain/dayRoute'
-import type { TravelLeg } from '../domain/dayRoute'
+import type { RouteOrigin, TravelLeg } from '../domain/dayRoute'
 import {
   families,
   familyRouteBudget,
@@ -37,11 +37,13 @@ export async function createDayCard(
   day: Itinerary['days'][number],
   bundle: DestinationBundle,
   scope: BudgetScope,
+  origin?: RouteOrigin,
+  remaining = false,
 ) {
   const settings = day.settings ?? defaultRouteSettings
   const hotel = bundle.trip.accommodation!
   const places = day.placeIds.map((id) => bundle.places.find((place) => place.id === id)!)
-  const route = evaluateRoute(places, bundle, day.date, settings)
+  const route = evaluateRoute(places, bundle, day.date, settings, origin)
   const budget = familyRouteBudget(
     route,
     scope,
@@ -106,11 +108,18 @@ export async function createDayCard(
       <body>
         <main>
           <header>
-            <p className="eyebrow">{bundle.destination.nameRu} · Маршрут с собой</p>
+            <p className="eyebrow">
+              {bundle.destination.nameRu} · {remaining ? 'Продолжение дня' : 'Маршрут с собой'}
+            </p>
             <h1>{formatDate(day.date)}</h1>
             <p>
-              <strong>{hotel.name}</strong>
+              <strong>{origin?.name ?? hotel.name}</strong>
             </p>
+            {origin && (
+              <p className="muted">
+                {origin.coordinates.lat.toFixed(5)}, {origin.coordinates.lng.toFixed(5)}
+              </p>
+            )}
             <p className="time">
               Выезд {settings.start} · в отель до {settings.end}
             </p>
@@ -123,6 +132,12 @@ export async function createDayCard(
             <p className="muted">
               Сохранено {savedAt} · время местное, {bundle.destination.timezone} · v{version}.
             </p>
+            {remaining && (
+              <p>
+                Остаток маршрута от выбранной точки. Посещённые места и расходы до неё сюда не
+                входят; билеты впереди включены, даже если уже куплены.
+              </p>
+            )}
           </header>
           {(!route.fits || toMinutes(settings.end) <= toMinutes(settings.start)) && (
             <p className="warning">
@@ -136,7 +151,8 @@ export async function createDayCard(
             <p>Дорога: {money(budget.cost, budget.highCost)}</p>
             <p>
               <strong>
-                День: {money(budget.cost + budget.ticketCost, budget.highCost + budget.ticketCost)}
+                {remaining ? 'Остаток маршрута' : 'День'}:{' '}
+                {money(budget.cost + budget.ticketCost, budget.highCost + budget.ticketCost)}
               </strong>
             </p>
             <p className="muted">
@@ -265,8 +281,7 @@ export async function createDayCard(
           <footer>
             <p>
               <strong>Это копия плана на момент скачивания.</strong> Изменения на сайте сюда не
-              попадут. Карты и сайты требуют интернета; расписание, фотографии и отметки билетов уже
-              в файле.
+              попадут. Карты и сайты требуют интернета; сохранённая карточка доступна без сети.
             </p>
             <p className="muted">
               Дорога и очереди — оценка без живых пробок. Часы и билеты сверяем перед выездом.

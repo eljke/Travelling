@@ -48,6 +48,7 @@ import TripOverview from '../shared/TripOverview'
 import PlanBackup from '../shared/PlanBackup'
 import DepartureChecklist from '../shared/DepartureChecklist'
 import DayCardDownload from '../shared/DayCardDownload'
+import DayContinuation from '../shared/DayContinuation'
 import '../styles/print.css'
 import { dubaiDayIdeas } from '../content/dayIdeas'
 
@@ -481,6 +482,9 @@ export default function PlanPage() {
                   })
                 }
               />
+            )}
+            {places.length > 0 && bundle.trip.accommodation && (
+              <DayContinuation day={day} bundle={bundle} />
             )}
             {places.length > 0 && bundle.trip.accommodation && (
               <DayCardDownload day={day} bundle={bundle} scope={budgetScope} />
