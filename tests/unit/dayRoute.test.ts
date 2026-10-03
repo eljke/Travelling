@@ -20,6 +20,47 @@ const dubai = destinations.dubai
 const place = (slug: string) => dubai.places.find((place) => place.slug === slug)!
 const date = '2026-10-08'
 describe('day route', () => {
+  it('walks between connected places but takes a taxi to keep a tight booking', () => {
+    const places = [place('dubai-mall'), place('souk-al-bahar')]
+    expect(evaluateRoute(places, dubai, '2026-10-06', defaultRouteSettings).stops[1].leg.mode).toBe(
+      'walk',
+    )
+    const booked = evaluateRoute(places, dubai, '2026-10-06', {
+      ...defaultRouteSettings,
+      slots: { 'dubai-souk-al-bahar': '15:00' },
+    })
+    expect(booked.stops[1].leg.mode).toBe('taxi')
+    expect(booked.stops[1].visitStart).toBe(toMinutes('15:00'))
+    expect(booked.fits).toBe(true)
+  })
+  it('fills a long wait nearby without moving a booked visit or increasing the ticket budget', () => {
+    const day = {
+      ...createItinerary(dubai).days[0],
+      placeIds: ['dubai-dubai-mall', 'dubai-dubai-fountain'],
+      settings: { ...defaultRouteSettings, slots: { 'dubai-dubai-fountain': '18:30' } },
+    }
+    const before = evaluateRoute(
+      day.placeIds.map((id) => dubai.places.find((row) => row.id === id)!),
+      dubai,
+      day.date,
+      day.settings,
+    )
+    const suggestion = dayAdvice(day, dubai).find(
+      (row) => row.addedPlace?.slug === 'souk-al-bahar',
+    )!
+    expect(suggestion.route.fits).toBe(true)
+    expect(suggestion.day.placeIds).toEqual([
+      'dubai-dubai-mall',
+      'dubai-souk-al-bahar',
+      'dubai-dubai-fountain',
+    ])
+    expect(suggestion.route.stops.at(-1)!.visitStart).toBe(toMinutes('18:30'))
+    expect(suggestion.route.ticketCost).toBe(before.ticketCost)
+    expect(suggestion.day.settings).toEqual(day.settings)
+    expect(
+      dayAdvice(day, dubai, [{ ...day, date: '2026-10-09', placeIds: ['dubai-souk-al-bahar'] }]),
+    ).not.toContainEqual(suggestion)
+  })
   it('prefers a taxi unless transit saves enough time-adjusted money', () => {
     const options = travelOptions(
       place('mall-of-the-emirates'),

@@ -1,10 +1,10 @@
 import type { DestinationBundle } from './model'
 import { createItinerary } from './itinerary'
-import { defaultRouteSettings, optimizeDay } from './dayRoute'
+import { defaultRouteSettings, evaluateRoute, optimizeDay } from './dayRoute'
 
 export function tripProposal(bundle: DestinationBundle, resortFirst = false, aquarium = false) {
   const clusters = [
-    ['dubai-mall', ...(aquarium ? ['dubai-aquarium'] : []), 'dubai-fountain'],
+    ['dubai-mall', ...(aquarium ? ['dubai-aquarium'] : ['souk-al-bahar']), 'dubai-fountain'],
     ['madinat-jumeirah', 'sunset-beach', 'dubai-marina-walk', 'jbr-beach'],
     ['miracle-garden', 'butterfly-garden', 'dubai-outlet-mall'],
     ['dubai-frame', 'al-fahidi', 'al-seef', 'creek-abra'],
@@ -20,7 +20,9 @@ export function tripProposal(bundle: DestinationBundle, resortFirst = false, aqu
   ]
   if (resortFirst) [titles[0], titles[4]] = [titles[4], titles[0]]
   const notes = [
-    'Внешнюю стену аквариума в молле можно посмотреть без билета. На Бурдж-Халифу любуемся с набережной; подъём оставляем по желанию.',
+    aquarium
+      ? 'Платный аквариум заполняет часть дня до фонтанов. На Бурдж-Халифу любуемся с набережной; подъём оставляем по желанию.'
+      : 'Четыре часа в молле, затем прогулка через мост к Souk Al Bahar перед фонтанами. Внешнюю стену аквариума смотрим без билета, Бурдж-Халифу — с набережной.',
     'Каналы и souk Мадината, фото Паруса с Sunset Beach, затем прогулка у воды в Marina/JBR. Лодка по каналам — отдельная платная опция на месте.',
     'Miracle Garden заявляет открытие 8 октября. Сначала сады, затем покупки: не делаем отдельный дальний выезд из JA ради аутлета.',
     'Одна доступная панорама с Рамки вместо нескольких смотровых. Затем улочки Al Fahidi, набережная Al Seef и абра; точку высадки и обратный путь уточняем на пристани.',
@@ -33,10 +35,16 @@ export function tripProposal(bundle: DestinationBundle, resortFirst = false, aqu
       bundle.places.find((place) => place.slug === slug)!,
     )
     const settings = structuredClone(defaultRouteSettings)
+    if (!aquarium && places.some((place) => place.slug === 'dubai-mall')) {
+      settings.visits['dubai-dubai-mall'] = 240
+      settings.visits['dubai-souk-al-bahar'] = 90
+    }
     // The ferry is a short outing from the same pier; return fare is counted explicitly.
     if (places.some((place) => place.slug === 'creek-abra'))
       settings.visits['dubai-creek-abra'] = 30
-    const route = optimizeDay(places, bundle, day.date, settings)
+    const route = places.some((place) => place.slug === 'dubai-mall')
+      ? evaluateRoute(places, bundle, day.date, settings)
+      : optimizeDay(places, bundle, day.date, settings)
     return {
       title: titles[index],
       note: notes[index],

@@ -38,3 +38,25 @@ test('keeps a separate queue buffer and offers a shorter viable day', async ({ p
   await expect(page.locator('.route-result:visible')).toContainText('Укладываемся')
   await expect(page.getByLabel('Время на месте: Дубай Молл', { exact: true })).toHaveValue('120')
 })
+
+test('offers a nearby walk during a long wait and retains the booked time', async ({ page }) => {
+  await page.goto('/#/dubai/plan')
+  const picker = page.locator('.plan-picker')
+  for (const name of ['Дубай Молл', 'Фонтаны Дубая']) {
+    await picker.getByLabel('Поиск места').fill(name)
+    await picker.getByRole('button', { name: `Добавить: ${name}`, exact: true }).click()
+  }
+  await page.getByLabel('Вход по билету: Фонтаны Дубая', { exact: true }).fill('18:30')
+  const suggestion = page
+    .getByRole('region', { name: 'Как улучшить день' })
+    .locator('article')
+    .filter({ hasText: 'Пока ждём — «Сук Аль-Бахар» рядом' })
+  await expect(suggestion.locator('img')).toHaveAttribute('src', /souk-al-bahar/)
+  await expect(suggestion).toContainText('билеты, очереди и перерыв сохранены')
+  await suggestion.getByRole('button', { name: 'Применить вариант', exact: true }).click()
+  await expect(page.locator('.plan-stop:visible')).toHaveCount(3)
+  await expect(page.getByLabel('Вход по билету: Фонтаны Дубая', { exact: true })).toHaveValue(
+    '18:30',
+  )
+  await expect(page.locator('.route-result:visible')).toContainText('Укладываемся')
+})

@@ -174,6 +174,11 @@ function legScore(leg: TravelLeg, preference: RouteSettings['preference']) {
 }
 export function selectTravelOption(options: TravelLeg[], settings: RouteSettings) {
   const taxi = options.find((option) => option.mode === 'taxi')!
+  const shortWalk = options.find(
+    (option) =>
+      option.mode === 'walk' && option.minutes <= 25 && option.minutes <= taxi.minutes + 12,
+  )
+  if (settings.preference === 'balanced' && shortWalk) return shortWalk
   const cardFee = settings.nolCardsOwned ? 0 : 6 * (settings.adults + settings.children)
   return options
     .filter((option) => {

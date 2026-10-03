@@ -96,6 +96,21 @@
   margin: 0 0 8px;
   font-size: 16px;
 }
+.advice-place {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+  font-size: 14px;
+}
+.advice-place img,
+.advice-place .photo-fallback {
+  width: 96px;
+  height: 64px;
+  flex-shrink: 0;
+  object-fit: cover;
+  border-radius: 8px;
+}
 .route-advice p {
   font-size: 13px;
   line-height: 1.7;

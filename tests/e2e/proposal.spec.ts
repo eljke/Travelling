@@ -11,7 +11,7 @@ test('previews a trip, applies it deliberately and restores the previous plan', 
   await proposal
     .getByRole('button', { name: 'Применить minmax на все пять дней', exact: true })
     .click()
-  await expect(page.locator('.plan-stop:visible')).toHaveCount(2)
+  await expect(page.locator('.plan-stop:visible')).toHaveCount(3)
   await expect(page.locator('.route-result:visible')).toContainText('Укладываемся')
   await page
     .getByRole('group', { name: 'Дни поездки', exact: true })

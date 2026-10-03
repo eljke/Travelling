@@ -2,6 +2,7 @@ import type { DestinationBundle, Place } from './model'
 import type { Itinerary } from './itinerary'
 import { clockTime, defaultRouteSettings, evaluateRoute, optimizeDay } from './dayRoute'
 import { closedOnDate } from './openingHours'
+import { distanceBetween } from './geo'
 
 export function dayAdvice(
   day: Itinerary['days'][number],
@@ -16,10 +17,49 @@ export function dayAdvice(
     note: string
     day: Itinerary['days'][number]
     route: typeof current
+    addedPlace?: Place
     move?: { placeId: string; date: string; target: Itinerary['days'][number] }
   }
   const advice: Advice[] = []
-  if (current.fits || !places.length) return advice
+  if (!places.length) return advice
+  if (current.fits) {
+    const planned = new Set([...day.placeIds, ...otherDays.flatMap((other) => other.placeIds)])
+    for (const [index, stop] of current.stops.entries()) {
+      const idle = stop.visitStart - stop.arrival - stop.queueMinutes
+      if (idle < 60) continue
+      const previous = places[index - 1]
+      const candidates = bundle.places.filter(
+        (place) =>
+          !planned.has(place.id) &&
+          place.pricing.kind === 'free' &&
+          !closedOnDate(place, day.date) &&
+          distanceBetween(place.coordinates, stop.place.coordinates) <= 1.5 &&
+          (!previous || distanceBetween(place.coordinates, previous.coordinates) <= 1.5),
+      )
+      for (const place of candidates) {
+        const order = [...places.slice(0, index), place, ...places.slice(index)]
+        const next = evaluateRoute(order, bundle, day.date, settings)
+        const target = next.stops.find((row) => row.place.id === stop.place.id)!
+        const reduced = idle - (target.visitStart - target.arrival - target.queueMinutes)
+        if (
+          !next.fits ||
+          reduced < 30 ||
+          next.returnAt > current.returnAt + 15 ||
+          next.highCost > current.highCost + 10 ||
+          next.ticketCost > current.ticketCost
+        )
+          continue
+        advice.push({
+          title: `Пока ждём — «${place.nameRu}» рядом`,
+          note: `До «${stop.place.nameRu}» есть около ${Math.round(idle)} мин свободного времени. Прогулка без входного билета уменьшит ожидание примерно на ${Math.round(reduced)} мин. Порядок остальных мест, билеты, очереди и перерыв сохранены; сравним ниже итоговый бюджет.`,
+          day: { ...day, placeIds: order.map((row) => row.id) },
+          route: next,
+          addedPlace: place,
+        })
+      }
+    }
+    return advice.sort((a, b) => a.route.highCost - b.route.highCost).slice(0, 3)
+  }
   const improve = (order: Place[], config = settings, date = day.date) =>
     order.length <= 5
       ? optimizeDay(order, bundle, date, config)

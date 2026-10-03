@@ -19,6 +19,11 @@ describe('trip proposal', () => {
     expect(proposal.days.every(({ route }) => route.fits)).toBe(true)
     expect(proposal.plan.days[2].placeIds).toContain('dubai-miracle-garden')
     expect(proposal.plan.days[0].placeIds).toContain('dubai-dubai-mall')
+    expect(proposal.plan.days[0].placeIds).toContain('dubai-souk-al-bahar')
+    const fountain = proposal.days[0].route.stops.find(
+      (stop) => stop.place.slug === 'dubai-fountain',
+    )!
+    expect(fountain.visitStart - fountain.arrival - fountain.queueMinutes).toBeLessThan(60)
     expect(proposal.plan.days[4].placeIds).toEqual(['dubai-ja-beach'])
     expect(proposal.days[4].route.ticketCost).toBe(0)
     expect(proposal.days[3].route.ticketCost).toBe(282)

@@ -15,6 +15,7 @@ import type { RouteSettings, TravelLeg } from '../domain/dayRoute'
 import { formatMoney } from './format'
 import { directionsUrl } from './HotelBase'
 import { dayAdvice } from '../domain/dayAdvice'
+import Photo from './Photo'
 import { formatDate } from './format'
 import { usePreferences } from '../app/Preferences'
 import { familyRouteBudget, families, hasFamilyComposition } from '../domain/families'
@@ -345,7 +346,19 @@ export default function DayRoutePlanner({
           <h3>Как сделать день удобнее</h3>
           <div>
             {advice.map((suggestion) => (
-              <article key={suggestion.title}>
+              <article key={`${suggestion.title}:${suggestion.day.placeIds.join('|')}`}>
+                {suggestion.addedPlace && (
+                  <Link
+                    className="advice-place"
+                    to={`/${bundle.destination.id}/place/${suggestion.addedPlace.slug}`}
+                  >
+                    <Photo
+                      imageId={suggestion.addedPlace.imageId}
+                      alt={suggestion.addedPlace.nameRu}
+                    />
+                    <span>{suggestion.addedPlace.nameRu} · посмотреть место</span>
+                  </Link>
+                )}
                 <h4>
                   {suggestion.title}
                   {suggestion.move && ` · ${formatDate(suggestion.move.date)}`}
