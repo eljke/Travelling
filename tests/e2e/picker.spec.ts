@@ -1,5 +1,40 @@
 import { test, expect } from '@playwright/test'
 
+test('adds a daytime stop before an evening visit using the displayed preview', async ({
+  page,
+}) => {
+  await page.goto('/#/dubai/place/dubai-fountain')
+  await page
+    .locator('.place-story')
+    .getByRole('button', { name: 'В план: Фонтаны Дубая', exact: true })
+    .click()
+  await page
+    .getByRole('dialog')
+    .getByRole('button', { name: /День 1/ })
+    .click()
+  await page.getByRole('link', { name: 'План', exact: true }).click()
+  await page.getByLabel('Вход по билету: Фонтаны Дубая', { exact: true }).fill('19:00')
+  const picker = page.locator('.plan-picker')
+  await picker.getByLabel('Поиск места').fill('Дубай Молл')
+  await picker.getByLabel('Помещается в день').check()
+  const card = picker.locator('[data-place-id="dubai-dubai-mall"]')
+  await expect(card).toContainText('Перед: Фонтаны Дубая')
+  const returnAt = (await card.locator('.picker-preview').innerText()).match(
+    /Возврат ≈ ([0-9:]+)/,
+  )![1]
+  await card.getByRole('button', { name: 'Добавить: Дубай Молл', exact: true }).click()
+  await expect(page.locator('.plan-stop:visible').first()).toContainText('Дубай Молл')
+  await expect(page.locator('.route-result:visible')).toContainText('Укладываемся')
+  await expect(page.locator('.route-timeline:visible')).toContainText(
+    `${returnAt} · Возвращение в отель`,
+  )
+  await page.reload()
+  await expect(page.locator('.plan-stop:visible').first()).toContainText('Дубай Молл')
+  await expect(page.getByLabel('Вход по билету: Фонтаны Дубая', { exact: true })).toHaveValue(
+    '19:00',
+  )
+})
+
 test('chooses a date explicitly and searches nearby places for that day', async ({ page }) => {
   await page.goto('/#/dubai/place/dubai-mall')
   await page

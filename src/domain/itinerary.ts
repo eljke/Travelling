@@ -57,15 +57,66 @@ export function normalizeItinerary(plan: Itinerary, bundle: DestinationBundle): 
   }
 }
 
-export function placeInDay(plan: Itinerary, placeId: string, date: string): Itinerary {
+export function previewInsertion(
+  day: Itinerary['days'][number],
+  place: Place,
+  bundle: DestinationBundle,
+) {
+  const current = day.placeIds
+    .filter((id) => id !== place.id)
+    .map((id) => bundle.places.find((row) => row.id === id)!)
+  const settings = day.settings ?? defaultRouteSettings
+  const candidates = Array.from({ length: current.length + 1 }, (_, position) => {
+    const places = [...current.slice(0, position), place, ...current.slice(position)]
+    const route = bundle.trip.accommodation
+      ? evaluateRoute(places, bundle, day.date, settings)
+      : undefined
+    return { position, placeIds: places.map((row) => row.id), route }
+  })
+  const best = candidates.sort(
+    (a, b) =>
+      Number(Boolean(b.route?.fits)) - Number(Boolean(a.route?.fits)) ||
+      (a.route?.score ?? 0) - (b.route?.score ?? 0) ||
+      b.position - a.position,
+  )[0]
+  return {
+    ...best,
+    fits: Boolean(best.route?.fits && toMinutes(settings.end) > toMinutes(settings.start)),
+    placement:
+      current.length === 0
+        ? 'Первая остановка'
+        : best.position < current.length
+          ? `Перед: ${current[best.position].nameRu}`
+          : `После: ${current.at(-1)!.nameRu}`,
+  }
+}
+
+export function placeInDay(
+  plan: Itinerary,
+  placeId: string,
+  date: string,
+  bundle?: DestinationBundle,
+): Itinerary {
+  const target = plan.days.find((day) => day.date === date)
+  const insertion =
+    bundle && target
+      ? previewInsertion(
+          target,
+          bundle.places.find((place) => place.id === placeId)!,
+          bundle,
+        )
+      : undefined
   return {
     ...plan,
     days: plan.days.map((day) => ({
       ...day,
-      placeIds: [
-        ...day.placeIds.filter((id) => id !== placeId),
-        ...(day.date === date ? [placeId] : []),
-      ],
+      placeIds:
+        day.date === date && insertion
+          ? insertion.placeIds
+          : [
+              ...day.placeIds.filter((id) => id !== placeId),
+              ...(day.date === date ? [placeId] : []),
+            ],
     })),
   }
 }

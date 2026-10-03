@@ -3,10 +3,10 @@ import { useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { usePreferences } from '../app/Preferences'
 import type { DestinationBundle, Place } from '../domain/model'
-import { createItinerary, placeInDay } from '../domain/itinerary'
+import { createItinerary, placeInDay, previewInsertion } from '../domain/itinerary'
 import { formatDate } from './format'
 import { closedOnDate } from '../domain/openingHours'
-import { clockTime, defaultRouteSettings, evaluateRoute } from '../domain/dayRoute'
+import { clockTime } from '../domain/dayRoute'
 
 export default function PlanButton({ place, bundle }: { place: Place; bundle: DestinationBundle }) {
   const { plans, savePlan } = usePreferences()
@@ -45,17 +45,8 @@ export default function PlanButton({ place, bundle }: { place: Place; bundle: De
         <div>
           {plan.days.map((target, index) => {
             const closed = closedOnDate(place, target.date)
-            const preview = bundle.trip.accommodation
-              ? evaluateRoute(
-                  [
-                    ...target.placeIds.map((id) => bundle.places.find((row) => row.id === id)!),
-                    place,
-                  ],
-                  bundle,
-                  target.date,
-                  target.settings ?? defaultRouteSettings,
-                )
-              : undefined
+            const insertion = previewInsertion(target, place, bundle)
+            const preview = insertion.route
             return (
               <button
                 type="button"
@@ -64,19 +55,20 @@ export default function PlanButton({ place, bundle }: { place: Place; bundle: De
                 disabled={closed}
                 onClick={() => {
                   dialog.current!.close()
-                  savePlan(bundle.destination.id, placeInDay(plan, place.id, target.date))
+                  savePlan(bundle.destination.id, placeInDay(plan, place.id, target.date, bundle))
                 }}
               >
                 День {index + 1} · {formatDate(target.date)} ·{' '}
                 {closed
                   ? 'закрыто'
-                  : `${target.placeIds.length} мест${preview ? ` · возврат ≈ ${clockTime(preview.returnAt)}${preview.fits ? '' : ' · тесный день'}` : ''}`}
+                  : `${target.placeIds.length} мест · ${insertion.placement}${preview ? ` · возврат ≈ ${clockTime(preview.returnAt)}${insertion.fits ? '' : ' · тесный день'}` : ''}`}
               </button>
             )
           })}
         </div>
         <p className="fine-print">
-          Добавим последней остановкой. Порядок и время можно изменить в плане; дорога — оценка.
+          Подберём место в маршруте, сохранив порядок остальных остановок и время ваших билетов.
+          Дорога — оценка; порядок можно изменить в плане.
         </p>
       </dialog>
     </>

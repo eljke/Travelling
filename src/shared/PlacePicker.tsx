@@ -3,11 +3,12 @@ import { Link } from 'react-router-dom'
 import { Check, Heart, Map, Search } from 'lucide-react'
 import type { DestinationBundle } from '../domain/model'
 import type { Itinerary } from '../domain/itinerary'
+import { previewInsertion } from '../domain/itinerary'
 import { usePreferences } from '../app/Preferences'
 import { closedOnDate } from '../domain/openingHours'
 import { distanceBetween } from '../domain/geo'
 import { familyRouteBudget, families } from '../domain/families'
-import { clockTime, defaultRouteSettings, evaluateRoute } from '../domain/dayRoute'
+import { clockTime, defaultRouteSettings } from '../domain/dayRoute'
 import { formatDate, formatDuration, formatMoney, formatPrice, formatRub } from './format'
 import { categoryLabels } from './labels'
 import Photo from './Photo'
@@ -37,13 +38,8 @@ export default function PlacePicker({
   const [sort, setSort] = useState('nearby')
   const previews = useMemo(() => {
     if (!day || !bundle.trip.accommodation) return undefined
-    const settings = day.settings ?? defaultRouteSettings
-    const current = day.placeIds.map((id) => bundle.places.find((place) => place.id === id)!)
     return new globalThis.Map(
-      bundle.places.map((place) => [
-        place.id,
-        evaluateRoute([...current, place], bundle, day.date, settings),
-      ]),
+      bundle.places.map((place) => [place.id, previewInsertion(day, place, bundle)]),
     )
   }, [bundle, day])
   const term = query.trim().toLocaleLowerCase('ru')
@@ -155,8 +151,8 @@ export default function PlacePicker({
       </p>
       {day && (
         <p className="fine-print">
-          Возвращение и бюджет показаны для добавления последней остановкой, с дорогой и перерывом.
-          После выбора можно оптимизировать порядок. Еда и покупки отдельно.
+          Подбираем место в маршруте с учётом дороги, часов работы и билетов. Порядок уже выбранных
+          остановок сохраняется. Бюджет — за весь день; еда и покупки отдельно.
         </p>
       )}
       {suggestions.length > 0 && (
@@ -194,7 +190,8 @@ export default function PlacePicker({
       )}
       <div className="picker-grid">
         {mapPlaces.map((place) => {
-          const preview = previews?.get(place.id)
+          const insertion = previews?.get(place.id)
+          const preview = insertion?.route
           const budget =
             preview && day
               ? familyRouteBudget(
@@ -224,14 +221,15 @@ export default function PlacePicker({
                   {formatRub(place.pricing, bundle.exchangeRate)}
                 </p>
                 {preview && (
-                  <div className={`picker-preview ${preview.fits ? '' : 'picker-tight'}`}>
+                  <div className={`picker-preview ${insertion!.fits ? '' : 'picker-tight'}`}>
                     <strong>
                       {closed
                         ? 'Закрыто на этот день'
-                        : preview.fits
+                        : insertion!.fits
                           ? 'Помещается в день'
                           : 'Нужно скорректировать день'}
                     </strong>
+                    <p>{insertion!.placement}</p>
                     <p>
                       Возврат ≈ {clockTime(preview.returnAt)} · дорога {preview.travelMinutes} мин
                     </p>

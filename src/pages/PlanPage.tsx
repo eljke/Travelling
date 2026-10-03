@@ -654,7 +654,9 @@ export default function PlanPage() {
                       <select
                         id={`day-${place.id}`}
                         value={day.date}
-                        onChange={(event) => update(placeInDay(plan, place.id, event.target.value))}
+                        onChange={(event) =>
+                          update(placeInDay(plan, place.id, event.target.value, bundle))
+                        }
                       >
                         {plan.days.map((target, index) => (
                           <option key={target.date} value={target.date}>
@@ -734,7 +736,7 @@ export default function PlanPage() {
             day={activeDay}
             excludedIds={[...scheduled]}
             onSelect={(id) => {
-              update(placeInDay(plan, id, activeDay.date))
+              update(placeInDay(plan, id, activeDay.date, bundle))
               setMessage(
                 `${placeById.get(id)!.nameRu} — добавлено на ${formatDate(activeDay.date)}.`,
               )
@@ -754,7 +756,7 @@ export default function PlanPage() {
               <button
                 className="button secondary"
                 key={place.id}
-                onClick={() => update(placeInDay(plan, place.id, activeDay.date))}
+                onClick={() => update(placeInDay(plan, place.id, activeDay.date, bundle))}
               >
                 <Plus size={14} />
                 {place.nameRu}

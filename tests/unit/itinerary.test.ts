@@ -6,6 +6,7 @@ import {
   fillFromFavorites,
   normalizeItinerary,
   placeInDay,
+  previewInsertion,
   summarizeDay,
   summarizeTrip,
 } from '../../src/domain/itinerary'
@@ -82,6 +83,30 @@ describe('trip plan', () => {
       unknownPrices: 1,
       lowerBound: true,
     })
+  })
+  it('inserts a daytime visit before an evening booking without changing settings', () => {
+    const fountain = dubai.places.find((place) => place.slug === 'dubai-fountain')!
+    const mall = dubai.places.find((place) => place.slug === 'dubai-mall')!
+    const plan = placeInDay(createItinerary(dubai), fountain.id, '2026-10-06')
+    const day = plan.days[0]
+    day.settings = {
+      ...defaultRouteSettings,
+      slots: { [fountain.id]: '19:00' },
+      visits: { [mall.id]: 180 },
+      waits: { [fountain.id]: 20 },
+    }
+    expect(evaluateRoute([fountain, mall], dubai, day.date, day.settings).fits).toBe(false)
+    const preview = previewInsertion(day, mall, dubai)
+    expect(preview.fits).toBe(true)
+    expect(preview.placement).toBe('Перед: Фонтаны Дубая')
+    const next = placeInDay(plan, mall.id, day.date, dubai)
+    expect(next.days[0].placeIds).toEqual(preview.placeIds)
+    expect(next.days[0].settings).toEqual(day.settings)
+    expect(preview.route!.stops[1].visitStart).toBe(19 * 60)
+    expect(day.placeIds).toEqual([fountain.id])
+    expect(placeInDay(next, mall.id, day.date, dubai).days[0].placeIds).toEqual(preview.placeIds)
+    day.settings.end = day.settings.start
+    expect(previewInsertion(day, mall, dubai).fits).toBe(false)
   })
 })
 describe('trip overview', () => {
