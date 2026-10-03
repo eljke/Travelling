@@ -26,8 +26,8 @@ import { distanceBetween } from '../domain/geo'
 import { closedOnDate } from '../domain/openingHours'
 import HotelBase, { directionsUrl } from '../shared/HotelBase'
 import {
-  convertCurrency,
-  formatCurrency,
+  formatMoney,
+  formatRub,
   formatDate,
   formatDistance,
   formatDuration,
@@ -147,7 +147,7 @@ export default function PlanPage() {
   }
   const budget = (summary: ReturnType<typeof summarizeDay>) => {
     const prefix = summary.lowerBound || summary.unknownPrices ? 'от ' : ''
-    return `${prefix}${formatCurrency(summary.amount, bundle.exchangeRate.baseCurrency)}`
+    return `${prefix}${formatMoney(summary.amount, bundle.exchangeRate)}`
   }
   return (
     <main className="plan-page container" id="main">
@@ -211,13 +211,6 @@ export default function PlanPage() {
         </div>
         <div>
           <strong>{budget(total)}</strong>
-          <small>
-            ≈{' '}
-            {formatCurrency(
-              convertCurrency(total.amount, bundle.exchangeRate.rate),
-              bundle.exchangeRate.quoteCurrency,
-            )}
-          </small>
         </div>
         <RateStrip bundle={bundle} />
       </div>
@@ -427,7 +420,8 @@ export default function PlanPage() {
                       <Link to={`/${destinationId}/place/${place.slug}`}>{place.nameRu}</Link>
                     </h3>
                     <p>
-                      {formatDuration(place.duration)} · {formatPrice(place.pricing)}
+                      {formatDuration(place.duration)} · {formatPrice(place.pricing)}{' '}
+                      {formatRub(place.pricing, bundle.exchangeRate)}
                     </p>
                     <p className="fine-print">{place.bestTime.join(' ')}</p>
                     {!shared &&

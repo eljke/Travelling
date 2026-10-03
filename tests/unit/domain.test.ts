@@ -4,6 +4,7 @@ import {
   convertCurrency,
   formatPrice,
   formatRub,
+  formatMoney,
   formatDistance,
   formatTrip,
 } from '../../src/shared/format'
@@ -49,6 +50,12 @@ describe('daily rates', () => {
 
 const dubai = destinations.dubai
 describe('money', () => {
+  it('shows estimates beside amounts and both ends of a range', () => {
+    const fx = { ...dubai.exchangeRate, rate: 25 }
+    expect(formatMoney(100, fx)).toContain('2 500')
+    expect(formatMoney(100, fx, 200)).toContain('5 000')
+    expect(formatMoney(0, fx)).toContain('0 ₽')
+  })
   it('rounds RUB to a readable estimate', () => {
     expect(convertCurrency(149, 22.6672)).toBe(3400)
     expect(convertCurrency(0, 22.6672)).toBe(0)

@@ -12,10 +12,20 @@ import {
   toMinutes,
 } from '../domain/dayRoute'
 import type { RouteSettings, TravelLeg } from '../domain/dayRoute'
-import { formatCurrency } from './format'
+import { formatMoney } from './format'
 import { directionsUrl } from './HotelBase'
 
-function Leg({ leg, departure, arrival }: { leg: TravelLeg; departure: number; arrival: number }) {
+function Leg({
+  leg,
+  departure,
+  arrival,
+  fx,
+}: {
+  leg: TravelLeg
+  departure: number
+  arrival: number
+  fx: DestinationBundle['exchangeRate']
+}) {
   return (
     <div className="route-leg">
       {leg.mode === 'walk' ? (
@@ -29,7 +39,7 @@ function Leg({ leg, departure, arrival }: { leg: TravelLeg; departure: number; a
         <strong>
           {clockTime(departure)} → {clockTime(arrival)} · {leg.minutes} мин ·{' '}
           {leg.cost
-            ? `≈ ${leg.cost}–${leg.highCost} AED на всех`
+            ? `≈ ${formatMoney(leg.cost, fx, leg.highCost)} на всех`
             : leg.mode === 'tour'
               ? 'входит в тур'
               : 'бесплатно'}
@@ -221,9 +231,7 @@ export default function DayRoutePlanner({
             <strong>
               {preference === 'fast' ? 'Быстрее' : preference === 'cheap' ? 'Дешевле' : 'Баланс'}
             </strong>
-            <span>
-              Дорога ≈ {variant.cost}–{variant.highCost} AED
-            </span>
+            <span>Дорога ≈ {formatMoney(variant.cost, bundle.exchangeRate, variant.highCost)}</span>
             <small>
               В отеле ≈ {clockTime(variant.returnAt)}
               {!variant.fits ? ' · не укладываемся' : ''}
@@ -278,14 +286,12 @@ export default function DayRoutePlanner({
       <div className="route-budget">
         <div>
           <span>Транспорт на всех</span>
-          <strong>
-            ≈ {route.cost}–{route.highCost} AED
-          </strong>
+          <strong>≈ {formatMoney(route.cost, bundle.exchangeRate, route.highCost)}</strong>
           <small>Дорога ≈ {route.travelMinutes} мин</small>
         </div>
         <div>
           <span>Билеты на всех</span>
-          <strong>от {formatCurrency(route.ticketCost, bundle.exchangeRate.baseCurrency)}</strong>
+          <strong>от {formatMoney(route.ticketCost, bundle.exchangeRate)}</strong>
           <small>
             {route.unknownPrices
               ? `Без цены: ${route.unknownPrices} мест`
@@ -294,9 +300,7 @@ export default function DayRoutePlanner({
         </div>
         <div>
           <span>День без еды и покупок</span>
-          <strong>
-            от {formatCurrency(route.cost + route.ticketCost, bundle.exchangeRate.baseCurrency)}
-          </strong>
+          <strong>от {formatMoney(route.cost + route.ticketCost, bundle.exchangeRate)}</strong>
           <small>Тарифы «от» и оценки дороги</small>
         </div>
       </div>
@@ -328,14 +332,11 @@ export default function DayRoutePlanner({
             return (
               <p key={family.title}>
                 <strong>{family.title}</strong> · от{' '}
-                {formatCurrency(
-                  Math.ceil(tickets + route.cost * family.share),
-                  bundle.exchangeRate.baseCurrency,
-                )}
-                ; с верхней оценкой дороги —{' '}
-                {formatCurrency(
+                {formatMoney(Math.ceil(tickets + route.cost * family.share), bundle.exchangeRate)};
+                с верхней оценкой дороги —{' '}
+                {formatMoney(
                   Math.ceil(tickets + route.highCost * family.share),
-                  bundle.exchangeRate.baseCurrency,
+                  bundle.exchangeRate,
                 )}
                 .
               </p>
@@ -361,7 +362,12 @@ export default function DayRoutePlanner({
         <ol>
           {route.stops.map((stop) => (
             <li key={stop.place.id}>
-              <Leg leg={stop.leg} departure={stop.departure} arrival={stop.arrival} />
+              <Leg
+                leg={stop.leg}
+                departure={stop.departure}
+                arrival={stop.arrival}
+                fx={bundle.exchangeRate}
+              />
               {stop.visitStart > stop.arrival && (
                 <p className="route-wait">
                   Пауза до {clockTime(stop.visitStart)}: ждём открытия или вечернего визита.
@@ -389,7 +395,12 @@ export default function DayRoutePlanner({
             </li>
           ))}
         </ol>
-        <Leg leg={route.returnLeg} departure={route.returnDeparture} arrival={route.returnAt} />
+        <Leg
+          leg={route.returnLeg}
+          departure={route.returnDeparture}
+          arrival={route.returnAt}
+          fx={bundle.exchangeRate}
+        />
         <p>
           <strong>{clockTime(route.returnAt)} · Возвращение в отель</strong>
         </p>
@@ -454,9 +465,10 @@ export default function DayRoutePlanner({
           Верхняя сумма включает запас; фактический маршрут может отличаться.
         </p>
         <p>
-          База e-hail: 9–13 AED; ориентир за км — {settings.perKm} AED. Hala Max до 6 пассажиров;
-          наличие машины и итоговую стоимость смотрим в Careem. Ожидание, Salik и повышенный спрос
-          могут увеличить цену.{' '}
+          База e-hail: {formatMoney(9, bundle.exchangeRate, 13)}; ориентир за км —{' '}
+          {formatMoney(settings.perKm, bundle.exchangeRate)}. Hala Max до 6 пассажиров; наличие
+          машины и итоговую стоимость смотрим в Careem. Ожидание, Salik и повышенный спрос могут
+          увеличить цену.{' '}
           <a
             href="https://www.rta.ae/wps/portal/rta/ae/home/promotion/taxi-fare"
             target="_blank"
@@ -470,10 +482,10 @@ export default function DayRoutePlanner({
           </a>
         </p>
         <p>
-          Красная линия метро: до 7,50 AED по Silver nol на человека, чтобы не занизить сумму по
-          зонам; подходы к станциям и ожидание учтены. Трамвай Marina — 3 AED; карту nol приобретаем
-          отдельно. При реальном переходе между метро и трамваем тариф может объединяться, здесь
-          скидку не закладываем.{' '}
+          Красная линия метро: до {formatMoney(7.5, bundle.exchangeRate)} по Silver nol на человека,
+          чтобы не занизить сумму по зонам; подходы к станциям и ожидание учтены. Трамвай Marina —{' '}
+          {formatMoney(3, bundle.exchangeRate)}; карту nol приобретаем отдельно. При реальном
+          переходе между метро и трамваем тариф может объединяться, здесь скидку не закладываем.{' '}
           <a
             href="https://www.rta.ae/wps/portal/rta/ae/public-transport/Nol-Fares"
             target="_blank"

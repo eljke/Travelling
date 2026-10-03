@@ -25,6 +25,12 @@ export function formatRub(price: PriceInfo, fx: DestinationBundle['exchangeRate'
     ? ''
     : `≈ ${formatCurrency(convertCurrency(price.amount, fx.rate), fx.quoteCurrency)}`
 }
+export function formatMoney(amount: number, fx: DestinationBundle['exchangeRate'], high?: number) {
+  const range = high !== undefined && high !== amount
+  const local = `${formatCurrency(amount, fx.baseCurrency)}${range ? `–${formatCurrency(high, fx.baseCurrency)}` : ''}`
+  const rub = `${formatCurrency(convertCurrency(amount, fx.rate), fx.quoteCurrency)}${range ? `–${formatCurrency(convertCurrency(high, fx.rate), fx.quoteCurrency)}` : ''}`
+  return `${local} (≈ ${rub})`
+}
 export function formatDistance(km: number) {
   return km < 1
     ? `${Math.round((km * 1000) / 10) * 10} м`

@@ -25,6 +25,7 @@ import {
   formatRub,
   formatCoordinates,
   formatCurrency,
+  formatMoney,
 } from '../shared/format'
 import { categoryLabels, paymentLabels } from '../shared/labels'
 import Photo from '../shared/Photo'
@@ -266,7 +267,11 @@ export default function PlacePage() {
               {place.pricing.variants.map((v) => (
                 <li key={v.label}>
                   <span>{v.label}</span>
-                  <strong>{formatCurrency(v.amount, place.pricing.currency)}</strong>
+                  <strong>
+                    {place.pricing.currency === bundle.exchangeRate.baseCurrency
+                      ? formatMoney(v.amount, bundle.exchangeRate)
+                      : formatCurrency(v.amount, place.pricing.currency)}
+                  </strong>
                 </li>
               ))}
             </ul>
