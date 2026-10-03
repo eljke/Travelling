@@ -1,0 +1,110 @@
+.print-plan {
+  display: none;
+}
+@media print {
+  @page {
+    size: A4;
+    margin: 14mm;
+    @bottom-right {
+      content: counter(page) ' / ' counter(pages);
+      font-size: 9pt;
+      color: #666;
+    }
+  }
+  body:has(.print-plan) {
+    background: white;
+    color: #111;
+    font-family: Arial, sans-serif;
+  }
+  body:has(.print-plan) .skip-link {
+    display: none !important;
+  }
+  .plan-page > :not(.print-plan) {
+    display: none !important;
+  }
+  .plan-page.container {
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    padding: 0;
+  }
+  .print-plan {
+    display: block;
+    font-size: 9.5pt;
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+  }
+  .print-day + .print-day {
+    break-before: page;
+  }
+  .print-day header {
+    border-bottom: 2px solid #234b3c;
+    padding-bottom: 3mm;
+    margin-bottom: 4mm;
+  }
+  .print-day header span,
+  .print-note {
+    font-size: 9pt;
+    color: #444;
+  }
+  .print-plan h1 {
+    font:
+      bold 20pt Arial,
+      sans-serif;
+    margin: 2mm 0;
+  }
+  .print-plan h2 {
+    font:
+      bold 11pt Arial,
+      sans-serif;
+    margin: 0 0 1.5mm;
+  }
+  .print-plan p {
+    margin: 1mm 0;
+    orphans: 3;
+    widows: 3;
+  }
+  .print-budget {
+    border: 1px solid #ccc;
+    padding: 3mm;
+    margin-bottom: 4mm;
+    break-inside: avoid;
+  }
+  .print-plan table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+  }
+  .print-plan thead {
+    display: table-header-group;
+  }
+  .print-plan th {
+    background: #eee;
+    text-align: left;
+  }
+  .print-plan th:first-child,
+  .print-plan td:first-child {
+    width: 27%;
+  }
+  .print-plan th,
+  .print-plan td {
+    padding: 2mm;
+    border-bottom: 1px solid #ccc;
+    vertical-align: top;
+  }
+  .print-plan tr {
+    break-inside: avoid;
+  }
+  .print-plan a {
+    color: #234b3c;
+    text-decoration: underline;
+  }
+  .print-warning {
+    color: #653c1e;
+    font-weight: bold;
+  }
+  .print-note {
+    margin-top: 4mm !important;
+    break-inside: avoid;
+  }
+}

@@ -43,6 +43,8 @@ import { defaultRouteSettings, evaluateRoute } from '../domain/dayRoute'
 import { familyTicketPrice, families } from '../domain/families'
 import FamilyBudgetControl from '../shared/FamilyBudgetControl'
 import TripProposal from '../shared/TripProposal'
+import PlanPrint from '../shared/PlanPrint'
+import '../styles/print.css'
 import { dubaiDayIdeas } from '../content/dayIdeas'
 
 export default function PlanPage() {
@@ -155,6 +157,7 @@ export default function PlanPage() {
   }
   return (
     <main className="plan-page container" id="main">
+      <PlanPrint bundle={bundle} plan={plan} scope={budgetScope} />
       <Link className="text-button" to={`/${destinationId}`}>
         ← К местам
       </Link>
