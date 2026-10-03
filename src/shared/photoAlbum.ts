@@ -148,12 +148,3 @@ export async function importAlbum(
   })
   return new Set(fresh.map((photo) => photo.id)).size
 }
-
-export function downloadFile(blob: Blob, filename: string) {
-  const url = URL.createObjectURL(blob)
-  const link = document.createElement('a')
-  link.href = url
-  link.download = filename
-  link.click()
-  window.setTimeout(() => URL.revokeObjectURL(url), 1000)
-}

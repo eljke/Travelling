@@ -4,7 +4,6 @@ import { Camera, Download, Pencil, Trash2, Upload, X } from 'lucide-react'
 import { useDestinationBundle } from '../app/ExchangeRates'
 import {
   deletePhoto,
-  downloadFile,
   exportAlbum,
   importAlbum,
   preparePhoto,
@@ -15,6 +14,7 @@ import type { AlbumPhoto } from '../shared/photoAlbum'
 import { formatDate } from '../shared/format'
 import PlacePicker from '../shared/PlacePicker'
 import Photo from '../shared/Photo'
+import { downloadFile } from '../shared/download'
 
 function LocalPhoto({ photo, onOpen }: { photo: AlbumPhoto; onOpen?: () => void }) {
   const [url, setUrl] = useState('')

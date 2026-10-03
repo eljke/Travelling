@@ -45,6 +45,7 @@ import FamilyBudgetControl from '../shared/FamilyBudgetControl'
 import TripProposal from '../shared/TripProposal'
 import PlanPrint from '../shared/PlanPrint'
 import TripOverview from '../shared/TripOverview'
+import PlanBackup from '../shared/PlanBackup'
 import '../styles/print.css'
 import { dubaiDayIdeas } from '../content/dayIdeas'
 
@@ -222,6 +223,7 @@ export default function PlanPage() {
           </Link>
         </div>
       )}
+      <PlanBackup bundle={bundle} plan={plan} readOnly={!!shared} onApply={update} />
       <HotelBase bundle={bundle} />
       {!shared && destinationId === 'dubai' && bundle.trip.startDate === '2026-10-06' && (
         <TripProposal
