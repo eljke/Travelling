@@ -1,7 +1,7 @@
 import { Hotel, Navigation } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import type { DestinationBundle, Place } from '../domain/model'
-import { formatDate, formatDistance } from './format'
+import { formatTrip, formatDistance } from './format'
 import { distanceBetween } from '../domain/geo'
 
 // oxlint-disable-next-line react/only-export-components
@@ -29,7 +29,7 @@ export default function HotelBase({ bundle, place }: { bundle: DestinationBundle
         <p>
           {place
             ? `${formatDistance(distanceBetween(hotel.coordinates, place.coordinates))} от отеля по прямой; дорога будет длиннее.`
-            : `${bundle.trip.arrivalDate ? formatDate(bundle.trip.arrivalDate) : formatDate(bundle.trip.startDate)} — ${formatDate(bundle.trip.departureDate ?? bundle.trip.endDate)}. Посещения планируем на ${formatDate(bundle.trip.startDate)} — ${formatDate(bundle.trip.endDate)}.`}
+            : `${formatTrip({ startDate: bundle.trip.arrivalDate ?? bundle.trip.startDate, endDate: bundle.trip.departureDate ?? bundle.trip.endDate })} Выезды: ${formatTrip(bundle.trip)}`}
         </p>
       </div>
       {place ? (

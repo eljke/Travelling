@@ -37,6 +37,8 @@ export const routeSettingsSchema = z.object({
 })
 export type RouteSettings = z.infer<typeof routeSettingsSchema>
 export const defaultRouteSettings: RouteSettings = routeSettingsSchema.parse({ childAge: 11 })
+export const hoursReminder =
+  'Часы и время входа нужно подтвердить; в расчёте нет закреплённого слота.'
 export const toMinutes = (time: string) => Number(time.slice(0, 2)) * 60 + Number(time.slice(3))
 export function estimateQueue(place: Place, date: string, arrival: number) {
   if (!place.queue) return 0
@@ -369,8 +371,7 @@ export function evaluateRoute(
       warnings.push('Посещение не помещается в опубликованные сеансы с регистрацией за 30 минут.')
     if (schedule && schedule.opens < schedule.closes && time > toMinutes(schedule.closes))
       warnings.push('Посещение не помещается в опубликованные часы работы.')
-    if (!schedule && !sessions && !fixedTime)
-      warnings.push('Часы и время входа нужно подтвердить; в расчёте нет закреплённого слота.')
+    if (!schedule && !sessions && !fixedTime) warnings.push(hoursReminder)
     if (index === breakIndex && !includedSafari) {
       pause = settings.breakMinutes
       time += pause

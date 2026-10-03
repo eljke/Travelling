@@ -16,6 +16,10 @@ test('builds a day for six, optimizes it and retains limits', async ({ page }) =
   await planner.getByRole('button', { name: 'Оптимизировать день', exact: true }).click()
   await expect(page.locator('.plan-stop:visible')).toHaveCount(2)
   await expect(planner.locator('.route-result')).toContainText('Укладываемся')
+  await expect(planner.getByText(/^Перед выездом сверим часы:/)).toHaveCount(1)
+  await expect(planner.locator('.route-timeline')).not.toContainText(
+    'Часы и время входа нужно подтвердить',
+  )
   await expect(planner.locator('.route-timeline')).toContainText(
     '10:00 · Выезд из JA Palm Tree Court',
   )

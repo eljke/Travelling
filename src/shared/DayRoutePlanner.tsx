@@ -8,6 +8,7 @@ import {
   defaultRouteSettings,
   evaluateRoute,
   groupTicketPrice,
+  hoursReminder,
   optimizeDay,
   toMinutes,
 } from '../domain/dayRoute'
@@ -509,6 +510,16 @@ export default function DayRoutePlanner({
           пока заложена взрослая цена. Размер и возрастные ограничения проверьте перед покупкой.
         </p>
       )}
+      {route.stops.some((stop) => stop.warnings.includes(hoursReminder)) && (
+        <p className="fine-print">
+          Перед выездом сверим часы:{' '}
+          {route.stops
+            .filter((stop) => stop.warnings.includes(hoursReminder))
+            .map((stop) => stop.place.nameRu)
+            .join(', ')}
+          . В расчёте для этих мест нет подтверждённого расписания или времени входа.
+        </p>
+      )}
       <details className="route-timeline" open>
         <summary>
           Как пройдёт день · {settings.start} — {settings.end}
@@ -547,11 +558,13 @@ export default function DayRoutePlanner({
                   {stop.place.nameRu} ↗
                 </Link>
                 <small>Примерно {stop.visitMinutes} мин на посещение</small>
-                {stop.warnings.map((warning) => (
-                  <p className="fine-print" key={warning}>
-                    {warning}
-                  </p>
-                ))}
+                {stop.warnings
+                  .filter((warning) => warning !== hoursReminder)
+                  .map((warning) => (
+                    <p className="fine-print" key={warning}>
+                      {warning}
+                    </p>
+                  ))}
               </div>
               {stop.pauseAfter > 0 && (
                 <p className="route-wait">

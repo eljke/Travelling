@@ -1,6 +1,12 @@
 import type { DestinationBundle } from '../domain/model'
 import type { Itinerary } from '../domain/itinerary'
-import { clockTime, defaultRouteSettings, evaluateRoute, toMinutes } from '../domain/dayRoute'
+import {
+  clockTime,
+  defaultRouteSettings,
+  evaluateRoute,
+  hoursReminder,
+  toMinutes,
+} from '../domain/dayRoute'
 import { families, familyRouteBudget, needsTicket, ticketChecks } from '../domain/families'
 import type { BudgetScope } from '../domain/families'
 import { formatDate, formatMoney, formatTrip } from './format'
@@ -154,9 +160,7 @@ export default function PlanPrint({
                         {stop.place.coordinates.lng.toFixed(5)}
                       </p>
                       {stop.warnings
-                        .filter(
-                          (warning) => !warning.startsWith('Часы и время входа нужно подтвердить'),
-                        )
+                        .filter((warning) => warning !== hoursReminder)
                         .map((warning) => (
                           <p className="print-warning" key={warning}>
                             {warning}
@@ -218,11 +222,11 @@ export default function PlanPrint({
                 ? `Без цены: ${route.unknownPrices} мест; итог неполный. `
                 : ''}
               Курс: 1 AED ≈ {bundle.exchangeRate.rate.toFixed(2)} ₽ на{' '}
-              {formatDate(bundle.exchangeRate.effectiveAt)}.
+              {formatDate(bundle.exchangeRate.effectiveAt)}
             </p>
             {index === 0 && empty.length > 0 && (
               <p className="print-note">
-                Пока без остановок: {empty.map((day) => formatDate(day.date)).join('; ')}.
+                Пока без остановок: {empty.map((day) => formatDate(day.date)).join('; ')}
               </p>
             )}
           </section>

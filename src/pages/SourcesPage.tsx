@@ -4,7 +4,7 @@ import { images } from '../content/registry'
 import { useDestinationBundle } from '../app/ExchangeRates'
 import RateStrip from '../shared/RateStrip'
 import Sources from '../shared/Sources'
-import { formatDate } from '../shared/format'
+import { formatDate, formatTrip } from '../shared/format'
 import { paymentLabels } from '../shared/labels'
 
 export default function SourcesPage() {
@@ -47,10 +47,9 @@ export default function SourcesPage() {
               .map((place) => place.updatedAt)
               .sort()
               .at(-1)!,
-          )}
-          . Цены указаны в валюте назначения, рублёвые суммы — ориентировочный пересчёт по
-          указанному источнику курса. Даты поездки: {formatDate(bundle.trip.startDate)} —{' '}
-          {formatDate(bundle.trip.endDate)}.
+          )}{' '}
+          Цены указаны в валюте билета; рядом с AED — ориентировочный пересчёт в рубли по указанному
+          источнику курса. Даты выездов: {formatTrip(bundle.trip)}
         </p>
         <p>
           Географические точки обозначают объекты или прогулочные зоны, а не гарантированный вход.
@@ -97,7 +96,7 @@ export default function SourcesPage() {
         <p className="section-note">
           1 {bundle.exchangeRate.baseCurrency} = {bundle.exchangeRate.rate}{' '}
           {bundle.exchangeRate.quoteCurrency}; дата действия{' '}
-          {formatDate(bundle.exchangeRate.effectiveAt)}. Комиссии банка и курс продавца могут
+          {formatDate(bundle.exchangeRate.effectiveAt)} Комиссии банка и курс продавца могут
           отличаться.
         </p>
         <Sources

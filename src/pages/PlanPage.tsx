@@ -637,14 +637,15 @@ export default function PlanPage() {
                         На этот день указано закрытие. Выберите другую дату.
                       </p>
                     )}
-                    {place.availability.status !== 'open' && (
-                      <p className="plan-warning">
-                        {place.availability.status === 'temporarily-closed'
-                          ? 'Временно закрыто. '
-                          : 'Проверьте даты. '}
-                        {place.availability.note}
-                      </p>
-                    )}
+                    {place.availability.status !== 'open' &&
+                      place.availability.note !==
+                        'Перед выездом сверим часы и билеты на выбранный день.' && (
+                        <p
+                          className={closedOnDate(place, day.date) ? 'plan-warning' : 'fine-print'}
+                        >
+                          {place.availability.note}
+                        </p>
+                      )}
                     {place.bookingRecommended && (
                       <Link className="text-button" to={`/${destinationId}/place/${place.slug}`}>
                         Рекомендуется бронирование →
@@ -752,7 +753,7 @@ export default function PlanPage() {
             onSelect={(id) => {
               update(placeInDay(plan, id, activeDay.date, bundle))
               setMessage(
-                `${placeById.get(id)!.nameRu} — добавлено на ${formatDate(activeDay.date)}.`,
+                `${placeById.get(id)!.nameRu} — добавлено на ${formatDate(activeDay.date)}`,
               )
             }}
           />

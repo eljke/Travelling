@@ -345,7 +345,7 @@ export default function PlacePage() {
                 </div>
                 <p className="fine-print">
                   {place.reviewInsights.sampleNote} Проверено{' '}
-                  {formatDate(place.reviewInsights.checkedAt)}.
+                  {formatDate(place.reviewInsights.checkedAt)}
                 </p>
                 <Sources bundle={bundle} ids={place.reviewInsights.sourceIds} />
               </>
@@ -432,8 +432,8 @@ export default function PlacePage() {
             <ArrowLeft className="down-arrow" size={16} />
           </button>
           <small>
-            Цены проверены {formatDate(place.pricing.checkedAt)}. Курс от{' '}
-            {formatDate(bundle.exchangeRate.effectiveAt)}.
+            Цены проверены {formatDate(place.pricing.checkedAt)} Курс от{' '}
+            {formatDate(bundle.exchangeRate.effectiveAt)}
           </small>
         </aside>
       </div>

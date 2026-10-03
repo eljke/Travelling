@@ -44,7 +44,7 @@ export function formatDate(date: string) {
     timeZone: 'UTC',
   }).format(new Date(`${date}T12:00:00Z`))
 }
-export function formatTrip(trip: DestinationBundle['trip']) {
+export function formatTrip(trip: Pick<DestinationBundle['trip'], 'startDate' | 'endDate'>) {
   return new Intl.DateTimeFormat('ru-RU', {
     day: 'numeric',
     month: 'long',
