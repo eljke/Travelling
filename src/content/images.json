@@ -669,5 +669,104 @@
     "sourceUrl": "https://commons.wikimedia.org/wiki/File:Burj_Al_Arab_Interior_on_25_December_2007_Pict_9.jpg",
     "checkedAt": "2026-10-03",
     "adaptation": "Resized and converted to WebP"
+  },
+  "lost-tank": {
+    "src": "images/lost-tank-1280.webp",
+    "small": "images/lost-tank-640.webp",
+    "alt": "Аквариум Lost Chambers в Atlantis The Palm до обновления — архивный снимок",
+    "author": "AwOiSoAk KaOsIoWa",
+    "license": "CC BY-SA 3.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:The_Lost_Chambers_-_panoramio_(2).jpg",
+    "checkedAt": "2026-10-03",
+    "adaptation": "Resized and converted to WebP"
+  },
+  "lost-jellyfish": {
+    "src": "images/lost-jellyfish-1280.webp",
+    "small": "images/lost-jellyfish-640.webp",
+    "alt": "Медузы в аквариуме Atlantis The Palm — архивный снимок",
+    "author": "AwOiSoAk KaOsIoWa",
+    "license": "CC BY-SA 3.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:The_Lost_Chambers_-_panoramio_(3).jpg",
+    "checkedAt": "2026-10-03",
+    "adaptation": "Resized and converted to WebP"
+  },
+  "madinat-bridge": {
+    "src": "images/madinat-bridge-1280.webp",
+    "small": "images/madinat-bridge-640.webp",
+    "alt": "Каналы Madinat Jumeirah и мост — архивный снимок",
+    "author": "Diego Delso",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Madinat_Jumeirah-Dubai3303.JPG",
+    "checkedAt": "2026-10-03",
+    "adaptation": "Resized and converted to WebP"
+  },
+  "madinat-boat": {
+    "src": "images/madinat-boat-1280.webp",
+    "small": "images/madinat-boat-640.webp",
+    "alt": "Причал и лодки Madinat Jumeirah — архивный снимок",
+    "author": "Diego Delso",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Madinat_Jumeirah-Dubai3315.JPG",
+    "checkedAt": "2026-10-03",
+    "adaptation": "Resized and converted to WebP"
+  },
+  "terra-official": {
+    "src": "https://images.ctfassets.net/3l68px74344b/4HGn9jz5g1s818UhMMBtws/6551cef2bc87540ae74df11ab665f584/c22a8f185bbad6dff7815229ee98a518.jpeg",
+    "small": "https://images.ctfassets.net/3l68px74344b/4HGn9jz5g1s818UhMMBtws/6551cef2bc87540ae74df11ab665f584/c22a8f185bbad6dff7815229ee98a518.jpeg",
+    "alt": "Павильон Terra вечером",
+    "author": "Expo City Dubai",
+    "license": "© Правообладатель; внешний источник",
+    "licenseUrl": "https://terra.expocitydubai.com/en",
+    "sourceUrl": "https://terra.expocitydubai.com/en",
+    "checkedAt": "2026-10-03",
+    "adaptation": "Загружается с сайта правообладателя; файл не изменён"
+  },
+  "difc-gate": {
+    "src": "https://static1.gensler.com/uploads/hero_element/3731/thumb_desktop/thumbs/project_gate-building_05_1024x576_1405720038_1024x576.jpg",
+    "small": "https://static1.gensler.com/uploads/hero_element/3731/thumb_desktop/thumbs/project_gate-building_05_1024x576_1405720038_1024x576.jpg",
+    "alt": "Арка The Gate Building в DIFC",
+    "author": "Gensler / The Gate Building",
+    "license": "© Правообладатель; внешний источник",
+    "licenseUrl": "https://www.gensler.com/projects/the-gate-building",
+    "sourceUrl": "https://www.gensler.com/projects/the-gate-building",
+    "checkedAt": "2026-10-03",
+    "adaptation": "Загружается с сайта правообладателя; файл не изменён"
+  },
+  "west-beach-official": {
+    "src": "https://cdn.prod.website-files.com/66c2f28ab8a461bf9d63a1c9/66cb07e24043347f9a076264_WEST-BEACH-Banner.jpg",
+    "small": "https://cdn.prod.website-files.com/66c2f28ab8a461bf9d63a1c9/66cb07e24043347f9a076264_WEST-BEACH-Banner.jpg",
+    "alt": "Набережная Palm West Beach вечером",
+    "author": "Palm West Beach / Dubai Retail",
+    "license": "© Правообладатель; внешний источник",
+    "licenseUrl": "https://www.westbeach.ae/en/west-beach",
+    "sourceUrl": "https://www.westbeach.ae/en/west-beach",
+    "checkedAt": "2026-10-03",
+    "adaptation": "Загружается с сайта правообладателя; файл не изменён"
+  },
+  "ja-water-official": {
+    "src": "https://jaweb2019cdn.azureedge.net/assets/images/default-source/jarh-images/site-redesign/experiences/-hero-top/watersports---standing-paddleboard-jpg.jpg?sfvrsn=e94a3a67_0",
+    "small": "https://jaweb2019cdn.azureedge.net/assets/images/default-source/jarh-images/site-redesign/experiences/-hero-top/watersports---standing-paddleboard-jpg.jpg?sfvrsn=e94a3a67_0",
+    "alt": "Сапборд на воде JA The Resort",
+    "author": "JA Resorts & Hotels",
+    "license": "© Правообладатель; внешний источник",
+    "licenseUrl": "https://www.jaresortshotels.com/leisure-detail/watersports",
+    "sourceUrl": "https://www.jaresortshotels.com/leisure-detail/watersports",
+    "checkedAt": "2026-10-03",
+    "adaptation": "Загружается с сайта правообладателя; файл не изменён"
+  },
+  "legoland-water-official": {
+    "src": "https://www.legoland.com/dubai/media/wawpzhqa/joker-soaker.jpg",
+    "small": "https://www.legoland.com/dubai/media/wawpzhqa/joker-soaker.jpg",
+    "alt": "Водная площадка Joker Soaker в LEGOLAND Water Park Dubai",
+    "author": "LEGOLAND Dubai",
+    "license": "© Правообладатель; внешний источник",
+    "licenseUrl": "https://www.legoland.com/dubai/explore-legoland-dubai/legoland-water-park/attractions/joker-soaker/",
+    "sourceUrl": "https://www.legoland.com/dubai/explore-legoland-dubai/legoland-water-park/attractions/joker-soaker/",
+    "checkedAt": "2026-10-03",
+    "adaptation": "Загружается с сайта правообладателя; файл не изменён"
   }
 }

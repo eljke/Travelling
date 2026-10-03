@@ -13,22 +13,26 @@ export default function Photo({
   priority?: boolean
   className?: string
 }) {
-  const [failed, setFailed] = useState(false)
+  const [failedId, setFailedId] = useState<string>()
   const image = imageId ? images[imageId] : undefined
-  return failed || !image ? (
+  return failedId === imageId || !image ? (
     <div
       className={`photo-fallback ${className}`}
       role="img"
       aria-label={alt ?? 'Фото места пока нет'}
     >
-      <span>{image ? 'elsewhere' : alt}</span>
+      <span>{alt ?? image?.alt}</span>
       <small>{image ? 'Фотография недоступна' : 'Фото этого места пока нет'}</small>
     </div>
   ) : (
     <img
       className={className}
       src={assetUrl(image.small)}
-      srcSet={`${assetUrl(image.small)} 640w, ${assetUrl(image.src)} 1280w`}
+      srcSet={
+        image.small === image.src
+          ? undefined
+          : `${assetUrl(image.small)} 640w, ${assetUrl(image.src)} 1280w`
+      }
       sizes={priority ? '100vw' : '(max-width: 600px) 100vw, (max-width: 1000px) 50vw, 33vw'}
       alt={alt ?? image.alt}
       loading={priority ? 'eager' : 'lazy'}
@@ -36,7 +40,7 @@ export default function Photo({
       decoding="async"
       width="1280"
       height="853"
-      onError={() => setFailed(true)}
+      onError={() => setFailedId(imageId)}
     />
   )
 }

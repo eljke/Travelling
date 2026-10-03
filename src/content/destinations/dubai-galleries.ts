@@ -16,13 +16,19 @@ export const placePhotos: Record<string, { imageId?: string; note?: string }> = 
     imageId: 'burj-arab-interior',
     note: 'Интерьер Burj Al Arab, 2007 год. Это архивное фото, а не подтверждение нынешнего маршрута экскурсии.',
   },
-  'difc-gate-avenue': {},
-  terra: {},
-  'palm-west-beach': {},
-  'ja-watersports': {},
-  'legoland-waterpark': {},
+  'difc-gate-avenue': {
+    imageId: 'difc-gate',
+    note: 'The Gate Building — архитектура района DIFC, фото с сайта Gensler.',
+  },
+  terra: { imageId: 'terra-official' },
+  'palm-west-beach': { imageId: 'west-beach-official' },
+  'ja-watersports': { imageId: 'ja-water-official' },
+  'legoland-waterpark': { imageId: 'legoland-water-official' },
   'sky-views': {},
-  'lost-world-aquarium': {},
+  'lost-world-aquarium': {
+    imageId: 'lost-tank',
+    note: 'Аквариум Atlantis The Palm под прежним названием Lost Chambers. Архивный снимок до обновления Lost World; нынешнее оформление залов может отличаться.',
+  },
 }
 export const galleries: Record<string, { imageId: string; caption: string }[]> = {
   'outlet-village': [
@@ -55,11 +61,25 @@ export const galleries: Record<string, { imageId: string; caption: string }[]> =
     },
   ],
   'palm-jumeirah': [{ imageId: 'palm-coast', caption: 'Побережье и застройка Palm Jumeirah' }],
-  'dubai-marina': [{ imageId: 'marina-skyline', caption: 'Небоскрёбы Dubai Marina у воды' }],
+  'dubai-marina-walk': [{ imageId: 'marina-skyline', caption: 'Небоскрёбы Dubai Marina у воды' }],
   'jumeirah-mosque': [
     { imageId: 'mosque-courtyard', caption: 'Фасад мечети Джумейра и площадь перед ней' },
   ],
   'madinat-jumeirah': [
     { imageId: 'madinat-canals', caption: 'Лодка на каналах Madinat Jumeirah — архивный снимок' },
+    {
+      imageId: 'madinat-bridge',
+      caption: 'Каналы, мост и Burj Al Arab на горизонте — архивный снимок',
+    },
+    {
+      imageId: 'madinat-boat',
+      caption: 'Причал лодок среди арабской архитектуры — архивный снимок',
+    },
+  ],
+  'lost-world-aquarium': [
+    {
+      imageId: 'lost-jellyfish',
+      caption: 'Медузы в Atlantis The Palm — архивный снимок Lost Chambers',
+    },
   ],
 }

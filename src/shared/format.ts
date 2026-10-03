@@ -62,5 +62,6 @@ export function formatCoordinates(point: Coordinates) {
   return `${point.lat.toFixed(5)}, ${point.lng.toFixed(5)}`
 }
 export function assetUrl(path: string) {
+  if (path.startsWith('https://')) return path
   return `${import.meta.env.BASE_URL}${path}`
 }

@@ -16,6 +16,10 @@ from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[1]
 QUERIES = {
+    'lost-tank': 'Аквариум Lost Chambers в Atlantis The Palm до обновления — архивный снимок',
+    'lost-jellyfish': 'Медузы в аквариуме Atlantis The Palm — архивный снимок',
+    'madinat-bridge': 'Каналы Madinat Jumeirah и мост — архивный снимок',
+    'madinat-boat': 'Причал и лодки Madinat Jumeirah — архивный снимок',
     'outlet-mall': 'Интерьер Dubai Outlet Mall, архивный снимок 2010 года',
     'outlet-village': 'The Outlet Village в Дубае, архивный снимок',
     'outlet-village-roof': 'Архитектура крыши The Outlet Village в Дубае',
@@ -79,6 +83,10 @@ QUERIES = {
     'hatta': 'Hatta dam',
 }
 SELECTED_FILES = {
+    'lost-tank': 'The Lost Chambers - panoramio (2).jpg',
+    'lost-jellyfish': 'The Lost Chambers - panoramio (3).jpg',
+    'madinat-bridge': 'Madinat Jumeirah-Dubai3303.JPG',
+    'madinat-boat': 'Madinat Jumeirah-Dubai3315.JPG',
     'outlet-mall': 'Mezzah.jpg',
     'outlet-village': 'Traditional ?.jpg',
     'outlet-village-roof': 'Old roof !.jpg',

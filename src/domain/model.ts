@@ -84,9 +84,22 @@ export const priceSchema = z
     if (value.kind === 'unknown' && value.amount !== undefined)
       ctx.addIssue({ code: 'custom', message: 'Unknown prices cannot contain an amount' })
   })
+const photographUrl = z.union([
+  z.string().regex(/^images\/[a-z0-9-]+\.webp$/),
+  url.refine((value) =>
+    [
+      'images.ctfassets.net',
+      'cdn.prod.website-files.com',
+      'static1.gensler.com',
+      'jaweb2019cdn.azureedge.net',
+      'www-addresshotels-com.azureedge.net',
+      'www.legoland.com',
+    ].includes(new URL(value).hostname),
+  ),
+])
 export const imageSchema = z.object({
-  src: z.string().regex(/^images\/[a-z0-9-]+\.webp$/),
-  small: z.string().regex(/^images\/[a-z0-9-]+\.webp$/),
+  src: photographUrl,
+  small: photographUrl,
   alt: z.string(),
   author: z.string(),
   license: z.string(),

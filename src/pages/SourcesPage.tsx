@@ -112,9 +112,9 @@ export default function SourcesPage() {
       <section>
         <h2>Фотографии и лицензии.</h2>
         <p className="section-note">
-          Локальные WebP — уменьшенные версии фотографий Wikimedia Commons. Авторство и лицензия
-          сохранены для каждого файла. Для объектов без подходящего фото использован подписанный
-          общий вид направления.
+          Свободные фотографии Wikimedia Commons хранятся на сайте в уменьшенном формате WebP.
+          Другие снимки загружаются с официальных сайтов и принадлежат указанным правообладателям.
+          Источник и условия использования доступны для каждого фото.
         </p>
         <ul className="source-list">
           {usedImages.map((id) => {
@@ -130,7 +130,7 @@ export default function SourcesPage() {
                   <a href={image.licenseUrl} target="_blank" rel="noreferrer">
                     {image.license}
                   </a>{' '}
-                  · WebP, изменение размера
+                  · {image.adaptation}
                 </small>
               </li>
             )
