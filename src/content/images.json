@@ -515,5 +515,93 @@
     "sourceUrl": "https://commons.wikimedia.org/wiki/File:Madinat_Jumeirah_dhow_(3050971546).jpg",
     "checkedAt": "2026-10-03",
     "adaptation": "Resized and converted to WebP"
+  },
+  "miracle": {
+    "src": "images/miracle-1280.webp",
+    "small": "images/miracle-640.webp",
+    "alt": "Цветочные композиции Dubai Miracle Garden, архивный снимок",
+    "author": "Balou46",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:VAE-dubai-miracle-03.jpg",
+    "checkedAt": "2026-10-03",
+    "adaptation": "Resized and converted to WebP"
+  },
+  "butterfly": {
+    "src": "images/butterfly-1280.webp",
+    "small": "images/butterfly-640.webp",
+    "alt": "Dubai Butterfly Garden, архивный снимок",
+    "author": "Ginevrajocosa88",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Dubai_Butterfly_Garden.jpg",
+    "checkedAt": "2026-10-03",
+    "adaptation": "Resized and converted to WebP"
+  },
+  "moe": {
+    "src": "images/moe-1280.webp",
+    "small": "images/moe-640.webp",
+    "alt": "Mall of the Emirates",
+    "author": "Ank Kumar",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Mall_of_the_Emirates,_Dubai_(Ank_Kumar)_01.jpg",
+    "checkedAt": "2026-10-03",
+    "adaptation": "Resized and converted to WebP"
+  },
+  "ibn-battuta": {
+    "src": "images/ibn-battuta-1280.webp",
+    "small": "images/ibn-battuta-640.webp",
+    "alt": "Персидский двор Ibn Battuta Mall",
+    "author": "Shahroozporia",
+    "license": "CC BY-SA 3.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Ibn_Battuta_Mall_Persian_Court.JPG",
+    "checkedAt": "2026-10-03",
+    "adaptation": "Resized and converted to WebP"
+  },
+  "marina-mall": {
+    "src": "images/marina-mall-1280.webp",
+    "small": "images/marina-mall-640.webp",
+    "alt": "Интерьер Dubai Marina Mall",
+    "author": "Jpbowen",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Dubai_Marina_Mall_interior_view,_Dubai.jpg",
+    "checkedAt": "2026-10-03",
+    "adaptation": "Resized and converted to WebP"
+  },
+  "festival-mall": {
+    "src": "images/festival-mall-1280.webp",
+    "small": "images/festival-mall-640.webp",
+    "alt": "Dubai Festival City Mall",
+    "author": "Ziank-photography",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Dubai_Festival_City_Mall_-_Afternoon.jpg",
+    "checkedAt": "2026-10-03",
+    "adaptation": "Resized and converted to WebP"
+  },
+  "hills-mall": {
+    "src": "images/hills-mall-1280.webp",
+    "small": "images/hills-mall-640.webp",
+    "alt": "Dubai Hills Mall",
+    "author": "Alaaeldahshan",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Dubai_Hills_Mall_Arcade.jpg",
+    "checkedAt": "2026-10-03",
+    "adaptation": "Resized and converted to WebP"
+  },
+  "ski": {
+    "src": "images/ski-1280.webp",
+    "small": "images/ski-640.webp",
+    "alt": "Снежный склон Ski Dubai, архивный снимок",
+    "author": "Banku",
+    "license": "CC BY-SA 3.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Indoor_Ski_in_Dubai.JPG",
+    "checkedAt": "2026-10-03",
+    "adaptation": "Resized and converted to WebP"
   }
 }

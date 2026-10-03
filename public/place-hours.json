@@ -2,6 +2,22 @@
   "version": 1,
   "places": [
     {
+      "placeId": "dubai-the-view-at-the-palm",
+      "text": "Ежедневно 09:00–20:00 по времени Дубая. В праздники и особые даты расписание может меняться.",
+      "checkedAt": "2026-10-03",
+      "sourceUrl": "https://www.theviewpalm.ae/en",
+      "schedule": { "opens": "09:00", "closes": "20:00", "closedWeekdays": [] },
+      "closedWeekdays": []
+    },
+    {
+      "placeId": "dubai-jumeirah-mosque",
+      "text": "Публичные визиты: суббота–четверг, сеансы в 10:00 и 14:00. Регистрация за 30 минут; в пятницу закрыто.",
+      "checkedAt": "2026-10-03",
+      "sourceUrl": "https://www.jumeirahmosque.ae/mosque-visit-public/",
+      "sessions": ["10:00", "14:00"],
+      "closedWeekdays": [5]
+    },
+    {
       "placeId": "dubai-dubai-frame",
       "text": "Ежедневно 08:00–21:00 по времени Дубая. В праздники и особые даты расписание может меняться.",
       "checkedAt": "2026-10-03",

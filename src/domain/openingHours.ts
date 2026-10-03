@@ -17,6 +17,7 @@ export const hoursFeedSchema = z.object({
         checkedAt: z.iso.date(),
         sourceUrl: z.url().refine((url) => url.startsWith('https://')),
         schedule: scheduleSchema.optional(),
+        sessions: z.array(time).min(1).optional(),
         closedWeekdays: z.array(z.number().int().min(0).max(6)).default([]),
       }),
     )
@@ -85,6 +86,7 @@ export function parseOfficialHours(
       ...base,
       text: `Публичные визиты: суббота–четверг, сеансы в ${first} и ${second}. Регистрация за 30 минут; в пятницу закрыто.`,
       closedWeekdays: [5],
+      sessions: [first, second],
     }
   }
   const schedule = scheduleSchema.parse({ opens: first, closes: second })
@@ -99,6 +101,7 @@ export function parseOfficialHours(
 
 export function closedOnDate(place: Place, date: string): boolean {
   return (
+    Boolean(place.availability.opensOn && date < place.availability.opensOn) ||
     place.availability.status === 'temporarily-closed' ||
     (place.openingHours.closedWeekdays ?? []).includes(new Date(`${date}T12:00:00Z`).getUTCDay())
   )

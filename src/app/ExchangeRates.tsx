@@ -118,13 +118,16 @@ export function useDestinationBundle(id: string) {
                 checkedAt: update.checkedAt,
                 sourceIds: [`hours-${place.id}`],
                 schedule: update.schedule,
+                sessions: update.sessions,
                 closedWeekdays: update.closedWeekdays,
               },
             }
           : place
       }),
       sources: [
-        ...original.sources,
+        ...original.sources.filter(
+          (source) => !updates.some((update) => source.id === `hours-${update.placeId}`),
+        ),
         ...updates.map((update) => ({
           id: `hours-${update.placeId}`,
           type: 'official' as const,

@@ -251,6 +251,19 @@
   }
 }
 @media (max-width: 600px) {
+  .site-header .header-inner {
+    flex-wrap: wrap;
+    gap: 12px;
+    padding-block: 12px;
+  }
+  .site-header .header-inner nav {
+    order: 3;
+    flex-basis: 100%;
+    justify-content: space-between;
+  }
+  .site-header .header-actions {
+    margin-left: auto;
+  }
   .album-upload form,
   .album-filters,
   .album-grid {

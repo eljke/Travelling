@@ -24,6 +24,7 @@ export const categories = [
   'nature',
   'food-view',
   'hidden-gem',
+  'shopping',
 ] as const
 export const sourceSchema = z.object({
   id,
@@ -53,6 +54,18 @@ export const priceSchema = z
     currency: z.string().length(3),
     note: z.string(),
     variants: z.array(variantSchema).default([]),
+    childPrices: z
+      .array(
+        z
+          .object({
+            minAge: z.number().int().min(0).max(17),
+            maxAge: z.number().int().min(0).max(17),
+            amount: z.number().nonnegative(),
+            sourceIds: references,
+          })
+          .refine((price) => price.minAge <= price.maxAge),
+      )
+      .optional(),
     checkedAt: date,
     sourceIds: references,
   })
@@ -106,9 +119,14 @@ export const placeSchema = z.object({
     checkedAt: date,
     sourceIds: references,
     schedule: scheduleSchema.optional(),
+    sessions: z
+      .array(z.string().regex(/^(?:[01]\d|2[0-3]):[0-5]\d$/))
+      .min(1)
+      .optional(),
     closedWeekdays: z.array(z.number().int().min(0).max(6)).optional(),
   }),
   availability: z.object({
+    opensOn: date.optional(),
     status: z.enum(['open', 'temporarily-closed', 'check-dates']),
     note: z.string(),
     checkedAt: date,
@@ -132,6 +150,13 @@ export const placeSchema = z.object({
       tips: z.array(z.string()),
       consensus: z.string(),
       sampleNote: z.string(),
+      coverage: z
+        .object({
+          period: z.string(),
+          languages: z.array(z.string()).min(1),
+          latestReviewAt: date.optional(),
+        })
+        .optional(),
       sourceIds: references,
       checkedAt: date,
     })

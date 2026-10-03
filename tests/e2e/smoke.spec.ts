@@ -47,12 +47,12 @@ test('shares filters and keeps them on refresh', async ({ page, isMobile }) => {
   await page.goto('/#/dubai')
   if (isMobile) await page.locator('.filter-details > summary').click()
   await page.getByRole('combobox', { name: 'Район', exact: true }).selectOption('jebel-ali')
-  await expect(page.locator('.place-card')).toHaveCount(6)
+  await expect(page.locator('.place-card')).toHaveCount(7)
   await expect(page).toHaveURL(/area=jebel-ali/)
   await page.reload()
-  await expect(page.locator('.place-card')).toHaveCount(6)
+  await expect(page.locator('.place-card')).toHaveCount(7)
   await page.getByRole('searchbox', { name: 'Поиск мест' }).fill('LEGO')
-  await expect(page.locator('.place-card')).toHaveCount(2)
+  await expect(page.locator('.place-card')).toHaveCount(3)
 })
 test('saves favorites across reloads', async ({ page }) => {
   await page.goto('/#/dubai')
@@ -84,7 +84,7 @@ test('loads a real map and selects a place', async ({ page }) => {
   await expect(page.locator('.maplibregl-canvas')).toBeVisible()
   await expect(page.locator('.map-popup')).toContainText('Бурдж-Халифа')
   await page.getByRole('searchbox', { name: 'Поиск мест' }).fill('LEGOLAND')
-  await expect(page.locator('.place-card')).toHaveCount(2)
+  await expect(page.locator('.place-card')).toHaveCount(3)
   await page.getByRole('button', { name: 'На карте: LEGOLAND Dubai', exact: true }).click()
   await expect(page.locator('.map-popup')).toContainText('LEGOLAND Dubai')
 })
@@ -92,7 +92,7 @@ test('degrades gracefully when map requests fail', async ({ page }) => {
   await page.route('https://tiles.openfreemap.org/**', (route) => route.abort())
   await page.goto('/#/dubai/map')
   await expect(page.getByText('Карта пока недоступна')).toBeVisible({ timeout: 25000 })
-  await expect(page.locator('.place-card')).toHaveCount(42)
+  await expect(page.locator('.place-card')).toHaveCount(53)
 })
 test('handles empty results and unavailable storage', async ({ page }) => {
   await page.addInitScript(() => {

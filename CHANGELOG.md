@@ -4,6 +4,20 @@
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-10-03
+
+### Added
+
+- Одиннадцать новых мест: сады Miracle Garden и Butterfly Garden, Ski Dubai, Global Village и торговые центры.
+- Отдельный раздел с восемью торговыми центрами, поиском и картой.
+- Восемь новых фотографий мест с авторами и лицензиями.
+- Сезонные даты, числовой тариф Ski Dubai и детские цены для расчёта поездки.
+
+### Changed
+
+- Опубликованные часы пяти мест доступны сразу и сохраняются при недоступности официального сайта.
+- Визиты в мечеть учитывают сеансы и закрытие по пятницам.
+
 ## [1.1.0] - 2026-10-03
 
 ### Added
@@ -26,6 +40,7 @@
 
 - Доступность элементов управления, читаемость кнопок и устойчивость загрузки.
 
-[Unreleased]: https://github.com/eljke/Travelling/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/eljke/Travelling/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/eljke/Travelling/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/eljke/Travelling/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/eljke/Travelling/tree/v1.0.0

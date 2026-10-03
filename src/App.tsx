@@ -96,6 +96,18 @@ function Shell() {
             >
               План
             </Link>
+            <Link
+              className={location.pathname.endsWith('/shopping') ? 'active' : ''}
+              to={`${destinationPath}/shopping`}
+            >
+              ТЦ
+            </Link>
+            <Link
+              className={location.pathname.endsWith('/photos') ? 'active' : ''}
+              to={`${destinationPath}/photos`}
+            >
+              Фото
+            </Link>
           </nav>
           <div className="header-actions">
             <Link
@@ -158,6 +170,7 @@ function Shell() {
           <Route path="/" element={<HomePage />} />
           <Route path="/:destinationId" element={<DestinationPage />} />
           <Route path="/:destinationId/map" element={<DestinationPage mapMode />} />
+          <Route path="/:destinationId/shopping" element={<DestinationPage shoppingMode />} />
           <Route
             path="/:destinationId/place/:slug"
             element={<PlacePage key={location.pathname} />}

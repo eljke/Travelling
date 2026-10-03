@@ -16,6 +16,14 @@ from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[1]
 QUERIES = {
+    'miracle': 'Цветочные композиции Dubai Miracle Garden, архивный снимок',
+    'butterfly': 'Dubai Butterfly Garden, архивный снимок',
+    'moe': 'Mall of the Emirates',
+    'ibn-battuta': 'Персидский двор Ibn Battuta Mall',
+    'marina-mall': 'Интерьер Dubai Marina Mall',
+    'festival-mall': 'Dubai Festival City Mall',
+    'hills-mall': 'Dubai Hills Mall',
+    'ski': 'Снежный склон Ski Dubai, архивный снимок',
     'burj-deck': 'Вид со смотровой площадки Бурдж-Халифы, архивный снимок',
     'burj-city': 'Панорама Дубая со смотровой площадки Бурдж-Халифы, архивный снимок',
     'fountain-show': 'Вечернее шоу фонтанов Дубая, архивный снимок',
@@ -65,6 +73,14 @@ QUERIES = {
     'hatta': 'Hatta dam',
 }
 SELECTED_FILES = {
+    'miracle': 'VAE-dubai-miracle-03.jpg',
+    'butterfly': 'Dubai Butterfly Garden.jpg',
+    'moe': 'Mall of the Emirates, Dubai (Ank Kumar) 01.jpg',
+    'ibn-battuta': 'Ibn Battuta Mall Persian Court.JPG',
+    'marina-mall': 'Dubai Marina Mall interior view, Dubai.jpg',
+    'festival-mall': 'Dubai Festival City Mall - Afternoon.jpg',
+    'hills-mall': 'Dubai Hills Mall Arcade.jpg',
+    'ski': 'Indoor Ski in Dubai.JPG',
     'burj-deck': 'At The Top Burj Khalifa Dubai (157940823).jpeg',
     'burj-city': 'Dubai- At The Top Burj Khalifa - 140515-2193-jikatu (15100351735).jpg',
     'fountain-show': 'Dubai fountain show.jpg',

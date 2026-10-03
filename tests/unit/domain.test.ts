@@ -112,7 +112,7 @@ describe('catalog', () => {
         (p) => p.slug === 'burj-khalifa',
       ),
     ).toBe(true)
-    expect(filterPlaces(dubai, { ...defaultFilters, q: 'Джебель-Али' }, []).length).toBe(6)
+    expect(filterPlaces(dubai, { ...defaultFilters, q: 'Джебель-Али' }, []).length).toBe(7)
     expect(
       filterPlaces(dubai, { ...defaultFilters, q: 'террасы' }, []).some(
         (p) => p.slug === 'madinat-jumeirah',
@@ -160,7 +160,6 @@ describe('URL', () => {
 describe('content integrity', () => {
   it('validates real content and evidence references', () => {
     expect(dubai.places.length).toBeGreaterThanOrEqual(30)
-    expect(dubai.places.length).toBeLessThanOrEqual(45)
     expect(destinationSchema.safeParse(dubai).success).toBe(true)
     const copy = structuredClone(dubai)
     copy.places[0].pricing.sourceIds = ['missing-source']

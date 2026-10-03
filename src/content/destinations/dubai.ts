@@ -1,6 +1,9 @@
 import { ticketLinks, ticketLinksCheckedAt } from './dubai-tickets'
 import { priceUpdates } from './dubai-prices'
 import { galleries } from './dubai-galleries'
+import { extraAreas, extraPlaces } from './dubai-extra'
+import hoursSnapshot from '../../../public/place-hours.json'
+import { hoursFeedSchema } from '../../domain/openingHours'
 
 const checkedAt = '2026-10-02'
 const source = (id: string, title: string, url: string, type = 'official', note?: string) => ({
@@ -532,7 +535,12 @@ const review = (
   consensus: string,
   sampleNote = 'Качественный разбор опубликованных русскоязычных отзывов. Это субъективный опыт, а не репрезентативный рейтинг.',
 ) => ({ sourceIds, positives, negatives, tips, consensus, sampleNote, checkedAt })
-interface Seed {
+export interface Seed {
+  website?: string
+  checkedAt?: string
+  opensOn?: string
+  schedule?: { opens: string; closes: string }
+  childPrices?: { minAge: number; maxAge: number; amount: number }[]
   id: string
   name: string
   nameRu: string
@@ -601,7 +609,7 @@ const seeds: Seed[] = [
     nameRu: 'Дубай Молл',
     area: 'downtown',
     coordinates: [25.1985, 55.2796],
-    category: 'walk',
+    category: 'shopping',
     image: 'mall',
     short: 'Не только магазины: аквариум, арт-объекты и выход к фонтанам.',
     description:
@@ -1592,8 +1600,29 @@ sources.push(
     accessedAt: '2026-10-03',
   })),
 )
-const places = seeds.map((s) => {
+for (const place of extraPlaces)
+  sources.push({
+    ...source(place.source, `${place.name} • информация для посещения`, place.website!, 'official'),
+    accessedAt: '2026-10-03',
+  })
+const verifiedHours = hoursFeedSchema.parse(hoursSnapshot).places
+for (const hours of verifiedHours)
+  sources.push({
+    ...source(`hours-${hours.placeId}`, 'Официальное расписание', hours.sourceUrl, 'official'),
+    accessedAt: hours.checkedAt,
+  })
+sources.push(
+  source(
+    'miracle-season',
+    'Miracle Garden • открытие сезона 15 и тарифы',
+    'https://www.traveldailymedia.com/dubai-miracle-garden-opens-for-season-15/',
+    'other',
+    'Сообщение об открытии 8 октября 2026 и тарифах; VAT и детский возраст сверяются при бронировании.',
+  ),
+)
+const places = [...seeds, ...extraPlaces].map((s) => {
   const sourceIds = [s.source, ...(s.extraSources ?? [])]
+  const hours = verifiedHours.find((hours) => hours.placeId === `dubai-${s.id}`)
   const update = priceUpdates.find((update) => update.slug === s.id)
   const officialWebsite = update?.url ?? sources.find((v) => v.id === s.source)!.url
   const pricing = price(
@@ -1604,6 +1633,34 @@ const places = seeds.map((s) => {
         ? 'Подтверждённой числовой цены нет. Проверьте продавца на свою дату.'
         : 'Цена на дату исследования; это не гарантия доступности слота.'),
   )
+  if (s.checkedAt) pricing.checkedAt = s.checkedAt
+  const childPrices =
+    s.childPrices ??
+    (s.id === 'dubai-frame'
+      ? [
+          { minAge: 0, maxAge: 2, amount: 0 },
+          { minAge: 3, maxAge: 12, amount: 20 },
+        ]
+      : s.id === 'terra'
+        ? [{ minAge: 4, maxAge: 11, amount: 80 }]
+        : s.id === 'green-planet'
+          ? [
+              { minAge: 0, maxAge: 1, amount: 0 },
+              { minAge: 2, maxAge: 10, amount: 135 },
+              { minAge: 11, maxAge: 17, amount: 155 },
+            ]
+          : ['legoland-dubai', 'legoland-waterpark'].includes(s.id)
+            ? [
+                { minAge: 0, maxAge: 2, amount: 0 },
+                { minAge: 3, maxAge: 17, amount: 295 },
+              ]
+            : [])
+  Object.assign(pricing, {
+    childPrices: childPrices.map((child) => ({
+      ...child,
+      sourceIds: update ? [`price-${s.id}`] : pricing.sourceIds,
+    })),
+  })
   if (s.id === 'dubai-frame')
     pricing.variants = [
       { label: 'Взрослый', type: 'adult', amount: 50, sourceIds: ['frame'] },
@@ -1713,15 +1770,24 @@ const places = seeds.map((s) => {
           : 'Примерно столько стоит заложить на прогулку и возможное ожидание. Можно задержаться, если понравится.',
     },
     openingHours: {
-      text: s.hours ?? 'Расписание на выбранную дату не подтверждено. Проверьте официальный сайт.',
-      sourceIds,
-      checkedAt,
+      text:
+        hours?.text ??
+        s.hours ??
+        'Перед выездом посмотрим часы работы на сайте места — расписание на наши даты ещё нужно сверить.',
+      sourceIds: hours ? [`hours-${hours.placeId}`] : sourceIds,
+      checkedAt: hours?.checkedAt ?? s.checkedAt ?? checkedAt,
+      schedule: hours?.schedule ?? (s.schedule ? { ...s.schedule, closedWeekdays: [] } : undefined),
+      sessions: hours?.sessions,
+      closedWeekdays: hours?.closedWeekdays,
     },
     availability: {
+      opensOn: s.opensOn,
       status: s.availability ?? 'check-dates',
       note:
         s.availabilityNote ??
-        'Наличие места в каталоге не подтверждает работу или наличие билетов 6–10 октября. Проверьте условия перед поездкой.',
+        (s.opensOn
+          ? `Сезон начинается ${s.opensOn}. До этой даты место в план не ставим.`
+          : 'Перед выездом сверим часы и билеты на выбранный день.'),
       sourceIds,
       checkedAt,
     },
@@ -1733,7 +1799,7 @@ const places = seeds.map((s) => {
     bestTime: [s.best],
     transport: { text: s.transport, sourceIds },
     sourceIds,
-    updatedAt: checkedAt,
+    updatedAt: s.checkedAt ?? checkedAt,
   }
 })
 const areaRows: [string, string, string, string, number, number][] = [
@@ -1874,7 +1940,7 @@ export default {
     checkedAt,
     sourceIds: ['fx'],
   },
-  areas: areaRows.map(([id, name, nameRu, description, lat, lng]) => ({
+  areas: [...areaRows, ...extraAreas].map(([id, name, nameRu, description, lat, lng]) => ({
     id,
     name,
     nameRu,

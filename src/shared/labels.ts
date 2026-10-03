@@ -1,6 +1,7 @@
 import type { PaymentSupport, Place } from '../domain/model'
 
 export const categoryLabels: Record<Place['categories'][number], string> = {
+  shopping: 'Торговый центр',
   attraction: 'Достопримечательность',
   viewpoint: 'Смотровая',
   architecture: 'Архитектура',
@@ -23,6 +24,9 @@ export const paymentLabels: Record<PaymentSupport['status'], string> = {
   unknown: 'Приём карты РФ не подтверждён',
 }
 export const tagLabels: Record<string, string> = {
+  shopping: 'Покупки',
+  indoors: 'В помещении',
+  outdoors: 'На свежем воздухе',
   'must-see': 'Обязательно увидеть',
   sunset: 'На закате',
   evening: 'Вечером',

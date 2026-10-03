@@ -27,11 +27,20 @@ import PlaceCard from '../shared/PlaceCard'
 import LazyMap from '../features/map/LazyMap'
 import HotelBase from '../shared/HotelBase'
 
-export default function DestinationPage({ mapMode = false }: { mapMode?: boolean }) {
+export default function DestinationPage({
+  mapMode = false,
+  shoppingMode = false,
+}: {
+  mapMode?: boolean
+  shoppingMode?: boolean
+}) {
   const { destinationId = '' } = useParams()
   const bundle = useDestinationBundle(destinationId)
   const [params, setParams] = useSearchParams()
-  const filters = useMemo(() => parseFilters(params), [params])
+  const filters = useMemo(
+    () => ({ ...parseFilters(params), ...(shoppingMode ? { category: 'shopping' } : {}) }),
+    [params, shoppingMode],
+  )
   const { favorites } = usePreferences()
   const [pagination, setPagination] = useState({ query: '', limit: 12 })
   const limit = pagination.query === params.toString() ? pagination.limit : 12
@@ -122,7 +131,7 @@ export default function DestinationPage({ mapMode = false }: { mapMode?: boolean
   )
   return (
     <main id="main" className={mapMode ? 'destination map-page' : 'destination'}>
-      {!mapMode && (
+      {!mapMode && !shoppingMode && (
         <>
           <section className="destination-hero container">
             <Photo
@@ -135,7 +144,7 @@ export default function DestinationPage({ mapMode = false }: { mapMode?: boolean
               <span className="hero-country">
                 {bundle.country.isoCode} <span>·</span> {bundle.country.nameRu}
               </span>
-              <span className="hero-edition">Личный путеводитель / 01</span>
+              <span className="hero-edition">Наша поездка · октябрь 2026</span>
             </div>
             <div className="hero-content">
               <span className="hero-date">{formatTrip(bundle.trip)}</span>
@@ -150,7 +159,7 @@ export default function DestinationPage({ mapMode = false }: { mapMode?: boolean
                 <ArrowUpRight size={18} />
               </Link>
             </div>
-            <span className="hero-caption">Меньше планов. Больше открытий.</span>
+            <span className="hero-caption">Пять дней на город. Остальное — на отдых.</span>
           </section>
           <div className="trip-facts container">
             <div>
@@ -181,9 +190,21 @@ export default function DestinationPage({ mapMode = false }: { mapMode?: boolean
         {!mapMode && <HotelBase bundle={bundle} />}
         <div className="catalog-heading">
           <div>
-            <span className="eyebrow">ВАШ ГОРОД. ВАШ ТЕМП.</span>
-            <h2>{mapMode ? 'Большая карта открытий.' : `Места: ${bundle.destination.nameRu}.`}</h2>
-            {!mapMode && <p>Громкие символы и тихие находки. Выберите то, что интересно вам.</p>}
+            <span className="eyebrow">ВЫБИРАЕМ, КУДА ПОЙТИ ВМЕСТЕ</span>
+            <h2>
+              {shoppingMode
+                ? 'Торговые центры.'
+                : mapMode
+                  ? 'Места на карте.'
+                  : `Места: ${bundle.destination.nameRu}.`}
+            </h2>
+            {!mapMode && (
+              <p>
+                {shoppingMode
+                  ? 'За покупками, на обед или просто в прохладу. Сравним расположение и объединим с прогулкой рядом.'
+                  : 'Что посмотреть, где погулять и чем заняться всей компанией.'}
+              </p>
+            )}
           </div>
           <Link to={route} className="button secondary view-toggle">
             {mapMode ? <LayoutGrid size={17} /> : <Map size={17} />}
@@ -255,6 +276,7 @@ export default function DestinationPage({ mapMode = false }: { mapMode?: boolean
                 <span>Тип места</span>
                 <select
                   aria-label="Тип места"
+                  disabled={shoppingMode}
                   value={filters.category}
                   onChange={(e) => setFilter('category', e.target.value)}
                 >
@@ -377,7 +399,7 @@ export default function DestinationPage({ mapMode = false }: { mapMode?: boolean
                   e.target.value === 'nearby' ? findLocation() : setFilter('sort', e.target.value)
                 }
               >
-                <option value="editorial">Сначала знакомые места</option>
+                <option value="editorial">В порядке каталога</option>
                 <option value="price">Сначала дешевле</option>
                 <option value="nearby">Ближе ко мне</option>
                 {bundle.trip.accommodation && <option value="hotel">Ближе к отелю</option>}
@@ -444,7 +466,7 @@ export default function DestinationPage({ mapMode = false }: { mapMode?: boolean
           </div>
         )}
       </section>
-      {!mapMode && (
+      {!mapMode && !shoppingMode && (
         <>
           <section className="area-feature container">
             <div>
