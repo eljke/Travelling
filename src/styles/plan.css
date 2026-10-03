@@ -5,6 +5,28 @@
   border-radius: var(--radius-media);
   background: var(--surface);
 }
+.day-download {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px 24px;
+  padding: 20px;
+  margin-block: 24px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-media);
+  background: var(--surface);
+}
+.day-download > div {
+  flex: 1 1 260px;
+}
+.day-download h3 {
+  margin: 0 0 8px;
+}
+.day-download > [role='status'] {
+  flex-basis: 100%;
+  margin: 0;
+}
 .departure-checklist {
   margin-block: 24px;
   padding: 20px;

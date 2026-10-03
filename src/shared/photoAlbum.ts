@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { asDataUrl } from './download'
 
 const photoMetadata = z.object({
   id: z.string().uuid(),
@@ -94,14 +95,6 @@ export async function preparePhoto(file: Blob): Promise<Blob> {
   } finally {
     bitmap.close()
   }
-}
-function asDataUrl(blob: Blob): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader()
-    reader.onload = () => resolve(reader.result as string)
-    reader.onerror = () => reject(reader.error)
-    reader.readAsDataURL(blob)
-  })
 }
 export async function exportAlbum(photos: AlbumPhoto[]): Promise<Blob> {
   const rows = []
