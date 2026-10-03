@@ -2,11 +2,35 @@
   "version": 1,
   "places": [
     {
+      "placeId": "dubai-dubai-fountain",
+      "text": "Вечерние шоу ежедневно каждые 30 минут с 18:00 до 23:00, по времени Дубая. Дневные показы: сб–чт 13:00 и 13:30, пт 14:00 и 14:30. Перед выездом сверим расписание.",
+      "checkedAt": "2026-10-03",
+      "sourceUrl": "https://www.thedubaimall.com/en/entertain-detail/dubai-fountain",
+      "sessions": [
+        "18:00",
+        "18:30",
+        "19:00",
+        "19:30",
+        "20:00",
+        "20:30",
+        "21:00",
+        "21:30",
+        "22:00",
+        "22:30",
+        "23:00"
+      ],
+      "closedWeekdays": []
+    },
+    {
       "placeId": "dubai-the-view-at-the-palm",
       "text": "Ежедневно 09:00–20:00 по времени Дубая. В праздники и особые даты расписание может меняться.",
       "checkedAt": "2026-10-03",
       "sourceUrl": "https://www.theviewpalm.ae/en",
-      "schedule": { "opens": "09:00", "closes": "20:00", "closedWeekdays": [] },
+      "schedule": {
+        "opens": "09:00",
+        "closes": "20:00",
+        "closedWeekdays": []
+      },
       "closedWeekdays": []
     },
     {

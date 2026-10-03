@@ -27,6 +27,11 @@ export type HoursFeed = z.infer<typeof hoursFeedSchema>
 
 export const hoursSources = [
   {
+    placeId: 'dubai-dubai-fountain',
+    url: 'https://www.thedubaimall.com/en/entertain-detail/dubai-fountain',
+    pattern: 'Evening Shows',
+  },
+  {
     placeId: 'dubai-the-view-at-the-palm',
     url: 'https://www.theviewpalm.ae/en',
     pattern: 'Open Daily:',
@@ -79,6 +84,23 @@ export function parseOfficialHours(
   const first = convert(times[0])
   const second = convert(times[1])
   const base = { placeId: source.placeId, checkedAt, sourceUrl: source.url }
+  if (source.placeId === 'dubai-dubai-fountain') {
+    if (!/daily/i.test(section) || !/every\s+30\s+minutes/i.test(section))
+      throw new Error('Fountain interval changed')
+    const minutes = (value: string) => Number(value.slice(0, 2)) * 60 + Number(value.slice(3))
+    const start = minutes(first)
+    const end = minutes(second)
+    if (end <= start || (end - start) % 30) throw new Error('Ambiguous fountain sessions')
+    return {
+      ...base,
+      text: `Вечерние шоу ежедневно каждые 30 минут с ${first} до ${second}, по времени Дубая. Дневные показы: сб–чт 13:00 и 13:30, пт 14:00 и 14:30. Перед выездом сверим расписание.`,
+      sessions: Array.from({ length: (end - start) / 30 + 1 }, (_, index) => {
+        const minute = start + index * 30
+        return `${String(Math.floor(minute / 60)).padStart(2, '0')}:${String(minute % 60).padStart(2, '0')}`
+      }),
+      closedWeekdays: [],
+    }
+  }
   if (source.placeId === 'dubai-jumeirah-mosque') {
     if (!/Saturday to Thursday/i.test(section) || !/Closed on Fridays/i.test(section))
       throw new Error('Mosque opening days changed')

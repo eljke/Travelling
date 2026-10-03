@@ -297,6 +297,7 @@ export function evaluateRoute(
     const slot = fixedTime ? toMinutes(fixedTime) : undefined
     const schedule = place.openingHours.schedule
     const sessions = place.openingHours.sessions
+    const fountain = place.slug === 'dubai-fountain'
     let queueMinutes = settings.waits[place.id] ?? estimateQueue(place, date, slot ?? time)
     let visitMinutes =
       settings.visits[place.id] ??
@@ -307,7 +308,7 @@ export function evaluateRoute(
           : Math.round((place.duration.minMinutes + place.duration.maxMinutes) / 2))
     const arriveBy = Math.min(
       slot === undefined ? Infinity : slot - queueMinutes,
-      sessions ? (slot ?? toMinutes(sessions.at(-1)!)) - 30 : Infinity,
+      sessions ? (slot ?? toMinutes(sessions.at(-1)!)) - (fountain ? queueMinutes : 30) : Infinity,
       schedule && schedule.opens < schedule.closes
         ? toMinutes(schedule.closes) - visitMinutes - queueMinutes
         : Infinity,
@@ -342,13 +343,25 @@ export function evaluateRoute(
     const arrival = time
     const session = sessions
       ?.map(toMinutes)
-      .find((minute) => minute >= time + Math.max(30, queueMinutes))
-    if (session !== undefined) time = session - queueMinutes
+      .find(
+        (minute) =>
+          minute >=
+          time +
+            Math.max(
+              fountain ? 0 : 30,
+              settings.waits[place.id] ?? estimateQueue(place, date, minute),
+            ),
+      )
+    if (session !== undefined) {
+      queueMinutes = settings.waits[place.id] ?? estimateQueue(place, date, session)
+      time = session - queueMinutes
+    }
     if (schedule && schedule.opens < schedule.closes)
       time = Math.max(time, toMinutes(schedule.opens))
-    if (place.slug === 'dubai-fountain') time = Math.max(time, 18 * 60)
+    if (fountain && !sessions) time = Math.max(time, 18 * 60)
     const queueStart = time
-    queueMinutes = settings.waits[place.id] ?? estimateQueue(place, date, queueStart)
+    if (session === undefined)
+      queueMinutes = settings.waits[place.id] ?? estimateQueue(place, date, queueStart)
     time += queueMinutes
     const missedSlot = slot !== undefined && time > slot
     if (slot !== undefined) time = Math.max(time, slot)
@@ -368,7 +381,20 @@ export function evaluateRoute(
     if (sessions && slot !== undefined && !sessions.includes(fixedTime!))
       warnings.push('Вход по билету не помещается в опубликованные сеансы. Проверьте время.')
     if (sessions && session === undefined)
-      warnings.push('Посещение не помещается в опубликованные сеансы с регистрацией за 30 минут.')
+      warnings.push(
+        fountain
+          ? 'Просмотр не помещается в вечерние показы с запасом на место у воды.'
+          : 'Посещение не помещается в опубликованные сеансы с регистрацией за 30 минут.',
+      )
+    if (
+      fountain &&
+      sessions &&
+      visitStart + Math.max(0, Math.floor((visitMinutes - 15) / 30)) * 30 >
+        toMinutes(sessions.at(-1)!)
+    )
+      warnings.push(
+        'Запланированные показы не помещаются в вечернее расписание. Сократите просмотр или приезжайте раньше.',
+      )
     if (schedule && schedule.opens < schedule.closes && time > toMinutes(schedule.closes))
       warnings.push('Посещение не помещается в опубликованные часы работы.')
     if (!schedule && !sessions && !fixedTime) warnings.push(hoursReminder)

@@ -170,8 +170,32 @@ describe('trip overview', () => {
   })
 })
 describe('official hours', () => {
+  it('parses evening fountain shows and rejects changed intervals', () => {
+    const source = hoursSources.find((source) => source.placeId === 'dubai-dubai-fountain')!
+    const html = '<h3>Evening Shows</h3><p>Daily, every 30 minutes from 6:00 PM to 11:00 PM</p>'
+    const result = parseOfficialHours(html, source, '2026-10-03')
+    expect(result.sessions).toEqual([
+      '18:00',
+      '18:30',
+      '19:00',
+      '19:30',
+      '20:00',
+      '20:30',
+      '21:00',
+      '21:30',
+      '22:00',
+      '22:30',
+      '23:00',
+    ])
+    expect(() =>
+      parseOfficialHours(html.replace('30 minutes', '20 minutes'), source, '2026-10-03'),
+    ).toThrow()
+    expect(() =>
+      parseOfficialHours(html.replace('11:00 PM', '5:00 PM'), source, '2026-10-03'),
+    ).toThrow()
+  })
   it('parses a real-shaped schedule and rejects changed pages', () => {
-    const source = hoursSources[1]
+    const source = hoursSources.find((source) => source.placeId === 'dubai-dubai-frame')!
     const result = parseOfficialHours(
       '<p>Opening hours from <b>8 AM</b> to 9 PM</p>',
       source,

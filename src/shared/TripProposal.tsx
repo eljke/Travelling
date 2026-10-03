@@ -45,9 +45,9 @@ export default function TripProposal({
     <details className="trip-proposal" open={expanded || undefined}>
       <summary>Наш minmax · 6–10 октября · хорошие впечатления без лишних поездок</summary>
       <p>
-        Все обязательные места, Рамка и два сада. На Dubai Mall — шесть часов. Близкие прогулки
-        вместе; дорогие дополнения выбираем по интересу. Выезды с 10:00, возвращение до 22:00 с
-        запасом, очередями и перерывом на еду.
+        Все обязательные места, Рамка и два сада. На Dubai Mall — шесть часов, на фонтаны — два шоу.
+        Близкие прогулки вместе; дорогие дополнения выбираем по интересу. Выезды с 10:00,
+        возвращение до 22:00 с запасом, очередями и перерывом на еду.
       </p>
       <aside className="arrival-idea">
         <h3>5 октября · знакомимся с JA после заезда</h3>
@@ -89,6 +89,7 @@ export default function TripProposal({
             <option value="city-walk">City Walk · прогулка вечером около часа</option>
             <option value="sky-views">Sky Views · смотровая утром, по билету</option>
             <option value="none">Только молл и фонтаны · больше свободного времени</option>
+            <option value="split">City Walk + два шоу · Sky Views отдельно 9 октября</option>
             <option value="both">City Walk + Sky Views · проверим, поместятся ли</option>
           </select>
         </label>
@@ -130,6 +131,17 @@ export default function TripProposal({
               · дорога {route.travelMinutes} мин · очередь/подготовка{' '}
               {route.stops.reduce((sum, stop) => sum + stop.queueMinutes, 0)} мин
             </p>
+            {route.stops
+              .filter((stop) => stop.place.slug === 'dubai-fountain')
+              .map((stop) => (
+                <p key={stop.place.id}>
+                  Фонтаны:{' '}
+                  <strong>
+                    {clockTime(stop.visitStart)} и {clockTime(stop.visitStart + 30)}
+                  </strong>{' '}
+                  · смотрим бесплатно с набережной.
+                </p>
+              ))}
             <p>
               {formatMoney(
                 budgets[index].cost + budgets[index].ticketCost,
@@ -141,7 +153,13 @@ export default function TripProposal({
               <p className="plan-warning">
                 Возвращение около {clockTime(route.returnAt)}, а с резервом {day.settings!.buffer}{' '}
                 мин нужно быть в отеле до {day.settings!.end}. Молл, еду и очереди не сокращаем.
-                Выберите одно дополнение или только молл с фонтанами.
+                Уберите часть дополнений или перенесите смотровую на другой день.
+                {['both', 'sky-views'].includes(downtownExtra) &&
+                  day.placeIds.includes('dubai-dubai-mall') && (
+                    <button className="text-button" onClick={() => setDowntownExtra('split')}>
+                      Перенести Sky Views на 9 октября
+                    </button>
+                  )}
               </p>
             )}
             {route.stops.some((stop) => stop.warnings.length) && (

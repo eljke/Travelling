@@ -20,6 +20,22 @@ const dubai = destinations.dubai
 const place = (slug: string) => dubai.places.find((place) => place.slug === slug)!
 const date = '2026-10-08'
 describe('day route', () => {
+  it('aligns two fountain shows after preparing at the waterfront', () => {
+    const fountain = place('dubai-fountain')
+    const route = evaluateRoute([fountain], dubai, date, defaultRouteSettings)
+    expect(route.stops[0].visitStart).toBe(toMinutes('18:00'))
+    expect(route.stops[0].queueStart).toBe(toMinutes('17:30'))
+    expect(route.stops[0].visitMinutes).toBe(45)
+    expect(route.stops[0].warnings).toEqual([])
+    const late = evaluateRoute([fountain], dubai, date, {
+      ...defaultRouteSettings,
+      start: '21:30',
+      end: '23:59',
+    })
+    expect(late.stops[0].visitStart).toBe(toMinutes('23:00'))
+    expect(late.stops[0].warnings.join(' ')).toContain('Запланированные показы не помещаются')
+    expect(late.fits).toBe(false)
+  })
   it('keeps a meal at the chosen place when stops are reordered or removed', () => {
     const places = ['dubai-mall', 'dubai-fountain', 'city-walk'].map(place)
     const settings = {
