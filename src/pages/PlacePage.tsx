@@ -213,13 +213,18 @@ export default function PlacePage() {
               <div className="queue-note">
                 <h2>Очереди и время.</h2>
                 <p>
-                  <strong>В маршрут добавляем {place.queue.minutes} мин на ожидание.</strong> На
-                  само посещение — {formatDuration(place.duration)}.
+                  <strong>
+                    Обычно закладываем {place.queue.minutes}–{place.queue.peakMinutes} мин на
+                    ожидание.
+                  </strong>{' '}
+                  На само посещение — {formatDuration(place.duration)}.
                 </p>
                 <p>{place.queue.note}</p>
                 <p className="fine-print">
                   Это наш запас для планирования, не текущая длина очереди и не обещание времени
-                  входа. В плане его можно изменить.
+                  входа. Маршрут выбирает запас по сезону, дню недели и времени прибытия; повышенный
+                  запас — в выходные или после {place.queue.peakAfter}:00. В плане можно задать своё
+                  время.
                 </p>
                 <Sources bundle={bundle} ids={place.queue.sourceIds} />
               </div>

@@ -24,6 +24,16 @@ export const routeSettingsSchema = z.object({
 export type RouteSettings = z.infer<typeof routeSettingsSchema>
 export const defaultRouteSettings: RouteSettings = routeSettingsSchema.parse({ childAge: 11 })
 export const toMinutes = (time: string) => Number(time.slice(0, 2)) * 60 + Number(time.slice(3))
+export function estimateQueue(place: Place, date: string, arrival: number) {
+  if (!place.queue) return 0
+  const visitDate = new Date(`${date}T12:00:00Z`)
+  const month = visitDate.getUTCMonth() + 1
+  const weekend = [0, 6].includes(visitDate.getUTCDay())
+  const busySeason = !place.queue.seasonal || month >= 10 || month <= 4
+  const peak = weekend || arrival >= place.queue.peakAfter * 60
+  const minutes = peak ? place.queue.peakMinutes : place.queue.minutes
+  return busySeason ? minutes : Math.ceil((minutes * 0.65) / 5) * 5
+}
 export const clockTime = (minutes: number) =>
   `${String(Math.floor(minutes / 60) % 24).padStart(2, '0')}:${String(minutes % 60).padStart(2, '0')}${minutes >= 1440 ? ' +1 день' : ''}`
 
@@ -238,7 +248,7 @@ export function evaluateRoute(
     const slot = fixedTime ? toMinutes(fixedTime) : undefined
     const schedule = place.openingHours.schedule
     const sessions = place.openingHours.sessions
-    const queueMinutes = settings.waits[place.id] ?? place.queue?.minutes ?? 0
+    let queueMinutes = settings.waits[place.id] ?? estimateQueue(place, date, slot ?? time)
     let visitMinutes =
       settings.visits[place.id] ??
       (place.areaId === 'hatta'
@@ -271,12 +281,15 @@ export function evaluateRoute(
     const departure = time
     time += leg.minutes
     const arrival = time
-    const session = sessions?.map(toMinutes).find((minute) => minute >= time + 30)
-    if (session !== undefined) time = session
+    const session = sessions
+      ?.map(toMinutes)
+      .find((minute) => minute >= time + Math.max(30, queueMinutes))
+    if (session !== undefined) time = session - queueMinutes
     if (schedule && schedule.opens < schedule.closes)
       time = Math.max(time, toMinutes(schedule.opens))
     if (place.slug === 'dubai-fountain') time = Math.max(time, 18 * 60)
     const queueStart = time
+    queueMinutes = settings.waits[place.id] ?? estimateQueue(place, date, queueStart)
     time += queueMinutes
     const missedSlot = slot !== undefined && time > slot
     if (slot !== undefined) time = Math.max(time, slot)

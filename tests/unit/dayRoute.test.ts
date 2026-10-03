@@ -8,6 +8,7 @@ import {
   optimizeDay,
   travelOptions,
   toMinutes,
+  estimateQueue,
 } from '../../src/domain/dayRoute'
 import { closedOnDate } from '../../src/domain/openingHours'
 import { createItinerary, normalizeItinerary } from '../../src/domain/itinerary'
@@ -18,6 +19,21 @@ const dubai = destinations.dubai
 const place = (slug: string) => dubai.places.find((place) => place.slug === slug)!
 const date = '2026-10-08'
 describe('day route', () => {
+  it('adjusts queues by season and arrival while keeping manual overrides', () => {
+    const frame = place('dubai-frame')
+    expect(dubai.places.filter((place) => place.queue).length).toBeGreaterThanOrEqual(20)
+    expect(estimateQueue(frame, '2026-10-08', 11 * 60)).toBe(45)
+    expect(estimateQueue(frame, '2026-10-08', 17 * 60)).toBe(90)
+    expect(estimateQueue(frame, '2026-10-10', 11 * 60)).toBe(90)
+    expect(estimateQueue(frame, '2026-07-08', 11 * 60)).toBeLessThan(45)
+    const route = evaluateRoute([frame], dubai, '2026-10-10', {
+      ...defaultRouteSettings,
+      waits: { [frame.id]: 15 },
+    })
+    expect(route.stops[0].queueMinutes).toBe(15)
+    const automatic = evaluateRoute([frame], dubai, '2026-10-10', defaultRouteSettings)
+    expect(automatic.stops[0].queueMinutes).toBe(90)
+  })
   it('counts the queue separately and keeps it before booked admission', () => {
     const frame = place('dubai-frame')
     const settings = { ...defaultRouteSettings, preference: 'fast' as const, breakMinutes: 0 }

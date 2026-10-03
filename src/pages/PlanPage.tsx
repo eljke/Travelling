@@ -39,7 +39,7 @@ import PlacePicker from '../shared/PlacePicker'
 import RateStrip from '../shared/RateStrip'
 import LazyMap from '../features/map/LazyMap'
 import DayRoutePlanner from '../shared/DayRoutePlanner'
-import { defaultRouteSettings } from '../domain/dayRoute'
+import { defaultRouteSettings, evaluateRoute } from '../domain/dayRoute'
 import { familyTicketPrice, families } from '../domain/families'
 import FamilyBudgetControl from '../shared/FamilyBudgetControl'
 import { dubaiDayIdeas } from '../content/dayIdeas'
@@ -513,7 +513,11 @@ export default function PlanPage() {
                               min="0"
                               max="240"
                               step="5"
-                              value={settings.waits[place.id] ?? place.queue?.minutes ?? 0}
+                              value={
+                                settings.waits[place.id] ??
+                                evaluateRoute(places, bundle, day.date, settings).stops[index]
+                                  .queueMinutes
+                              }
                               onChange={(event) => {
                                 const value = Number(event.target.value)
                                 if (Number.isInteger(value) && value >= 0 && value <= 240)
@@ -522,6 +526,22 @@ export default function PlanPage() {
                                   })
                               }}
                             />
+                            {place.queue && !(place.id in settings.waits) && (
+                              <small>Автоматически: сезон, выходные и время прибытия.</small>
+                            )}
+                            {place.id in settings.waits && (
+                              <button
+                                type="button"
+                                className="text-button"
+                                onClick={() => {
+                                  const waits = { ...settings.waits }
+                                  delete waits[place.id]
+                                  updateSettings({ waits })
+                                }}
+                              >
+                                Считать автоматически
+                              </button>
+                            )}
                           </label>
                         </div>
                       )}

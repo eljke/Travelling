@@ -115,6 +115,8 @@ export const placeSchema = z.object({
     .object({
       minutes: z.number().int().min(0).max(180),
       peakMinutes: z.number().int().min(0).max(240),
+      peakAfter: z.number().int().min(0).max(23).default(16),
+      seasonal: z.boolean().default(true),
       note: z.string().min(1),
       sourceIds: references,
       checkedAt: date,

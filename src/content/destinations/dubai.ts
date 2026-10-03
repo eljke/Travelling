@@ -1775,7 +1775,7 @@ const places = [...seeds, ...extraPlaces].map((s) => {
     duration: {
       minMinutes: (queues[s.id]?.minutes ?? s.minutes)[0],
       maxMinutes: (queues[s.id]?.minutes ?? s.minutes)[1],
-      note: queues[s.id]
+      note: queues[s.id]?.minutes
         ? 'Время на месте без очереди. Запас на вход и подъём указан отдельно и добавляется в маршрут.'
         : s.area === 'desert'
           ? 'Около шести часов на весь тур: дорога, программа и ужин. Время забора согласуем с оператором.'

@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test'
 
 test('keeps a separate queue buffer and offers a shorter viable day', async ({ page }) => {
   await page.goto('/#/dubai/place/dubai-frame')
-  await expect(page.locator('.queue-note')).toContainText('45 мин')
+  await expect(page.locator('.queue-note')).toContainText('45–90 мин')
   await page
     .locator('.place-story')
     .getByRole('button', { name: 'В план: Дубайская рамка', exact: true })
