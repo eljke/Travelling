@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { destinations } from '../../src/content/registry'
+import { defaultRouteSettings, evaluateRoute } from '../../src/domain/dayRoute'
 import {
   createItinerary,
   fillFromFavorites,
@@ -49,11 +50,27 @@ describe('trip plan', () => {
     const ids = slugs.map((slug) => dubai.places.find((place) => place.slug === slug)!.id)
     const empty = createItinerary(dubai)
     const plan = placeInDay(empty, ids[0], empty.days[0].date)
-    const next = fillFromFavorites(plan, dubai, ids, 480)
+    const next = fillFromFavorites(plan, dubai, ids, 720)
     expect(next.days[0].placeIds[0]).toBe(ids[0])
     expect(new Set(next.days[0].placeIds.slice(0, 3))).toEqual(new Set(ids.slice(0, 3)))
     expect(next.days.flatMap((day) => day.placeIds)).toHaveLength(4)
     expect(plan.days[0].placeIds).toEqual([ids[0]])
+  })
+  it('includes travel, opening waits and breaks in the daily limit', () => {
+    const plan = createItinerary(dubai)
+    const favorites = ['dubai-dubai-mall', 'dubai-dubai-fountain', 'dubai-motiongate']
+    const next = fillFromFavorites(plan, dubai, favorites, 360)
+    expect(next.days.flatMap((day) => day.placeIds)).not.toContain('dubai-dubai-fountain')
+    for (const day of next.days) {
+      const route = evaluateRoute(
+        day.placeIds.map((id) => dubai.places.find((place) => place.id === id)!),
+        dubai,
+        day.date,
+        day.settings ?? defaultRouteSettings,
+      )
+      expect(route.fits).toBe(true)
+    }
+    expect(plan.days.every((day) => day.placeIds.length === 0)).toBe(true)
   })
   it('keeps unknown prices out of the subtotal', () => {
     const paid = dubai.places.find((place) => place.pricing.amount === 189)!

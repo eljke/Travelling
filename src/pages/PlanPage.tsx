@@ -35,6 +35,7 @@ import {
   formatTrip,
 } from '../shared/format'
 import Photo from '../shared/Photo'
+import PlacePicker from '../shared/PlacePicker'
 import RateStrip from '../shared/RateStrip'
 import LazyMap from '../features/map/LazyMap'
 import DayRoutePlanner from '../shared/DayRoutePlanner'
@@ -46,7 +47,7 @@ export default function PlanPage() {
   const bundle = useDestinationBundle(destinationId)
   const { plans, savePlan, favorites } = usePreferences()
   const [params, setParams] = useSearchParams()
-  const [dailyMinutes, setDailyMinutes] = useState(360)
+  const [dailyMinutes, setDailyMinutes] = useState(720)
   const [message, setMessage] = useState('')
   const [shareUrl, setShareUrl] = useState('')
   const [showMap, setShowMap] = useState(false)
@@ -102,7 +103,6 @@ export default function PlanPage() {
   const pending = bundle.places.filter(
     (place) => favorites.includes(place.id) && !scheduled.has(place.id),
   )
-  const available = bundle.places.filter((place) => !scheduled.has(place.id))
   const update = (next: Itinerary) => {
     savePlan(destinationId, next)
     setMessage('План обновлён.')
@@ -234,14 +234,14 @@ export default function PlanPage() {
           </div>
           <div className="plan-actions">
             <label>
-              Время на посещения в день
+              Весь выезд, с дорогой и перерывами
               <select
                 value={dailyMinutes}
                 onChange={(event) => setDailyMinutes(Number(event.target.value))}
               >
-                <option value={240}>4 часа · спокойно</option>
-                <option value={360}>6 часов · сбалансированно</option>
-                <option value={480}>8 часов · насыщенно</option>
+                <option value={360}>6 часов · спокойно</option>
+                <option value={480}>8 часов · сбалансированно</option>
+                <option value={720}>12 часов · насыщенно, 10:00–22:00</option>
               </select>
             </label>
             <button
@@ -325,6 +325,19 @@ export default function PlanPage() {
             aria-label={`День ${dayIndex + 1}`}
           >
             <div className="plan-day-heading">
+              {!shared && (
+                <a
+                  className="button secondary"
+                  href="#choose-places"
+                  onClick={(event) => {
+                    event.preventDefault()
+                    document.getElementById('choose-places')!.scrollIntoView({ behavior: 'smooth' })
+                  }}
+                >
+                  <Plus size={17} />
+                  Выбрать места
+                </a>
+              )}
               <h2>
                 День {dayIndex + 1} · {formatDate(day.date)}
               </h2>
@@ -604,27 +617,20 @@ export default function PlanPage() {
         )
       })}
       {!shared && (
-        <div className="plan-add">
-          <Plus size={20} />
-          <label>
-            Добавить место в день {plan.days.indexOf(activeDay) + 1}
-            <select
-              aria-label="Добавить место"
-              value=""
-              onChange={(event) => {
-                if (event.target.value) update(placeInDay(plan, event.target.value, activeDay.date))
-              }}
-            >
-              <option value="">Выберите из каталога</option>
-              {available.map((place) => (
-                <option key={place.id} value={place.id}>
-                  {place.nameRu}
-                  {place.availability.status === 'temporarily-closed' ? ' · временно закрыто' : ''}
-                </option>
-              ))}
-            </select>
-          </label>
-        </div>
+        <section className="plan-picker" id="choose-places">
+          <h2>Что добавим на {formatDate(activeDay.date)}?</h2>
+          <PlacePicker
+            bundle={bundle}
+            day={activeDay}
+            excludedIds={[...scheduled]}
+            onSelect={(id) => {
+              update(placeInDay(plan, id, activeDay.date))
+              setMessage(
+                `${placeById.get(id)!.nameRu} — добавлено на ${formatDate(activeDay.date)}.`,
+              )
+            }}
+          />
+        </section>
       )}
       {pending.length > 0 && !shared && (
         <div className="plan-pending">

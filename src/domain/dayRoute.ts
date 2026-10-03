@@ -5,7 +5,7 @@ import { closedOnDate } from './openingHours'
 
 const time = z.string().regex(/^(?:[01]\d|2[0-3]):[0-5]\d$/)
 export const routeSettingsSchema = z.object({
-  start: time.default('09:00'),
+  start: time.default('10:00'),
   end: time.default('22:00'),
   adults: z.number().int().min(1).max(12).default(5),
   childAge: z.number().int().min(0).max(17).optional(),

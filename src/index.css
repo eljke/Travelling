@@ -3,6 +3,7 @@
 @import './styles/photos.css';
 @import './styles/routes.css';
 @import './styles/family.css';
+@import './styles/picker.css';
 
 * {
   box-sizing: border-box;

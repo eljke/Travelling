@@ -312,8 +312,8 @@ export default function DayRoutePlanner({
             каждой семьи. Еда и покупки отдельно; для мест без цены сумма неполная.
           </p>
           {[
-            { title: 'Семья: 4 взрослых', adults: 4, children: 0, share: 4 / 6 },
-            { title: 'Семья: взрослый и ребёнок', adults: 1, children: 1, share: 2 / 6 },
+            { title: 'Семья 1 · 4 взрослых', adults: 4, children: 0, share: 4 / 6 },
+            { title: 'Семья 2 · взрослый и ребёнок 11 лет', adults: 1, children: 1, share: 2 / 6 },
           ].map((family) => {
             const tickets = places.reduce(
               (sum, place) =>

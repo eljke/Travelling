@@ -6,6 +6,10 @@ test('keeps a personal plan and opens a shared snapshot', async ({ page }) => {
     .locator('.place-story')
     .getByRole('button', { name: 'В план: Бурдж-Халифа', exact: true })
     .click()
+  await page
+    .getByRole('dialog', { name: 'Выбрать день: Бурдж-Халифа' })
+    .getByRole('button', { name: /День 1/ })
+    .click()
   await page.getByRole('link', { name: 'План', exact: true }).click()
   await expect(page.locator('.plan-stop:visible')).toHaveCount(1)
   await expect(page.locator('.hotel-base')).toContainText('JA Palm Tree Court')

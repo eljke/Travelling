@@ -17,7 +17,7 @@ test('builds a day for six, optimizes it and retains limits', async ({ page }) =
   await expect(page.locator('.plan-stop:visible')).toHaveCount(4)
   await expect(planner.locator('.route-result')).toContainText('Укладываемся')
   await expect(planner.locator('.route-timeline')).toContainText(
-    '09:00 · Выезд из JA Palm Tree Court',
+    '10:00 · Выезд из JA Palm Tree Court',
   )
   await planner.getByLabel('Вернуться в отель до', { exact: true }).fill('10:00')
   await expect(planner.locator('.route-result')).toContainText('Нужно сократить день')
@@ -55,6 +55,10 @@ test('splits one safari package and includes a confirmed hotel transfer', async 
     .locator('.place-story')
     .getByRole('button', { name: 'В план: Красные дюны Лахбаб', exact: true })
     .click()
+  await page
+    .getByRole('dialog')
+    .getByRole('button', { name: /День 1/ })
+    .click()
   await page.getByRole('link', { name: 'План', exact: true }).click()
   const planner = page.getByRole('region', { name: 'Маршрут на день' })
   await expect(planner.locator('.route-budget')).toContainText('1 000')
@@ -65,10 +69,12 @@ test('splits one safari package and includes a confirmed hotel transfer', async 
   await expect(planner.locator('.route-leg')).toHaveCount(2)
   await expect(planner.locator('.route-leg').first()).toContainText('входит в тур')
   await planner.getByText('Разделить бюджет между двумя семьями', { exact: true }).click()
-  await expect(planner.locator('p').filter({ hasText: 'Семья: 4 взрослых' })).toContainText('667')
-  await expect(planner.locator('p').filter({ hasText: 'Семья: взрослый и ребёнок' })).toContainText(
-    '334',
+  await expect(planner.locator('p').filter({ hasText: 'Семья 1 · 4 взрослых' })).toContainText(
+    '667',
   )
+  await expect(
+    planner.locator('p').filter({ hasText: 'Семья 2 · взрослый и ребёнок' }),
+  ).toContainText('334')
   await expect(page.getByLabel('Время на месте: Красные дюны Лахбаб', { exact: true })).toHaveCount(
     0,
   )

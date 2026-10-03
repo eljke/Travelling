@@ -153,6 +153,7 @@ describe('day route', () => {
     const slot = toMinutes('09:00') + taxi.minutes + 2
     const route = evaluateRoute([place('dubai-mall')], dubai, date, {
       ...defaultRouteSettings,
+      start: '09:00',
       preference: 'cheap',
       slots: { 'dubai-dubai-mall': clockTime(slot) },
     })

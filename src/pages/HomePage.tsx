@@ -66,8 +66,8 @@ export default function HomePage() {
             <em>Вместе.</em>
           </h1>
           <p>
-            Пять дней для города, немного приключений и много времени друг для друга. Соберём
-            поездку в нашем темпе.
+            Пять дней для города, пляжа и приключений. Выберем интересные места и удобные маршруты
+            для двух семей.
           </p>
           <div className="plan-actions">
             <Link className="button family-primary" to={`${path}/plan`}>
@@ -91,8 +91,9 @@ export default function HomePage() {
             <span>Нас</span>
             <strong>06</strong>
             <span>
-              5 взрослых
-              <br />и ребёнок 11 лет
+              Семья 1 · 4 взрослых
+              <br />
+              Семья 2 · взрослый и ребёнок 11 лет
             </span>
           </div>
           <div className="family-ticket-hotel">

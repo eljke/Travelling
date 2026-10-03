@@ -1,0 +1,245 @@
+.place-picker {
+  min-width: 0;
+}
+.picker-tools {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.picker-tools .picker-search {
+  display: flex;
+  flex: 1 1 220px;
+  align-items: center;
+  gap: 8px;
+  flex-direction: row;
+}
+.picker-tools input[type='search'],
+.picker-tools select {
+  width: 100%;
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 13px;
+  color: var(--ink);
+  background: var(--surface);
+  font: inherit;
+}
+.picker-tools select {
+  width: auto;
+  max-width: 100%;
+}
+.picker-tools button[aria-pressed='true'] {
+  background: var(--accent);
+  color: var(--on-accent);
+}
+.picker-fit {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+.picker-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  max-height: 680px;
+  overflow: auto;
+  padding: 8px 4px;
+  margin-top: 16px;
+  scrollbar-gutter: stable;
+}
+.picker-card {
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-media);
+  background: var(--surface);
+}
+.picker-card.selected {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent);
+}
+.picker-card .card-media {
+  aspect-ratio: 1.6;
+}
+.picker-card .card-media img,
+.picker-card .photo-fallback {
+  height: 100%;
+  width: 100%;
+  object-fit: cover;
+}
+.picker-card .photo-fallback span {
+  font-size: 19px;
+  padding: 8px;
+}
+.picker-card-body {
+  padding: 16px;
+}
+.picker-card-body h3 {
+  font-size: 19px;
+  margin: 6px 0;
+}
+.picker-card-body p,
+.picker-card-body small {
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+.picker-preview {
+  margin: 12px 0;
+  padding: 12px;
+  border-radius: 8px;
+  background: var(--tint);
+  font-size: 12px;
+}
+.picker-preview p {
+  margin: 4px 0;
+}
+.picker-tight {
+  border: 1px solid var(--line);
+}
+.picker-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-top: 14px;
+}
+.picker-actions .button {
+  padding: 11px 14px;
+  font-size: 12px;
+}
+.picker-recommendations {
+  margin: 20px 0;
+}
+.picker-recommendations > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.picker-recommendations button {
+  text-align: left;
+  justify-content: flex-start;
+  flex: 1 1 200px;
+}
+.picker-recommendations img,
+.picker-recommendations .photo-fallback {
+  width: 60px;
+  height: 50px;
+  object-fit: cover;
+  border-radius: 6px;
+}
+.picker-recommendations small {
+  display: block;
+  font-size: 11px;
+  margin-top: 4px;
+}
+.place-selection {
+  grid-column: 1 / -1;
+  min-width: 0;
+  border: 1px solid var(--line);
+  padding: 16px;
+  border-radius: var(--radius-media);
+}
+.place-selection summary {
+  cursor: pointer;
+}
+.selected-place-preview {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  margin: 12px 0;
+}
+.selected-place-preview > img,
+.selected-place-preview > .photo-fallback {
+  width: 100px;
+  height: 64px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+.selected-place-preview .photo-fallback span {
+  display: none;
+}
+.selected-place-preview small {
+  font-size: 10px;
+}
+.plan-picker {
+  scroll-margin-top: 90px;
+  margin: 32px 0;
+  padding: 24px;
+  background: var(--tint);
+  border-radius: var(--radius-media);
+}
+.plan-picker h2 {
+  font-size: 26px;
+}
+.day-picker-dialog {
+  width: min(500px, calc(100% - 32px));
+  border: 1px solid var(--line);
+  border-radius: var(--radius-media);
+  padding: 24px;
+  background: var(--surface);
+  color: var(--ink);
+}
+.day-picker-dialog::backdrop {
+  background: #0009;
+}
+.day-picker-dialog > div {
+  display: grid;
+  gap: 10px;
+  margin: 18px 0;
+}
+.people-editor {
+  min-width: 0;
+  border: 0;
+  padding: 0;
+  margin: 0;
+}
+.people-editor legend {
+  margin-bottom: 10px;
+}
+.people-input {
+  display: flex;
+  align-items: end;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.people-input label {
+  flex: 1 1 150px;
+}
+.people-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0;
+}
+.people-chips button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--line);
+  border-radius: 30px;
+  background: var(--tint);
+  color: var(--ink);
+  padding: 9px 12px;
+  font: inherit;
+  font-size: 13px;
+}
+@media (max-width: 900px) {
+  .picker-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 560px) {
+  .picker-grid {
+    grid-template-columns: 1fr;
+    max-height: 580px;
+  }
+  .plan-picker {
+    padding: 16px;
+  }
+  .picker-tools select {
+    width: 100%;
+  }
+}

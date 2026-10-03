@@ -2,7 +2,13 @@ import { z } from 'zod'
 import type { DestinationBundle, Place } from './model'
 import { distanceBetween } from './geo'
 import { closedOnDate } from './openingHours'
-import { routeSettingsSchema } from './dayRoute'
+import {
+  routeSettingsSchema,
+  defaultRouteSettings,
+  evaluateRoute,
+  toMinutes,
+  clockTime,
+} from './dayRoute'
 
 export const itinerarySchema = z.object({
   version: z.literal(1),
@@ -99,25 +105,46 @@ export function fillFromFavorites(
   // ponytail: nearest-neighbor grouping for a small catalog; road routing needs a transport API.
   for (const day of next.days) {
     const places = day.placeIds.map((id) => bundle.places.find((place) => place.id === id)!)
-    let minutes = summarizeDay(places, bundle.exchangeRate.baseCurrency).maxMinutes
+    const settings = { ...(day.settings ?? defaultRouteSettings) }
+    settings.end = clockTime(
+      Math.min(toMinutes(settings.end), toMinutes(settings.start) + dailyMinutes),
+    )
+    day.settings = settings
     while (remaining.length) {
       const origin =
         places.at(-1)?.coordinates ??
         bundle.trip.accommodation?.coordinates ??
         remaining[0].coordinates
-      const candidate = remaining
-        .filter(
-          (place) =>
-            !closedOnDate(place, day.date) && minutes + place.duration.maxMinutes <= dailyMinutes,
-        )
+      const candidates = remaining
+        .filter((place) => !closedOnDate(place, day.date))
+        .map((place) => {
+          const orders = Array.from({ length: Math.max(1, places.length) }, (_, index) => {
+            const position = places.length ? index + 1 : 0
+            const order = [...places.slice(0, position), place, ...places.slice(position)]
+            const route = bundle.trip.accommodation
+              ? evaluateRoute(order, bundle, day.date, settings)
+              : undefined
+            return { order, route }
+          })
+            .filter(({ order, route }) =>
+              route
+                ? route.fits
+                : summarizeDay(order, bundle.exchangeRate.baseCurrency).maxMinutes <= dailyMinutes,
+            )
+            .sort((a, b) => (a.route?.score ?? 0) - (b.route?.score ?? 0))
+          return { place, best: orders[0] }
+        })
+      const candidate = candidates
+        .filter((candidate) => candidate.best)
         .sort(
-          (a, b) => distanceBetween(origin, a.coordinates) - distanceBetween(origin, b.coordinates),
+          (a, b) =>
+            distanceBetween(origin, a.place.coordinates) -
+            distanceBetween(origin, b.place.coordinates),
         )[0]
       if (!candidate) break
-      day.placeIds.push(candidate.id)
-      places.push(candidate)
-      minutes += candidate.duration.maxMinutes
-      remaining.splice(remaining.indexOf(candidate), 1)
+      places.splice(0, places.length, ...candidate.best.order)
+      day.placeIds = places.map((place) => place.id)
+      remaining.splice(remaining.indexOf(candidate.place), 1)
     }
   }
   return next
