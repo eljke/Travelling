@@ -4,6 +4,28 @@ type Guide = {
   photoSpots?: { title: string; note: string; bestTime: string }[]
 }
 export const guides: Record<string, Guide> = {
+  'souk-al-bahar': {
+    priority: 15,
+    reason:
+      'Дополняет Dubai Mall и фонтаны пешком: больше ракурсов без ещё одного выезда из отеля.',
+    photoSpots: [
+      {
+        title: 'Мост через Burj Lake',
+        note: 'Снимаем арки souk и отражения у воды. На мосту оставляем проход другим гостям.',
+        bestTime: 'После заката, когда включена подсветка.',
+      },
+    ],
+  },
+  'aya-universe': {
+    priority: 24,
+    reason:
+      'Крытые световые залы для разнообразия. Обычный билет заметно дороже прогулок; семейный пакет проверяем на дату.',
+  },
+  'crocodile-park': {
+    priority: 42,
+    reason:
+      'Хорошо, если хочется животных и музея. Дорога из JA длинная: выбираем отдельный выезд вместо случайного крюка.',
+  },
   'dubai-fountain': {
     priority: 1,
     reason: 'Вечерний Дубай без отдельного билета. Удобно завершить здесь день в Dubai Mall.',

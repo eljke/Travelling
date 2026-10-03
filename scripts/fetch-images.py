@@ -16,6 +16,7 @@ from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[1]
 QUERIES = {
+    'souk-al-bahar': 'Souk Al Bahar Dubai',
     'lost-tank': 'Аквариум Lost Chambers в Atlantis The Palm до обновления — архивный снимок',
     'lost-jellyfish': 'Медузы в аквариуме Atlantis The Palm — архивный снимок',
     'madinat-bridge': 'Каналы Madinat Jumeirah и мост — архивный снимок',

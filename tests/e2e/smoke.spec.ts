@@ -93,7 +93,7 @@ test('degrades gracefully when map requests fail', async ({ page }) => {
   await page.route('https://tiles.openfreemap.org/**', (route) => route.abort())
   await page.goto('/#/dubai/map')
   await expect(page.getByText('Карта пока недоступна')).toBeVisible({ timeout: 25000 })
-  await expect(page.locator('.place-card')).toHaveCount(53)
+  await expect(page.locator('.place-card')).toHaveCount(56)
 })
 test('handles empty results and unavailable storage', async ({ page }) => {
   await page.addInitScript(() => {

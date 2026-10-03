@@ -18,6 +18,35 @@ const source = (id: string, title: string, url: string, type = 'official', note?
   ...(note ? { note } : {}),
 })
 const sources = [
+  ...[
+    ['aya', 'AYA Universe • часы, билеты и семейный пакет', 'https://www.aya-universe.com/payment'],
+    ['aya-location', 'AYA Universe • залы и расположение', 'https://www.aya-universe.com/'],
+    ['crocodile', 'Dubai Crocodile Park • билеты', 'https://dubaicrocodilepark.com/tickets/'],
+    [
+      'crocodile-visit',
+      'Dubai Crocodile Park • часы и программа',
+      'https://dubaicrocodilepark.com/',
+    ],
+    [
+      'crocodile-ages',
+      'Visit Dubai • детский возраст в Crocodile Park',
+      'https://www.visitdubai.com/tr/places-to-visit/dubai-crocodile-park',
+    ],
+    [
+      'souk-al-bahar',
+      'Emaar Malls • Souk Al Bahar и пешеходный мост',
+      'https://www.emaarmalls.ae/malls/souk-al-bahar/',
+    ],
+  ].map(([id, title, url]) => ({ ...source(id, title, url), accessedAt: '2026-10-03' })),
+  {
+    ...source(
+      'review-aya',
+      'Fever • отзывы посетителей AYA, июнь–август 2026',
+      'https://feverup.com/m/656224',
+      'review',
+    ),
+    accessedAt: '2026-10-03',
+  },
   {
     ...source(
       'madinat-abra',
@@ -550,6 +579,11 @@ const review = (
   sampleNote = 'Качественный разбор опубликованных русскоязычных отзывов. Это субъективный опыт, а не репрезентативный рейтинг.',
 ) => ({ sourceIds, positives, negatives, tips, consensus, sampleNote, checkedAt })
 export interface Seed {
+  variants?: {
+    label: string
+    type: 'adult' | 'child' | 'standard' | 'premium' | 'combination'
+    amount: number
+  }[]
   website?: string
   checkedAt?: string
   opensOn?: string
@@ -1615,7 +1649,9 @@ sources.push(
     accessedAt: '2026-10-03',
   })),
 )
-for (const place of extraPlaces)
+for (const place of extraPlaces.filter(
+  (place) => !sources.some((source) => source.id === place.source),
+))
   sources.push({
     ...source(place.source, `${place.name} • информация для посещения`, place.website!, 'official'),
     accessedAt: '2026-10-03',
@@ -1641,7 +1677,7 @@ const places = [...seeds, ...extraPlaces].map((s) => {
   const sourceIds = [s.source, ...(s.extraSources ?? [])]
   const hours = verifiedHours.find((hours) => hours.placeId === `dubai-${s.id}`)
   const update = priceUpdates.find((update) => update.slug === s.id)
-  const officialWebsite = update?.url ?? sources.find((v) => v.id === s.source)!.url
+  const officialWebsite = update?.url ?? s.website ?? sources.find((v) => v.id === s.source)!.url
   const pricing = price(
     s.free ? 0 : s.amount,
     s.id === 'dubai-aquarium' ? 'aquarium-guide' : s.source,
@@ -1651,6 +1687,8 @@ const places = [...seeds, ...extraPlaces].map((s) => {
         : 'Цена на дату исследования; это не гарантия доступности слота.'),
   )
   if (s.checkedAt) pricing.checkedAt = s.checkedAt
+  if (s.variants)
+    pricing.variants = s.variants.map((variant) => ({ ...variant, sourceIds: [s.source] }))
   if (s.id === 'lahbab-desert') Object.assign(pricing, { unit: 'group', groupCapacity: 6 })
   const childPrices =
     s.childPrices ??

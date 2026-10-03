@@ -94,6 +94,9 @@ const photographUrl = z.union([
       'jaweb2019cdn.azureedge.net',
       'www-addresshotels-com.azureedge.net',
       'www.legoland.com',
+      'aya-dxb-website.s3.me-central-1.amazonaws.com',
+      'applications-media.feverup.com',
+      'dubaicrocodilepark.com',
     ].includes(new URL(value).hostname),
   ),
 ])

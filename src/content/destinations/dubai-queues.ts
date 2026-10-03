@@ -4,6 +4,28 @@ export const queues: Record<
   string,
   { queue: NonNullable<Place['queue']>; minutes?: [number, number] }
 > = {
+  'aya-universe': {
+    queue: {
+      minutes: 15,
+      peakMinutes: 30,
+      peakAfter: 16,
+      seasonal: true,
+      checkedAt: '2026-10-03',
+      sourceIds: ['aya', 'review-aya'],
+      note: 'Плановый запас на проверку билетов. К открытию в прочитанном отзыве было мало людей, но это не обещание отсутствия очереди; выходные и вечер считаем с большим запасом.',
+    },
+  },
+  'crocodile-park': {
+    queue: {
+      minutes: 10,
+      peakMinutes: 20,
+      peakAfter: 16,
+      seasonal: true,
+      checkedAt: '2026-10-03',
+      sourceIds: ['crocodile'],
+      note: 'Наш запас на вход и проверку билетов, а не опубликованный замер очереди. Посещение аквариума и музея уже входит во время на месте.',
+    },
+  },
   'burj-khalifa': {
     minutes: [60, 90],
     queue: {

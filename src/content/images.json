@@ -768,5 +768,38 @@
     "sourceUrl": "https://www.legoland.com/dubai/explore-legoland-dubai/legoland-water-park/attractions/joker-soaker/",
     "checkedAt": "2026-10-03",
     "adaptation": "Загружается с сайта правообладателя; файл не изменён"
+  },
+  "souk-al-bahar": {
+    "src": "images/souk-al-bahar-1280.webp",
+    "small": "images/souk-al-bahar-640.webp",
+    "alt": "Souk Al Bahar Dubai",
+    "author": "Essam2K6",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Souk_Al-Bahar,_Dubai.jpg",
+    "checkedAt": "2026-10-03",
+    "adaptation": "Resized and converted to WebP"
+  },
+  "aya-official": {
+    "src": "https://aya-dxb-website.s3.me-central-1.amazonaws.com/AYA_DXB_Website_Images_SR_v001_Desktop_Experience_2_ec20783bb7.jpg",
+    "small": "https://aya-dxb-website.s3.me-central-1.amazonaws.com/AYA_DXB_Website_Images_SR_v001_Desktop_Experience_2_ec20783bb7.jpg",
+    "alt": "Световые инсталляции The Source в AYA",
+    "author": "AYA Universe / Hyperspace",
+    "license": "© Правообладатель; внешний источник",
+    "licenseUrl": "https://www.aya-universe.com/",
+    "sourceUrl": "https://www.aya-universe.com/",
+    "checkedAt": "2026-10-03",
+    "adaptation": "Загружается с сайта правообладателя; файл не изменён"
+  },
+  "crocodile-official": {
+    "src": "https://dubaicrocodilepark.com/wp-content/uploads/2023/12/homeslide1-mob.webp",
+    "small": "https://dubaicrocodilepark.com/wp-content/uploads/2023/12/homeslide1-mob.webp",
+    "alt": "Крокодил в Dubai Crocodile Park",
+    "author": "Dubai Crocodile Park",
+    "license": "© Правообладатель; внешний источник",
+    "licenseUrl": "https://dubaicrocodilepark.com/",
+    "sourceUrl": "https://dubaicrocodilepark.com/",
+    "checkedAt": "2026-10-03",
+    "adaptation": "Загружается с сайта правообладателя; файл не изменён"
   }
 }

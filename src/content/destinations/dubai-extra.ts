@@ -2,6 +2,109 @@ import type { Seed } from './dubai'
 
 export const extraPlaces: Seed[] = [
   {
+    id: 'souk-al-bahar',
+    name: 'Souk Al Bahar',
+    nameRu: 'Сук Аль-Бахар',
+    area: 'downtown',
+    coordinates: [25.1936, 55.2751],
+    category: 'walk',
+    image: 'souk-al-bahar',
+    short: 'Арабские арки, мост через озеро и другой ракурс фонтанов.',
+    description:
+      'Зайдём пешком из Dubai Mall через мост: каналы здесь не нужны, главный вид — на Burj Lake и башню. Внутри есть магазины и рестораны, снаружи — набережная для прогулки и фото. Хорошее дополнение к дню в молле без ещё одной поездки на такси. Еда и покупки оплачиваются отдельно.',
+    source: 'souk-al-bahar',
+    free: true,
+    minutes: [45, 90],
+    tags: ['free', 'photos', 'evening'],
+    best: 'Ближе к закату и перед фонтанами; во время шоу мост может быть людным.',
+    transport:
+      'Из Dubai Mall пешком через Burj Lake. Прогулочная точка приблизительная; к ресторану строим маршрут отдельно.',
+    hours:
+      'Магазины и рестораны работают по своим расписаниям. Для вечерней прогулки сверим доступ к мосту и набережной.',
+    priceNote: 'Прогулка без входного билета; ресторан и покупки по желанию.',
+    checkedAt: '2026-10-03',
+  },
+  {
+    id: 'aya-universe',
+    name: 'AYA Universe',
+    nameRu: 'AYA — мир света',
+    area: 'wafi',
+    coordinates: [25.2296, 55.3179],
+    category: 'experience',
+    image: 'aya-official',
+    short: 'Двенадцать залов со светом, зеркалами и необычными инсталляциями.',
+    description:
+      'Вариант в помещении для смены впечатлений после прогулок. Идём через главный атриум WAFI City на Level One. Внутри яркий свет, громкая музыка и тёмные пространства: при чувствительности к таким эффектам лучше выбрать другое место. Оператор оценивает посещение в 60–90 минут. Залы проходим в своём темпе, не торопясь между световыми сценами.',
+    source: 'aya',
+    extraSources: ['aya-location', 'review-aya'],
+    website: 'https://feverup.com/m/656224',
+    amount: 135,
+    minutes: [60, 90],
+    tags: ['indoors', 'kids', 'photos'],
+    priceNote:
+      'Обычный вход 135 AED. Family Pass стоит 399 AED за четырёх гостей, если доступен на выбранную дату; в базовом бюджете считаем обычные билеты, пока пакет не подтверждён.',
+    variants: [
+      { label: 'Обычный билет · 1 гость', type: 'standard', amount: 135 },
+      { label: 'Family Pass · 4 гостя · при наличии', type: 'combination', amount: 399 },
+    ],
+    childPrices: [
+      { minAge: 0, maxAge: 2, amount: 0 },
+      { minAge: 4, maxAge: 17, amount: 135 },
+    ],
+    hours:
+      'Вс–чт 10:00–22:00, пт–сб 10:00–00:00. Последний вход за час до закрытия. Наш маршрут рассчитывается до 22:00.',
+    schedule: { opens: '10:00', closes: '22:00' },
+    booking: true,
+    best: 'У открытия или в дневную жару, если удобен этот район.',
+    transport:
+      'WAFI City, Oud Metha. Зелёная ветка до Dubai Healthcare City, около шести минут пешком по данным оператора. Из JA сравним с прямым Hala Max.',
+    review: {
+      sourceIds: ['review-aya'],
+      checkedAt: '2026-10-03',
+      positives: [
+        'Посетитель августа 2026 хвалит возможность спокойно пройти залы сразу после открытия.',
+        'В июньских и июльских отзывах отмечают впечатления всей семьи и дружелюбных сотрудников.',
+      ],
+      negatives: [],
+      tips: ['Приходить к открытию, если хочется меньше людей в кадре.'],
+      consensus:
+        'В прочитанной выборке особенно ценят световые пространства и семейные впечатления.',
+      sampleNote:
+        'Шесть показанных англоязычных отзывов Fever за июнь–август 2026. Это небольшая положительная выборка продавца, без вывода о мнении всех посетителей.',
+    },
+    checkedAt: '2026-10-03',
+  },
+  {
+    id: 'crocodile-park',
+    name: 'Dubai Crocodile Park',
+    nameRu: 'Парк крокодилов',
+    area: 'mushrif',
+    coordinates: [25.2026, 55.4412],
+    category: 'nature',
+    image: 'crocodile-official',
+    short: 'Крокодилы, подводный обзор и небольшой музей — для отдельного выезда.',
+    description:
+      'Парк у Mushrif с открытыми вольерами, аквариумом и музеем естественной истории. Это дальняя поездка из JA: выбираем её ради интереса к животным, а не добавляем к Downtown между делом. Оператор указывает знакомство с маленькими крокодилами в 11:30 и 16:30; проведение и условия участия уточняем на месте. На обычную прогулку закладываем около двух часов без дороги.',
+    source: 'crocodile',
+    extraSources: ['crocodile-visit', 'crocodile-ages'],
+    amount: 95,
+    childPrices: [
+      { minAge: 0, maxAge: 2, amount: 0 },
+      { minAge: 3, maxAge: 11, amount: 75 },
+    ],
+    priceNote:
+      'Взрослый 95 AED, детский 75 AED; до трёх лет бесплатно. Для ребёнка 11 лет считаем детский билет. Возрастную границу сверяем при покупке.',
+    minutes: [90, 150],
+    tags: ['kids', 'animals', 'outdoors'],
+    booking: true,
+    hours: 'Ежедневно 10:00–20:00.',
+    schedule: { opens: '10:00', closes: '20:00' },
+    best: 'Утром или ближе к 16:30; часть маршрута проходит на улице.',
+    transport:
+      'Tripoli Street, Mushrif. Метка по карте оператора; для шести человек сравниваем прямой Hala Max с долгой пересадочной поездкой.',
+    checkedAt: '2026-10-03',
+  },
+  {
     id: 'miracle-garden',
     name: 'Dubai Miracle Garden',
     nameRu: 'Сад цветов Miracle Garden',
@@ -264,6 +367,22 @@ export const extraPlaces: Seed[] = [
   },
 ]
 export const extraAreas: [string, string, string, string, number, number][] = [
+  [
+    'wafi',
+    'WAFI · Oud Metha',
+    'WAFI и Уд-Мета',
+    'AYA и WAFI City возле зелёной ветки метро.',
+    25.2296,
+    55.3179,
+  ],
+  [
+    'mushrif',
+    'Mushrif',
+    'Мушриф',
+    'Парк крокодилов; отдельный дальний выезд из JA.',
+    25.2026,
+    55.4412,
+  ],
   [
     'gardens',
     'Al Barsha South · Gardens',
