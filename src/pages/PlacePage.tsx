@@ -79,7 +79,7 @@ export default function PlacePage() {
     (offer) => !russianPaymentOnly || offer.russianCardSupport.status === 'confirmed',
   )
   const nearby = getNearbyPlaces(place, bundle.places)
-  const image = images[place.imageId]
+  const image = place.imageId ? images[place.imageId] : undefined
   const sourceIds = [
     ...new Set([
       ...place.sourceIds,
@@ -121,17 +121,26 @@ export default function PlacePage() {
         </div>
         <FavoriteButton place={place} />
       </section>
-      <p className="image-credit">
-        Фото:{' '}
-        <a href={image.sourceUrl} target="_blank" rel="noreferrer">
-          {image.author}
-        </a>{' '}
-        ·{' '}
-        <a href={image.licenseUrl} target="_blank" rel="noreferrer">
-          {image.license}
-        </a>
-        {place.imageNote && <span> · {place.imageNote}</span>}
-      </p>
+      {image ? (
+        <p className="image-credit">
+          Фото:{' '}
+          <a href={image.sourceUrl} target="_blank" rel="noreferrer">
+            {image.author}
+          </a>{' '}
+          ·{' '}
+          <a href={image.licenseUrl} target="_blank" rel="noreferrer">
+            {image.license}
+          </a>
+          {place.imageNote && <span> · {place.imageNote}</span>}
+        </p>
+      ) : (
+        <p className="image-credit">
+          Фото этого места пока нет.{' '}
+          <a href={place.officialWebsite} target="_blank" rel="noreferrer">
+            Посмотреть на официальном сайте ↗
+          </a>
+        </p>
+      )}
       <div className="place-layout">
         <div className="place-story">
           <p className="place-lead">{place.shortDescription}</p>

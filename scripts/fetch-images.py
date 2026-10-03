@@ -16,6 +16,12 @@ from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[1]
 QUERIES = {
+    'outlet-mall': 'Интерьер Dubai Outlet Mall, архивный снимок 2010 года',
+    'outlet-village': 'The Outlet Village в Дубае, архивный снимок',
+    'outlet-village-roof': 'Архитектура крыши The Outlet Village в Дубае',
+    'global-village': 'Вход в Global Village Dubai, архивный снимок',
+    'view-palm': 'Панорама со смотровой The View at the Palm, 2023 год',
+    'burj-arab-interior': 'Интерьер Burj Al Arab, архивный снимок 2007 года',
     'miracle': 'Цветочные композиции Dubai Miracle Garden, архивный снимок',
     'butterfly': 'Dubai Butterfly Garden, архивный снимок',
     'moe': 'Mall of the Emirates',
@@ -73,6 +79,12 @@ QUERIES = {
     'hatta': 'Hatta dam',
 }
 SELECTED_FILES = {
+    'outlet-mall': 'Mezzah.jpg',
+    'outlet-village': 'Traditional ?.jpg',
+    'outlet-village-roof': 'Old roof !.jpg',
+    'global-village': 'Global Village Dubai entrance.jpg',
+    'view-palm': 'City view from Nakheel Mall Observatory.jpg',
+    'burj-arab-interior': 'Burj Al Arab Interior on 25 December 2007 Pict 9.jpg',
     'miracle': 'VAE-dubai-miracle-03.jpg',
     'butterfly': 'Dubai Butterfly Garden.jpg',
     'moe': 'Mall of the Emirates, Dubai (Ank Kumar) 01.jpg',

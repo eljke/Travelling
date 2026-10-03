@@ -1807,6 +1807,15 @@ select option {
   font-family: var(--font-display);
   font-size: 32px;
 }
+.place-hero > .photo-fallback {
+  background: var(--accent);
+  color: #fff;
+  justify-content: flex-start;
+  padding: 40px 28px;
+}
+.place-hero > .photo-fallback span {
+  display: none;
+}
 .page-loading {
   min-height: 70vh;
   padding-top: 30px;

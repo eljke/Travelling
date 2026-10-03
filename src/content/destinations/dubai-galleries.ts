@@ -1,4 +1,33 @@
+export const placePhotos: Record<string, { imageId?: string; note?: string }> = {
+  'dubai-outlet-mall': {
+    imageId: 'outlet-mall',
+    note: 'Интерьер Dubai Outlet Mall, 2010 год. Архивный снимок не подтверждает нынешний состав магазинов.',
+  },
+  'outlet-village': {
+    imageId: 'outlet-village',
+    note: 'The Outlet Village в Дубае, архивный снимок.',
+  },
+  'global-village': { imageId: 'global-village' },
+  'the-view-at-the-palm': {
+    imageId: 'view-palm',
+    note: 'Вид со смотровой над Nakheel Mall, 2023 год.',
+  },
+  'inside-burj-al-arab': {
+    imageId: 'burj-arab-interior',
+    note: 'Интерьер Burj Al Arab, 2007 год. Это архивное фото, а не подтверждение нынешнего маршрута экскурсии.',
+  },
+  'difc-gate-avenue': {},
+  terra: {},
+  'palm-west-beach': {},
+  'ja-watersports': {},
+  'legoland-waterpark': {},
+  'sky-views': {},
+  'lost-world-aquarium': {},
+}
 export const galleries: Record<string, { imageId: string; caption: string }[]> = {
+  'outlet-village': [
+    { imageId: 'outlet-village-roof', caption: 'Архитектура внутри The Outlet Village' },
+  ],
   'burj-khalifa': [
     { imageId: 'burj-deck', caption: 'На смотровой At the Top — архивный снимок' },
     { imageId: 'burj-city', caption: 'Город с высоты Burj Khalifa — архивный снимок' },

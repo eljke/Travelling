@@ -603,5 +603,71 @@
     "sourceUrl": "https://commons.wikimedia.org/wiki/File:Indoor_Ski_in_Dubai.JPG",
     "checkedAt": "2026-10-03",
     "adaptation": "Resized and converted to WebP"
+  },
+  "outlet-mall": {
+    "src": "images/outlet-mall-1280.webp",
+    "small": "images/outlet-mall-640.webp",
+    "alt": "Интерьер Dubai Outlet Mall, архивный снимок 2010 года",
+    "author": "Studio Sarah Lou",
+    "license": "CC BY 2.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/2.0",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Mezzah.jpg",
+    "checkedAt": "2026-10-03",
+    "adaptation": "Resized and converted to WebP"
+  },
+  "outlet-village": {
+    "src": "images/outlet-village-1280.webp",
+    "small": "images/outlet-village-640.webp",
+    "alt": "The Outlet Village в Дубае, архивный снимок",
+    "author": "Abrar Alnasheet",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Traditional_%3F.jpg",
+    "checkedAt": "2026-10-03",
+    "adaptation": "Resized and converted to WebP"
+  },
+  "outlet-village-roof": {
+    "src": "images/outlet-village-roof-1280.webp",
+    "small": "images/outlet-village-roof-640.webp",
+    "alt": "Архитектура крыши The Outlet Village в Дубае",
+    "author": "Abrar Alnasheet",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Old_roof_!.jpg",
+    "checkedAt": "2026-10-03",
+    "adaptation": "Resized and converted to WebP"
+  },
+  "global-village": {
+    "src": "images/global-village-1280.webp",
+    "small": "images/global-village-640.webp",
+    "alt": "Вход в Global Village Dubai, архивный снимок",
+    "author": "Abil Ahamed",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Global_Village_Dubai_entrance.jpg",
+    "checkedAt": "2026-10-03",
+    "adaptation": "Resized and converted to WebP"
+  },
+  "view-palm": {
+    "src": "images/view-palm-1280.webp",
+    "small": "images/view-palm-640.webp",
+    "alt": "Панорама со смотровой The View at the Palm, 2023 год",
+    "author": "JairamPJ",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:City_view_from_Nakheel_Mall_Observatory.jpg",
+    "checkedAt": "2026-10-03",
+    "adaptation": "Resized and converted to WebP"
+  },
+  "burj-arab-interior": {
+    "src": "images/burj-arab-interior-1280.webp",
+    "small": "images/burj-arab-interior-640.webp",
+    "alt": "Интерьер Burj Al Arab, архивный снимок 2007 года",
+    "author": "Imre Solt",
+    "license": "CC BY-SA 3.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0/",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Burj_Al_Arab_Interior_on_25_December_2007_Pict_9.jpg",
+    "checkedAt": "2026-10-03",
+    "adaptation": "Resized and converted to WebP"
   }
 }

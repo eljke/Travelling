@@ -108,7 +108,7 @@ export const placeSchema = z.object({
   coordinateNote: z.string(),
   categories: z.array(z.enum(categories)).min(1),
   tags: z.array(z.string()),
-  imageId: id,
+  imageId: id.optional(),
   gallery: z.array(z.object({ imageId: id, caption: z.string().min(1) })).default([]),
   imageNote: z.string().optional(),
   duration: z

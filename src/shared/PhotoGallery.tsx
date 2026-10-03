@@ -9,7 +9,9 @@ export default function PhotoGallery({ place }: { place: Place }) {
   const dialog = useRef<HTMLDialogElement>(null)
   const [index, setIndex] = useState(0)
   const photos = [
-    { imageId: place.imageId, caption: place.imageNote ?? place.nameRu },
+    ...(place.imageId
+      ? [{ imageId: place.imageId, caption: place.imageNote ?? place.nameRu }]
+      : []),
     ...place.gallery,
   ]
   if (!place.gallery.length) return null

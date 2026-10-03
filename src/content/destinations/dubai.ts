@@ -1,6 +1,6 @@
 import { ticketLinks, ticketLinksCheckedAt } from './dubai-tickets'
 import { priceUpdates } from './dubai-prices'
-import { galleries } from './dubai-galleries'
+import { galleries, placePhotos } from './dubai-galleries'
 import { extraAreas, extraPlaces } from './dubai-extra'
 import hoursSnapshot from '../../../public/place-hours.json'
 import { hoursFeedSchema } from '../../domain/openingHours'
@@ -1765,9 +1765,11 @@ const places = [...seeds, ...extraPlaces].map((s) => {
       'Ориентировочная точка объекта или прогулочной зоны. Это не обязательно точный вход; сверяйте маршрут у оператора.',
     categories: [s.category],
     tags: s.tags,
-    imageId: s.image,
+    imageId: s.id in placePhotos ? placePhotos[s.id].imageId : s.image,
     gallery: galleries[s.id] ?? [],
-    ...(s.imageNote ? { imageNote: s.imageNote } : {}),
+    ...((s.id in placePhotos ? placePhotos[s.id].note : s.imageNote)
+      ? { imageNote: s.id in placePhotos ? placePhotos[s.id].note : s.imageNote }
+      : {}),
     duration: {
       minMinutes: s.minutes[0],
       maxMinutes: s.minutes[1],

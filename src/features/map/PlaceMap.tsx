@@ -254,12 +254,14 @@ export default function PlaceMap({
     })
     const panel = document.createElement('div')
     panel.className = 'map-popup'
-    const photo = document.createElement('img')
-    photo.src = assetUrl(images[place.imageId].small)
-    photo.alt = place.nameRu
-    photo.width = 240
-    photo.height = 110
-    panel.append(photo)
+    if (place.imageId) {
+      const photo = document.createElement('img')
+      photo.src = assetUrl(images[place.imageId].small)
+      photo.alt = place.nameRu
+      photo.width = 240
+      photo.height = 110
+      panel.append(photo)
+    }
     const area = document.createElement('small')
     area.textContent = bundle.areas.find((a) => a.id === place.areaId)!.name
     panel.append(area)

@@ -8,17 +8,21 @@ export default function Photo({
   priority = false,
   className = '',
 }: {
-  imageId: string
+  imageId?: string
   alt?: string
   priority?: boolean
   className?: string
 }) {
   const [failed, setFailed] = useState(false)
-  const image = images[imageId]
-  return failed ? (
-    <div className={`photo-fallback ${className}`} role="img" aria-label={alt ?? image.alt}>
-      <span>elsewhere</span>
-      <small>Фотография недоступна</small>
+  const image = imageId ? images[imageId] : undefined
+  return failed || !image ? (
+    <div
+      className={`photo-fallback ${className}`}
+      role="img"
+      aria-label={alt ?? 'Фото места пока нет'}
+    >
+      <span>{image ? 'elsewhere' : alt}</span>
+      <small>{image ? 'Фотография недоступна' : 'Фото этого места пока нет'}</small>
     </div>
   ) : (
     <img

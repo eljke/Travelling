@@ -20,7 +20,10 @@ export default function SourcesPage() {
   const usedImages = [
     ...new Set([
       bundle.destination.heroImageId,
-      ...bundle.places.flatMap((p) => [p.imageId, ...p.gallery.map((photo) => photo.imageId)]),
+      ...bundle.places.flatMap((p) => [
+        ...(p.imageId ? [p.imageId] : []),
+        ...p.gallery.map((photo) => photo.imageId),
+      ]),
     ]),
   ]
   return (
