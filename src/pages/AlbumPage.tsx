@@ -13,6 +13,8 @@ import {
 } from '../shared/photoAlbum'
 import type { AlbumPhoto } from '../shared/photoAlbum'
 import { formatDate } from '../shared/format'
+import PlacePicker from '../shared/PlacePicker'
+import Photo from '../shared/Photo'
 
 function LocalPhoto({ photo, onOpen }: { photo: AlbumPhoto; onOpen?: () => void }) {
   const [url, setUrl] = useState('')
@@ -47,7 +49,8 @@ export default function AlbumPage() {
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
   const [caption, setCaption] = useState('')
-  const [people, setPeople] = useState('')
+  const [people, setPeople] = useState<string[]>([])
+  const [person, setPerson] = useState('')
   const [date, setDate] = useState('')
   const [placeId, setPlaceId] = useState(params.get('place') ?? '')
   const [files, setFiles] = useState<File[]>([])
@@ -136,20 +139,31 @@ export default function AlbumPage() {
   }
   const reset = () => {
     setCaption('')
-    setPeople('')
+    setPeople([])
+    setPerson('')
     setDate('')
     setEditing(undefined)
     setFiles([])
     if (upload.current) upload.current.value = ''
   }
   const names = () => [
-    ...new Set(
-      people
-        .split(',')
-        .map((name) => name.trim())
-        .filter(Boolean),
-    ),
+    ...people,
+    ...(person.trim() &&
+    !people.some((name) => name.toLocaleLowerCase('ru') === person.trim().toLocaleLowerCase('ru'))
+      ? [person.trim()]
+      : []),
   ]
+  const addPerson = () => {
+    const next = names()
+    if (next.length > 20) {
+      setError('Можно указать до 20 участников.')
+      return
+    }
+    setPeople(next)
+    setPerson('')
+  }
+  const selectedPlace = bundle.places.find((place) => place.id === placeId)
+  const filteredPlace = bundle.places.find((place) => place.id === placeFilter)
   const submit = () =>
     run(async () => {
       if (!bundle.places.some((place) => place.id === placeId))
@@ -210,22 +224,16 @@ export default function AlbumPage() {
             void submit()
           }}
         >
-          <label>
-            Где мы были
-            <select
-              aria-label="Место на фото"
-              value={placeId}
-              required
-              onChange={(event) => setPlaceId(event.target.value)}
-            >
-              <option value="">Выберите место</option>
-              {bundle.places.map((place) => (
-                <option key={place.id} value={place.id}>
-                  {place.nameRu}
-                </option>
-              ))}
-            </select>
-          </label>
+          <details className="place-selection" open={!selectedPlace}>
+            <summary>Где мы были · {selectedPlace?.nameRu ?? 'выберите место'}</summary>
+            {selectedPlace && (
+              <div className="selected-place-preview">
+                <Photo imageId={selectedPlace.imageId} alt={selectedPlace.nameRu} />
+                <strong>{selectedPlace.nameRu}</strong>
+              </div>
+            )}
+            <PlacePicker bundle={bundle} selectedId={placeId} onSelect={(id) => setPlaceId(id)} />
+          </details>
           {!editing && (
             <label>
               Фотографии
@@ -253,18 +261,57 @@ export default function AlbumPage() {
               placeholder="Мы у фонтанов после ужина"
             />
           </label>
-          <label>
-            Кто на фото
-            <input
-              maxLength={1200}
-              value={people}
-              onChange={(event) => setPeople(event.target.value)}
-              placeholder="Илья, мама, папа — через запятую"
-            />
+          <fieldset className="people-editor">
+            <legend>Кто на фото</legend>
+            <div className="people-chips">
+              {people.map((name) => (
+                <button
+                  type="button"
+                  key={name}
+                  aria-label={`Убрать участника: ${name}`}
+                  onClick={() => setPeople(people.filter((saved) => saved !== name))}
+                >
+                  {name}
+                  <X size={15} />
+                </button>
+              ))}
+            </div>
+            <div className="people-input">
+              <label>
+                Имя участника
+                <input
+                  maxLength={60}
+                  value={person}
+                  list="album-people"
+                  onChange={(event) => setPerson(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter') {
+                      event.preventDefault()
+                      addPerson()
+                    }
+                  }}
+                />
+              </label>
+              <button
+                type="button"
+                className="button secondary"
+                disabled={!person.trim()}
+                onClick={addPerson}
+              >
+                Добавить участника
+              </button>
+            </div>
+            <datalist id="album-people">
+              {allPeople
+                .filter((name) => !people.includes(name))
+                .map((name) => (
+                  <option key={name} value={name} />
+                ))}
+            </datalist>
             <small>
               Один участник — индивидуальное фото, двое и больше — общее. Можно оставить пустым.
             </small>
-          </label>
+          </fieldset>
           <label>
             Когда снято
             <input type="date" value={date} onChange={(event) => setDate(event.target.value)} />
@@ -334,21 +381,24 @@ export default function AlbumPage() {
         {message}
       </p>
       <div className="album-filters">
-        <label>
-          Место
-          <select
-            aria-label="Фильтр места в альбоме"
-            value={placeFilter}
-            onChange={(event) => filter('place', event.target.value)}
-          >
-            <option value="">Все места</option>
-            {bundle.places.map((place) => (
-              <option key={place.id} value={place.id}>
-                {place.nameRu}
-              </option>
-            ))}
-          </select>
-        </label>
+        <details className="place-selection">
+          <summary>Место · {filteredPlace?.nameRu ?? 'весь альбом'}</summary>
+          {placeFilter && (
+            <button type="button" className="button secondary" onClick={() => filter('place', '')}>
+              Все места
+            </button>
+          )}
+          <PlacePicker
+            bundle={{
+              ...bundle,
+              places: bundle.places.filter((place) =>
+                tripPhotos.some((photo) => photo.placeId === place.id),
+              ),
+            }}
+            selectedId={placeFilter}
+            onSelect={(id) => filter('place', id)}
+          />
+        </details>
         <label>
           Участник
           <select value={personFilter} onChange={(event) => filter('person', event.target.value)}>
@@ -410,7 +460,8 @@ export default function AlbumPage() {
                       setEditing(photo)
                       setPlaceId(photo.placeId)
                       setCaption(photo.caption)
-                      setPeople(photo.people.join(', '))
+                      setPeople(photo.people)
+                      setPerson('')
                       setDate(photo.date)
                       document
                         .querySelector('.album-upload')!
