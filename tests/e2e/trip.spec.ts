@@ -19,7 +19,15 @@ test('keeps a personal plan and opens a shared snapshot', async ({ page }) => {
   const url = await page.getByLabel('Ссылка на план').inputValue()
   await page.goto(url)
   await expect(page.getByText('Копия плана по ссылке')).toBeVisible()
+  await expect(page.locator('.plan-day-tab.active')).toContainText('День 2')
+  await expect(page.locator('.plan-stop:visible')).toHaveCount(1)
   await expect(page.getByRole('button', { name: /Убрать из плана/ })).toHaveCount(0)
+  await page.getByRole('button', { name: 'Заменить мой план этой копией', exact: true }).click()
+  await expect(page.getByText('Копия плана по ссылке')).toHaveCount(0)
+  await expect(page.locator('.plan-day-tab.active')).toContainText('День 2')
+  await expect(page.locator('.plan-stop:visible')).toHaveCount(1)
+  await page.reload()
+  await expect(page.locator('.plan-day-tab.active')).toContainText('День 2')
 })
 
 test('uploads, edits, exports and restores our photos', async ({ page }) => {

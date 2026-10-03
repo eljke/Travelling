@@ -134,7 +134,7 @@ export default function PlanPage() {
   }
   const share = async () => {
     const url = new URL(window.location.href)
-    url.hash = `/${destinationId}/plan?${new URLSearchParams({ plan: JSON.stringify(plan) })}`
+    url.hash = `/${destinationId}/plan?${new URLSearchParams({ plan: JSON.stringify(plan), day: activeDay.date })}`
     setShareUrl(url.href)
     try {
       await navigator.clipboard.writeText(url.href)
@@ -185,7 +185,7 @@ export default function PlanPage() {
             className="button dark-button"
             onClick={() => {
               savePlan(destinationId, shared)
-              setParams(new URLSearchParams(), { replace: true })
+              setParams(new URLSearchParams({ day: activeDay.date }), { replace: true })
               setMessage('Копия сохранена как ваш план.')
             }}
           >
