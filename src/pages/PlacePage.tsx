@@ -270,7 +270,7 @@ export default function PlacePage() {
               </section>
             )}
             {place.queue && (
-              <div className="queue-note">
+              <div className="queue-note" role="region" aria-label="Очереди и время">
                 <h2>Очереди и время.</h2>
                 <p>
                   <strong>

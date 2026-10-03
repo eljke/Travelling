@@ -56,6 +56,7 @@ test('shares filters and keeps them on refresh', async ({ page, isMobile }) => {
 })
 test('saves favorites across reloads', async ({ page }) => {
   await page.goto('/#/dubai')
+  await page.getByRole('searchbox', { name: 'Поиск мест' }).fill('Бурдж-Халифа')
   await page.getByRole('button', { name: 'Сохранить: Бурдж-Халифа', exact: true }).click()
   await page.reload()
   await expect(
@@ -101,6 +102,7 @@ test('handles empty results and unavailable storage', async ({ page }) => {
     }
   })
   await page.goto('/#/dubai')
+  await page.getByRole('searchbox', { name: 'Поиск мест' }).fill('Бурдж-Халифа')
   await page.getByRole('button', { name: 'Сохранить: Бурдж-Халифа', exact: true }).click()
   await expect(page.getByRole('status')).toContainText('не разрешил сохранение')
   await page.getByRole('searchbox', { name: 'Поиск мест' }).fill('nonexistent-place')
@@ -129,6 +131,7 @@ test('keeps dark theme and handles missing routes', async ({ page }) => {
 })
 test('updates AED and USD and retains rates offline', async ({ page }) => {
   await page.goto('/#/dubai')
+  await page.getByRole('searchbox', { name: 'Поиск мест' }).fill('Бурдж-Халифа')
   await expect(page.getByLabel('Курсы валют')).toContainText('1 AED ≈ 25 ₽')
   await expect(page.getByLabel('Курсы валют')).toContainText('1 USD ≈ 90 ₽')
   await expect(page.locator('.place-card').filter({ hasText: 'Бурдж-Халифа' })).toContainText(
