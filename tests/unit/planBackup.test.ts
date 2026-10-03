@@ -16,6 +16,7 @@ describe('plan copies', () => {
       slots: { 'dubai-dubai-mall': '11:30' },
       visits: { 'dubai-dubai-mall': 120 },
       waits: { 'dubai-dubai-mall': 15 },
+      ticketChecks: { 'dubai-dubai-frame:family-1': { adults: 4, children: 0, slot: '12:00' } },
     }
     const before = structuredClone(plan)
     expect(importPlan(exportPlan(plan, dubai), dubai)).toMatchObject({ plan, skippedStops: 0 })

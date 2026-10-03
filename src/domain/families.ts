@@ -10,6 +10,47 @@ export const families = {
 }
 export const hasFamilyComposition = (settings: RouteSettings) =>
   settings.adults === 5 && settings.children === 1
+
+export function ticketChecks(placeId: string, scope: BudgetScope, settings: RouteSettings) {
+  const separate = hasFamilyComposition(settings)
+  const scopes: BudgetScope[] = separate
+    ? scope === 'both'
+      ? ['family-1', 'family-2']
+      : [scope]
+    : ['both']
+  return scopes.map((familyScope) => {
+    const party = separate ? families[familyScope] : settings
+    const key = `${placeId}:${familyScope}`
+    const expected = {
+      adults: party.adults,
+      children: party.children,
+      childAge: party.children ? settings.childAge : undefined,
+      slot: settings.slots[placeId],
+    }
+    const saved = settings.ticketChecks[key]
+    const checked = Boolean(
+      saved &&
+      saved.adults === expected.adults &&
+      saved.children === expected.children &&
+      saved.childAge === expected.childAge &&
+      saved.slot === expected.slot,
+    )
+    return {
+      key,
+      label: separate
+        ? families[familyScope].label
+        : `Весь состав · ${settings.adults + settings.children} человек`,
+      expected,
+      checked,
+      changed: Boolean(saved && !checked),
+    }
+  })
+}
+
+export function needsTicket(place: Place, settings: RouteSettings, date: string) {
+  const price = groupTicketPrice(place, settings, date)
+  return place.pricing.kind !== 'free' && (price.unknown || price.amount > 0)
+}
 export function familyTicketPrice(
   place: Place,
   scope: BudgetScope,

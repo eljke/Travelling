@@ -12,7 +12,7 @@ import {
   ExternalLink,
   Navigation,
 } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { images } from '../content/registry'
 import { useDestinationBundle } from '../app/ExchangeRates'
 import RateStrip from '../shared/RateStrip'
@@ -72,6 +72,15 @@ export default function PlacePage() {
   const [selectedId, setSelectedId] = useState<string>()
   const [russianPaymentOnly, setRussianPaymentOnly] = useState(false)
   const { budgetScope } = usePreferences()
+  useEffect(() => {
+    if (location.hash !== '#purchase' || !place) return
+    const frame = requestAnimationFrame(() => {
+      const section = document.getElementById('purchase')!
+      section.focus({ preventScroll: true })
+      section.scrollIntoView({ block: 'start' })
+    })
+    return () => cancelAnimationFrame(frame)
+  }, [location.hash, place])
   if (!place)
     return (
       <main id="main" className="container empty">
@@ -428,7 +437,7 @@ export default function PlacePage() {
           </small>
         </aside>
       </div>
-      <section className="purchase-section" id="purchase">
+      <section className="purchase-section" id="purchase" tabIndex={-1}>
         <RateStrip bundle={bundle} />
         <div className="section-heading">
           <div>

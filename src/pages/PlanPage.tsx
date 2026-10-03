@@ -46,6 +46,7 @@ import TripProposal from '../shared/TripProposal'
 import PlanPrint from '../shared/PlanPrint'
 import TripOverview from '../shared/TripOverview'
 import PlanBackup from '../shared/PlanBackup'
+import DepartureChecklist from '../shared/DepartureChecklist'
 import '../styles/print.css'
 import { dubaiDayIdeas } from '../content/dayIdeas'
 
@@ -472,6 +473,19 @@ export default function PlanPage() {
                     ),
                   })
                 }
+                onChange={(next) =>
+                  update({
+                    ...plan,
+                    days: plan.days.map((saved) => (saved.date === next.date ? next : saved)),
+                  })
+                }
+              />
+            )}
+            {places.length > 0 && bundle.trip.accommodation && (
+              <DepartureChecklist
+                day={day}
+                bundle={bundle}
+                readOnly={Boolean(shared)}
                 onChange={(next) =>
                   update({
                     ...plan,

@@ -18,6 +18,17 @@ export const routeSettingsSchema = z.object({
   slots: z.record(z.string(), time).default({}),
   visits: z.record(z.string(), z.number().int().min(15).max(720)).default({}),
   waits: z.record(z.string(), z.number().int().min(0).max(240)).default({}),
+  ticketChecks: z
+    .record(
+      z.string(),
+      z.object({
+        adults: z.number().int().min(1).max(12),
+        children: z.number().int().min(0).max(6),
+        childAge: z.number().int().min(0).max(17).optional(),
+        slot: time.optional(),
+      }),
+    )
+    .default({}),
   hotelBeachIncluded: z.boolean().default(true),
   safariTransferConfirmed: z.boolean().default(false),
   nolCardsOwned: z.boolean().default(false),

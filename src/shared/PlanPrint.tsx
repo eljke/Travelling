@@ -1,7 +1,7 @@
 import type { DestinationBundle } from '../domain/model'
 import type { Itinerary } from '../domain/itinerary'
-import { clockTime, defaultRouteSettings, evaluateRoute } from '../domain/dayRoute'
-import { families, familyRouteBudget } from '../domain/families'
+import { clockTime, defaultRouteSettings, evaluateRoute, toMinutes } from '../domain/dayRoute'
+import { families, familyRouteBudget, needsTicket, ticketChecks } from '../domain/families'
 import type { BudgetScope } from '../domain/families'
 import { formatDate, formatMoney, formatTrip } from './format'
 import { directionsUrl } from './HotelBase'
@@ -73,7 +73,7 @@ export default function PlanPrint({
                 · без еды и покупок
               </p>
             </div>
-            {!route.fits && (
+            {(!route.fits || toMinutes(settings.end) <= toMinutes(settings.start)) && (
               <p className="print-warning">
                 День требует изменения: проверьте часы, вход по билету и время возвращения.
               </p>
@@ -121,7 +121,18 @@ export default function PlanPrint({
                       )}
                       {settings.slots[stop.place.id] && (
                         <p>
-                          <strong>Билет: вход в {settings.slots[stop.place.id]}</strong>
+                          <strong>Время входа: {settings.slots[stop.place.id]}</strong>
+                        </p>
+                      )}
+                      {needsTicket(stop.place, settings, day.date) && (
+                        <p className="print-ticket-status">
+                          {ticketChecks(stop.place.id, scope, settings)
+                            .map(
+                              (check) =>
+                                `${check.label}: ${check.checked ? 'билеты куплены' : check.changed ? 'проверить состав / время' : 'покупка не отмечена'}`,
+                            )
+                            .join('; ')}
+                          .
                         </p>
                       )}
                       <p>

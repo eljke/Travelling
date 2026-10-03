@@ -1,12 +1,38 @@
 import { describe, expect, it } from 'vitest'
 import { destinations } from '../../src/content/registry'
 import { defaultRouteSettings, evaluateRoute, groupTicketPrice } from '../../src/domain/dayRoute'
-import { familyTicketPrice, familyRouteBudget } from '../../src/domain/families'
+import {
+  familyTicketPrice,
+  familyRouteBudget,
+  ticketChecks,
+  needsTicket,
+} from '../../src/domain/families'
 
 const bundle = destinations.dubai
 const date = '2026-10-08'
 const place = (slug: string) => bundle.places.find((place) => place.slug === slug)!
 describe('family budgets', () => {
+  it('keeps purchases separate and rechecks a changed party or booked time', () => {
+    const settings = structuredClone(defaultRouteSettings)
+    const id = place('dubai-frame').id
+    const first = ticketChecks(id, 'family-1', settings)[0]
+    settings.ticketChecks[first.key] = first.expected
+    expect(ticketChecks(id, 'both', settings).map((check) => check.checked)).toEqual([true, false])
+    const second = ticketChecks(id, 'family-2', settings)[0]
+    settings.ticketChecks[second.key] = second.expected
+    settings.childAge = 12
+    expect(ticketChecks(id, 'both', settings).map((check) => check.checked)).toEqual([true, false])
+    settings.childAge = 11
+    settings.slots[id] = '12:00'
+    expect(ticketChecks(id, 'both', settings).every((check) => check.changed)).toBe(true)
+    settings.adults = 4
+    settings.children = 0
+    expect(ticketChecks(id, 'family-1', settings)).toMatchObject([
+      { checked: false, label: 'Весь состав · 4 человек' },
+    ])
+    expect(needsTicket(place('ja-beach'), settings, date)).toBe(false)
+    expect(needsTicket(place('dubai-frame'), settings, date)).toBe(true)
+  })
   it('sums personal child tickets and shares one group package', () => {
     for (const slug of ['green-planet', 'dubai-frame', 'lahbab-desert']) {
       const attraction = place(slug)
