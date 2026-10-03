@@ -126,7 +126,7 @@ npm run test:e2e
 
 E2E используют production build и сами запускают preview на порту 4173. Live map smoke требует доступного OpenFreeMap; отдельный тест проверяет отказ сети. На Windows реальные tile requests пересылаются через Playwright HTTP context, чтобы обойти зависание локального Chromium transport; на Linux браузер загружает их напрямую. Ошибки сохраняют screenshot/trace в `test-results/`.
 
-`npm run format` форматирует проект. Validation проверяет schemas, уникальность id/slug, source/provider/geography references и наличие фото. Unit tests проверяют деньги, Haversine, nearby, фильтры, URL и некорректные данные.
+`npm run format` форматирует проект. Validation проверяет schemas, уникальность id/slug, source/provider/geography references и наличие фото. Также проверяются текущая версия, отсутствие повторов в changelog и ссылки на изменения каждого выпуска. Unit tests проверяют деньги, Haversine, nearby, фильтры, URL и некорректные данные.
 
 ## GitHub Pages
 

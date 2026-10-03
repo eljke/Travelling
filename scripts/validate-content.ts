@@ -1,6 +1,27 @@
 import { destinations, images } from '../src/content/registry.ts'
 import { existsSync, readFileSync } from 'node:fs'
 import { createHash } from 'node:crypto'
+import assert from 'node:assert/strict'
+
+const { version } = JSON.parse(readFileSync('package.json', 'utf8'))
+const changelog = readFileSync('CHANGELOG.md', 'utf8')
+const versions = [...changelog.matchAll(/^## \[(\d+\.\d+\.\d+)\] - \d{4}-\d{2}-\d{2}\r?$/gm)].map(
+  (match) => match[1],
+)
+assert.equal(versions[0], version, 'The current release must be the first changelog entry')
+assert.equal(new Set(versions).size, versions.length, 'Duplicate changelog version')
+const repository = 'https://github.com/eljke/Travelling'
+assert(
+  changelog.includes(`[Unreleased]: ${repository}/compare/v${version}...HEAD`),
+  'Update the Unreleased comparison link',
+)
+for (const [index, release] of versions.entries()) {
+  const target = versions[index + 1]
+    ? `${repository}/compare/v${versions[index + 1]}...v${release}`
+    : `${repository}/tree/v${release}`
+  assert(changelog.includes(`[${release}]: ${target}`), `Missing changelog comparison: ${release}`)
+}
+
 for (const image of Object.values(images))
   for (const path of [image.src, image.small]) {
     if (!path.startsWith('https://') && !existsSync(`public/${path}`))
