@@ -4,6 +4,7 @@ import { galleries } from './dubai-galleries'
 import { extraAreas, extraPlaces } from './dubai-extra'
 import hoursSnapshot from '../../../public/place-hours.json'
 import { hoursFeedSchema } from '../../domain/openingHours'
+import { currentReviewSources, reviewUpdates } from './dubai-reviews'
 
 const checkedAt = '2026-10-02'
 const source = (id: string, title: string, url: string, type = 'official', note?: string) => ({
@@ -1605,6 +1606,8 @@ for (const place of extraPlaces)
     ...source(place.source, `${place.name} • информация для посещения`, place.website!, 'official'),
     accessedAt: '2026-10-03',
   })
+for (const [id, title, url] of currentReviewSources)
+  sources.push({ ...source(id, title, url, 'review'), accessedAt: '2026-10-03' })
 const verifiedHours = hoursFeedSchema.parse(hoursSnapshot).places
 for (const hours of verifiedHours)
   sources.push({
@@ -1793,7 +1796,7 @@ const places = [...seeds, ...extraPlaces].map((s) => {
     },
     pricing,
     ticketProviders: offers,
-    ...(s.review ? { reviewInsights: s.review } : {}),
+    ...(reviewUpdates[s.id] || s.review ? { reviewInsights: reviewUpdates[s.id] ?? s.review } : {}),
     officialWebsite,
     bookingRecommended: s.booking ?? false,
     bestTime: [s.best],

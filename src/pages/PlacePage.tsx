@@ -185,10 +185,18 @@ export default function PlacePage() {
             </p>
           )}
           <section className="review-section">
-            <span className="eyebrow">ОПЫТ РУССКОЯЗЫЧНЫХ ПУТЕШЕСТВЕННИКОВ</span>
+            <span className="eyebrow">ВПЕЧАТЛЕНИЯ ПОСЕТИТЕЛЕЙ · РУССКИЕ ОТЗЫВЫ В ПРИОРИТЕТЕ</span>
             <h2>Что говорят после визита.</h2>
             {place.reviewInsights ? (
               <>
+                {place.reviewInsights.coverage && (
+                  <p className="review-coverage">
+                    {place.reviewInsights.coverage.period} ·{' '}
+                    {place.reviewInsights.coverage.languages.join(', ')}
+                    {place.reviewInsights.coverage.latestReviewAt &&
+                      ` · последний просмотренный отзыв: ${formatDate(place.reviewInsights.coverage.latestReviewAt)}`}
+                  </p>
+                )}
                 <p className="review-consensus">{place.reviewInsights.consensus}</p>
                 <div className="review-columns">
                   <div>
@@ -226,6 +234,7 @@ export default function PlacePage() {
                   {place.reviewInsights.sampleNote} Проверено{' '}
                   {formatDate(place.reviewInsights.checkedAt)}.
                 </p>
+                <Sources bundle={bundle} ids={place.reviewInsights.sourceIds} />
               </>
             ) : (
               <div className="unknown-review">

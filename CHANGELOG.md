@@ -4,6 +4,18 @@
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-10-03
+
+### Added
+
+- Пересказы свежих отзывов для Burj Khalifa, Dubai Aquarium, Sky Views, Green Planet, The View и Aquaventure.
+- Период выборки, языки и дата последнего прочитанного отзыва рядом с впечатлениями.
+
+### Changed
+
+- Русскоязычные отзывы в приоритете; отзывы других языков дополняют выборку.
+- Разные билеты и впечатления о продавце отделены от впечатлений о месте.
+
 ## [1.2.0] - 2026-10-03
 
 ### Added
@@ -40,7 +52,8 @@
 
 - Доступность элементов управления, читаемость кнопок и устойчивость загрузки.
 
-[Unreleased]: https://github.com/eljke/Travelling/compare/v1.2.0...HEAD
+[Unreleased]: https://github.com/eljke/Travelling/compare/v1.3.0...HEAD
+[1.3.0]: https://github.com/eljke/Travelling/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/eljke/Travelling/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/eljke/Travelling/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/eljke/Travelling/tree/v1.0.0
