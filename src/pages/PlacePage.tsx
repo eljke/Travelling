@@ -209,6 +209,66 @@ export default function PlacePage() {
             </p>
           )}
           <section className="review-section">
+            {place.slug === 'madinat-jumeirah' && (
+              <aside className="queue-note">
+                <h2>Прокатиться по каналам.</h2>
+                <p>
+                  Full Abra Tour · 20 минут · {formatMoney(100, bundle.exchangeRate)} за взрослого.
+                  На {families[budgetScope].label.toLocaleLowerCase('ru')} закладываем{' '}
+                  {formatMoney(
+                    100 * (families[budgetScope].adults + families[budgetScope].children),
+                    bundle.exchangeRate,
+                  )}
+                  .
+                </p>
+                <p className="fine-print">
+                  У оператора указан детский билет {formatMoney(50, bundle.exchangeRate)}, но
+                  возрастная граница на странице не опубликована. Для ребёнка 11 лет пока считаем
+                  взрослую цену. Это отдельная лодочная прогулка; в бесплатный вход и базовый minmax
+                  не включена.
+                </p>
+                <a
+                  className="text-button"
+                  href="https://www.jumeirah.com/en/stay/dubai/jumeirah-mina-al-salam/experiences/abra-tours"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Выбрать прогулку у Jumeirah ↗
+                </a>
+              </aside>
+            )}
+            {place.recommendation && (
+              <aside className="queue-note">
+                <h2>Для нашей поездки.</h2>
+                <p>{place.recommendation.reason}</p>
+              </aside>
+            )}
+            {place.photoSpots.length > 0 && (
+              <section className="photo-spots" aria-label="Фотозоны">
+                <h2>Где сделать красивые фото.</h2>
+                <div>
+                  {place.photoSpots.map((spot) => (
+                    <article key={spot.title}>
+                      <h3>{spot.title}</h3>
+                      <p>{spot.note}</p>
+                      <small>{spot.bestTime}</small>
+                      <a
+                        className="text-button"
+                        href={`https://www.google.com/maps/search/?${new URLSearchParams({ api: '1', query: `${place.name} ${spot.title}` })}`}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        Найти ориентир на карте ↗
+                      </a>
+                    </article>
+                  ))}
+                </div>
+                <p className="fine-print">
+                  Это ориентиры для прогулки, без обещания свободного ракурса или доступа в
+                  гостиничные зоны.
+                </p>
+              </section>
+            )}
             {place.queue && (
               <div className="queue-note">
                 <h2>Очереди и время.</h2>

@@ -103,6 +103,14 @@ export const placeSchema = z.object({
   name: z.string().min(1),
   nameRu: z.string().min(1),
   shortDescription: z.string().min(1),
+  recommendation: z
+    .object({ priority: z.number().int().positive(), reason: z.string().min(1) })
+    .optional(),
+  photoSpots: z
+    .array(
+      z.object({ title: z.string().min(1), note: z.string().min(1), bestTime: z.string().min(1) }),
+    )
+    .default([]),
   description: z.string().min(1),
   coordinates: coordinatesSchema,
   coordinateNote: z.string(),

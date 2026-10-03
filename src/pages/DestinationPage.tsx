@@ -16,7 +16,13 @@ import {
 import { useDestinationBundle } from '../app/ExchangeRates'
 import RateStrip from '../shared/RateStrip'
 import type { Coordinates } from '../domain/model'
-import { parseFilters, serializeFilters, defaultFilters, filterPlaces } from '../domain/filters'
+import {
+  parseFilters,
+  serializeFilters,
+  defaultFilters,
+  filterPlaces,
+  sortRecommended,
+} from '../domain/filters'
 import type { Filters } from '../domain/filters'
 import { sortByDistance, distanceBetween } from '../domain/geo'
 import FamilyBudgetControl from '../shared/FamilyBudgetControl'
@@ -27,6 +33,7 @@ import Photo from '../shared/Photo'
 import PlaceCard from '../shared/PlaceCard'
 import LazyMap from '../features/map/LazyMap'
 import HotelBase from '../shared/HotelBase'
+import ViewpointComparison from '../shared/ViewpointComparison'
 
 export default function DestinationPage({
   mapMode = false,
@@ -67,7 +74,7 @@ export default function DestinationPage({
       return sortByDistance(result, position).map((v) => v.place)
     if (filters.sort === 'hotel' && bundle.trip.accommodation)
       return sortByDistance(result, bundle.trip.accommodation.coordinates).map((v) => v.place)
-    return result
+    return sortRecommended(result)
   }, [bundle, filters, favorites, position])
   if (!bundle)
     return (
@@ -373,6 +380,7 @@ export default function DestinationPage({
           </p>
         )}
         <FamilyBudgetControl />
+        {!shoppingMode && destinationId === 'dubai' && <ViewpointComparison bundle={bundle} />}
         {filters.sort === 'nearby' && !position && (
           <p className="status-message">
             Нажмите «Рядом со мной», чтобы отсортировать места по вашему положению. Геопозиция не
@@ -401,7 +409,7 @@ export default function DestinationPage({
                   e.target.value === 'nearby' ? findLocation() : setFilter('sort', e.target.value)
                 }
               >
-                <option value="editorial">В порядке каталога</option>
+                <option value="recommended">Сначала стоит увидеть</option>
                 <option value="price">Сначала дешевле</option>
                 <option value="nearby">Ближе ко мне</option>
                 {bundle.trip.accommodation && <option value="hotel">Ближе к отелю</option>}

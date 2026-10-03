@@ -88,6 +88,7 @@ export default function PlaceCard({
         </Link>
       </h3>
       <p className="card-description">{place.shortDescription}</p>
+      {place.recommendation && <p className="card-recommendation">{place.recommendation.reason}</p>}
       <div className="card-meta">
         <span>
           <Clock size={14} />

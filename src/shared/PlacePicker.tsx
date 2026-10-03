@@ -12,6 +12,7 @@ import { formatDate, formatDuration, formatMoney, formatPrice, formatRub } from 
 import { categoryLabels } from './labels'
 import Photo from './Photo'
 import LazyMap from '../features/map/LazyMap'
+import { sortRecommended } from '../domain/filters'
 
 export default function PlacePicker({
   bundle,
@@ -56,7 +57,7 @@ export default function PlacePicker({
           : [place]
       ).map((point) => distanceBetween(point.coordinates, place.coordinates)),
     )
-  const places = bundle.places
+  const places = sortRecommended(bundle.places)
     .filter(
       (place) =>
         !excludedIds.includes(place.id) &&
@@ -144,7 +145,7 @@ export default function PlacePicker({
             onChange={(event) => setSort(event.target.value)}
           >
             <option value="nearby">Сначала по пути</option>
-            <option value="catalog">Как в каталоге</option>
+            <option value="catalog">Сначала стоит увидеть</option>
           </select>
         )}
       </div>

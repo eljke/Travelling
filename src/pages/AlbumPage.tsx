@@ -225,13 +225,15 @@ export default function AlbumPage() {
           }}
         >
           <details className="place-selection" open={!selectedPlace}>
-            <summary>Где мы были · {selectedPlace?.nameRu ?? 'выберите место'}</summary>
-            {selectedPlace && (
-              <div className="selected-place-preview">
+            <summary className="selected-place-preview">
+              {selectedPlace && (
                 <Photo imageId={selectedPlace.imageId} alt={selectedPlace.nameRu} />
-                <strong>{selectedPlace.nameRu}</strong>
-              </div>
-            )}
+              )}
+              <span>
+                Где мы были · {selectedPlace?.nameRu ?? 'выберите место'}{' '}
+                <small>· выбрать другое</small>
+              </span>
+            </summary>
             <PlacePicker bundle={bundle} selectedId={placeId} onSelect={(id) => setPlaceId(id)} />
           </details>
           {!editing && (

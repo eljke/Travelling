@@ -18,17 +18,24 @@ export const defaultFilters: Filters = {
   duration: '',
   tag: '',
   favorites: false,
-  sort: 'editorial',
+  sort: 'recommended',
 }
 export function parseFilters(params: URLSearchParams): Filters {
   const value = { ...defaultFilters }
   for (const key of ['q', 'area', 'category', 'price', 'duration', 'tag', 'sort'] as const)
     value[key] = params.get(key) ?? value[key]
   value.favorites = params.get('favorites') === '1'
-  if (!['editorial', 'price', 'nearby', 'hotel'].includes(value.sort)) value.sort = 'editorial'
+  if (!['recommended', 'price', 'nearby', 'hotel'].includes(value.sort)) value.sort = 'recommended'
   if (!['', 'free', 'under-100', '100-250', '250-plus'].includes(value.price)) value.price = ''
   if (!['', 'under-1', '1-2', '2-4', 'half-day'].includes(value.duration)) value.duration = ''
   return value
+}
+export function sortRecommended(places: Place[]) {
+  return [...places].sort(
+    (a, b) =>
+      (a.availability.status === 'temporarily-closed' ? 1000 : (a.recommendation?.priority ?? 50)) -
+      (b.availability.status === 'temporarily-closed' ? 1000 : (b.recommendation?.priority ?? 50)),
+  )
 }
 export function serializeFilters(filters: Filters): URLSearchParams {
   const params = new URLSearchParams()

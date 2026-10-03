@@ -161,7 +161,7 @@ describe('URL', () => {
   })
   it('normalizes invalid enum values', () => {
     expect(parseFilters(new URLSearchParams('price=banana&duration=nan&sort=bad')).price).toBe('')
-    expect(parseFilters(new URLSearchParams('sort=bad')).sort).toBe('editorial')
+    expect(parseFilters(new URLSearchParams('sort=bad')).sort).toBe('recommended')
   })
 })
 describe('content integrity', () => {

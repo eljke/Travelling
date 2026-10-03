@@ -2,6 +2,7 @@ import { ticketLinks, ticketLinksCheckedAt } from './dubai-tickets'
 import { priceUpdates } from './dubai-prices'
 import { galleries, placePhotos } from './dubai-galleries'
 import { queues } from './dubai-queues'
+import { guides } from './dubai-guides'
 import { extraAreas, extraPlaces } from './dubai-extra'
 import hoursSnapshot from '../../../public/place-hours.json'
 import { hoursFeedSchema } from '../../domain/openingHours'
@@ -17,6 +18,14 @@ const source = (id: string, title: string, url: string, type = 'official', note?
   ...(note ? { note } : {}),
 })
 const sources = [
+  {
+    ...source(
+      'madinat-abra',
+      'Jumeirah • лодочная прогулка по каналам, 20 минут',
+      'https://www.jumeirah.com/en/stay/dubai/jumeirah-mina-al-salam/experiences/abra-tours',
+    ),
+    accessedAt: '2026-10-03',
+  },
   {
     ...source(
       'ja-palm-tree-court',
@@ -940,8 +949,9 @@ const seeds: Seed[] = [
     image: 'madinat',
     short: 'Каналы, арабские арки и террасы с видом на отель-парус.',
     description:
-      'Общественные пространства souk можно исследовать во время прогулки. Это современная интерпретация традиционного рынка, а не сохранившийся старый город. Рестораны, лодочные прогулки и гостиничные зоны имеют собственные условия доступа.',
+      'Здесь стоит задержаться: пройти через арабские арки souk к воде, посмотреть каналы и Парус, выбрать кафе или прогулку на абре. Общедоступную часть исследуем пешком без билета. Это современный рынок в традиционном стиле; гостиничные дорожки и пляжи могут быть только для гостей. Лодка — отдельное впечатление: официальный Full Abra Tour длится 20 минут; цену и детский возраст сверяем перед оплатой.',
     source: 'jumeirah',
+    extraSources: ['madinat-abra'],
     free: true,
     minutes: [60, 120],
     tags: ['sunset', 'couple', 'photos', 'free'],
@@ -1760,12 +1770,21 @@ const places = [...seeds, ...extraPlaces].map((s) => {
     name: s.name,
     nameRu: s.nameRu,
     shortDescription: s.short,
+    recommendation: guides[s.id]
+      ? { priority: guides[s.id].priority, reason: guides[s.id].reason }
+      : undefined,
+    photoSpots: guides[s.id]?.photoSpots ?? [],
     description: s.description,
     coordinates: { lat: s.coordinates[0], lng: s.coordinates[1] },
     coordinateNote:
       'Ориентировочная точка объекта или прогулочной зоны. Это не обязательно точный вход; сверяйте маршрут у оператора.',
     categories: [s.category],
-    tags: s.tags,
+    tags:
+      s.id === 'burj-khalifa'
+        ? s.tags.filter((tag) => tag !== 'must-see')
+        : guides[s.id]?.priority <= 12
+          ? [...new Set([...s.tags, 'must-see'])]
+          : s.tags,
     imageId: s.id in placePhotos ? placePhotos[s.id].imageId : s.image,
     gallery: galleries[s.id] ?? [],
     queue: queues[s.id]?.queue,

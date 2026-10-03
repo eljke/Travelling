@@ -1394,9 +1394,85 @@ select option {
   transform: rotate(-90deg);
 }
 .review-section {
+  scroll-margin-top: 90px;
   border-top: 1px solid var(--line);
   margin-top: 40px;
   padding-top: 32px;
+}
+.photo-spots {
+  margin-bottom: 32px;
+}
+.photo-spots > div {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.photo-spots article {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 20px;
+}
+.photo-spots h3 {
+  font-size: 22px;
+  margin-bottom: 12px;
+}
+.photo-spots p {
+  font-size: 14px;
+  line-height: 1.7;
+}
+.photo-spots small {
+  display: block;
+  color: var(--muted);
+  margin-block: 12px;
+}
+.photo-spots .text-button {
+  font-size: 12px;
+}
+.card-recommendation {
+  font-size: 12px;
+  line-height: 1.65;
+  color: var(--muted);
+  border-left: 2px solid var(--accent);
+  padding-left: 10px;
+  margin: 12px 0;
+}
+.viewpoint-comparison {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 20px;
+  margin-block: 24px;
+}
+.viewpoint-comparison summary {
+  cursor: pointer;
+  font-size: 15px;
+}
+.viewpoint-comparison p {
+  font-size: 13px;
+  line-height: 1.7;
+}
+.comparison-scroll {
+  overflow-x: auto;
+}
+.viewpoint-comparison table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 640px;
+  font-size: 13px;
+}
+.viewpoint-comparison th,
+.viewpoint-comparison td {
+  padding: 14px;
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid var(--line);
+}
+.viewpoint-comparison small {
+  color: var(--muted);
+}
+@media (max-width: 650px) {
+  .photo-spots > div {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 .review-section h2 {
   font-size: 31px;
