@@ -20,7 +20,7 @@ function Leg({ leg, departure, arrival }: { leg: TravelLeg; departure: number; a
     <div className="route-leg">
       {leg.mode === 'walk' ? (
         <Footprints size={19} />
-      ) : leg.mode === 'taxi' ? (
+      ) : leg.mode === 'taxi' || leg.mode === 'tour' ? (
         <Car size={19} />
       ) : (
         <TrainFront size={19} />
@@ -28,7 +28,11 @@ function Leg({ leg, departure, arrival }: { leg: TravelLeg; departure: number; a
       <div>
         <strong>
           {clockTime(departure)} → {clockTime(arrival)} · {leg.minutes} мин ·{' '}
-          {leg.cost ? `≈ ${leg.cost}–${leg.highCost} AED на всех` : 'бесплатно'}
+          {leg.cost
+            ? `≈ ${leg.cost}–${leg.highCost} AED на всех`
+            : leg.mode === 'tour'
+              ? 'входит в тур'
+              : 'бесплатно'}
         </strong>
         <p>{leg.detail}</p>
         <a
@@ -36,7 +40,11 @@ function Leg({ leg, departure, arrival }: { leg: TravelLeg; departure: number; a
           href={directionsUrl(
             leg.origin,
             leg.destination,
-            leg.mode === 'walk' ? 'walking' : leg.mode === 'taxi' ? 'driving' : 'transit',
+            leg.mode === 'walk'
+              ? 'walking'
+              : leg.mode === 'taxi' || leg.mode === 'tour'
+                ? 'driving'
+                : 'transit',
           )}
           target="_blank"
           rel="noreferrer"
@@ -296,8 +304,8 @@ export default function DayRoutePlanner({
         <details className="route-assumptions">
           <summary>Разделить бюджет между двумя семьями</summary>
           <p>
-            Общую дорогу делим на шестерых, билеты считаем по составу каждой семьи. Еда и покупки
-            отдельно; для мест без цены сумма неполная.
+            Общую дорогу и групповые пакеты делим на шестерых, личные билеты считаем по составу
+            каждой семьи. Еда и покупки отдельно; для мест без цены сумма неполная.
           </p>
           {[
             { title: 'Семья: 4 взрослых', adults: 4, children: 0, share: 4 / 6 },
@@ -308,10 +316,13 @@ export default function DayRoutePlanner({
                 sum +
                 groupTicketPrice(
                   place,
-                  { ...settings, adults: family.adults, children: family.children },
+                  place.pricing.unit === 'group'
+                    ? settings
+                    : { ...settings, adults: family.adults, children: family.children },
                   day.date,
                   bundle.exchangeRate.baseCurrency,
-                ).amount,
+                ).amount *
+                  (place.pricing.unit === 'group' ? family.share : 1),
               0,
             )
             return (
@@ -385,6 +396,58 @@ export default function DayRoutePlanner({
       </details>
       <details className="route-assumptions">
         <summary>Как считаем дорогу и деньги</summary>
+        {places.some((place) => place.areaId === 'desert') && (
+          <>
+            <p>
+              Сафари лучше оставить отдельным выездом. Пакет на шестерых включает программу, ужин и
+              трансфер, но забор из JA нужно подтвердить у оператора до оплаты.
+            </p>
+            {places.length === 1 && !readOnly && (
+              <label>
+                <input
+                  type="checkbox"
+                  checked={settings.safariTransferConfirmed}
+                  onChange={(event) => update({ safariTransferConfirmed: event.target.checked })}
+                />
+                Оператор подтвердил забор из JA в этом пакете
+              </label>
+            )}
+            <p>
+              {places.length === 1 && settings.safariTransferConfirmed
+                ? 'Время выезда из отеля задаём по согласованному времени забора. На весь тур с дорогой и ужином отводим около шести часов; отдельное такси и обед не добавляем.'
+                : 'Пока закладываем весь шестичасовой тур и отдельную дорогу с запасом. После подтверждения трансфера оставьте сафари единственной остановкой дня и включите его в расчёт.'}
+            </p>
+          </>
+        )}
+        {places.some((place) => place.slug === 'ja-beach') && (
+          <>
+            <p>
+              Мы живём в JA Palm Tree Court: отдельный day pass на пляж и бассейны по умолчанию не
+              покупаем. Это допущение для нашей брони; дополнительные активности и питание считаются
+              отдельно.
+            </p>
+            {!readOnly && (
+              <label>
+                <input
+                  type="checkbox"
+                  checked={settings.hotelBeachIncluded}
+                  onChange={(event) => update({ hotelBeachIncluded: event.target.checked })}
+                />
+                Пляж и бассейны JA входят в наше проживание
+              </label>
+            )}
+            <p>
+              <a
+                href="https://source.jaresortshotels.com/offer-detail/summer-suites-dining"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Доступ к пляжу в предложениях отеля ↗
+              </a>{' '}
+              · Условия своей брони сверим в подтверждении отеля.
+            </p>
+          </>
+        )}
         <p>
           Это предварительная оценка, без пробок и живых расписаний транспорта. Дорога на такси:
           расстояние по прямой × 1,3–1,55, средняя скорость 30–55 км/ч и 10 минут на подачу/выход.

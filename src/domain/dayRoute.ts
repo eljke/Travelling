@@ -17,6 +17,8 @@ export const routeSettingsSchema = z.object({
   breakMinutes: z.number().int().min(0).max(120).default(45),
   slots: z.record(z.string(), time).default({}),
   visits: z.record(z.string(), z.number().int().min(15).max(720)).default({}),
+  hotelBeachIncluded: z.boolean().default(true),
+  safariTransferConfirmed: z.boolean().default(false),
 })
 export type RouteSettings = z.infer<typeof routeSettingsSchema>
 export const defaultRouteSettings: RouteSettings = routeSettingsSchema.parse({ childAge: 11 })
@@ -51,7 +53,7 @@ const stationNames: Record<number, string> = {
 // Conservative estimate from JA to the metro; road geometry and traffic require live directions.
 const ibnBattuta: Coordinates = { lat: 25.0441, lng: 55.1182 }
 export type TravelLeg = {
-  mode: 'taxi' | 'walk' | 'metro' | 'tram'
+  mode: 'taxi' | 'walk' | 'metro' | 'tram' | 'tour'
   minutes: number
   cost: number
   highCost: number
@@ -182,8 +184,18 @@ export function groupTicketPrice(
   date: string,
   currency = 'AED',
 ) {
+  if (place.slug === 'ja-beach' && settings.hotelBeachIncluded)
+    return { amount: 0, unknown: false, childEstimated: false }
   if (place.pricing.kind === 'unknown' || place.pricing.currency !== currency)
     return { amount: 0, unknown: true, childEstimated: false }
+  if (place.pricing.unit === 'group')
+    return {
+      amount:
+        place.pricing.amount! *
+        Math.ceil((settings.adults + settings.children) / place.pricing.groupCapacity!),
+      unknown: false,
+      childEstimated: false,
+    }
   let adult = place.pricing.amount!
   if (place.slug === 'ja-beach' && [0, 5, 6].includes(new Date(`${date}T12:00:00Z`).getUTCDay()))
     adult = 200
@@ -209,6 +221,8 @@ export function evaluateRoute(
   const hotel = bundle.trip.accommodation!
   const start = toMinutes(settings.start)
   const deadline = toMinutes(settings.end)
+  const includedSafari =
+    places.length === 1 && places[0].areaId === 'desert' && settings.safariTransferConfirmed
   const hotelPoint: StopPoint = {
     coordinates: hotel.coordinates,
     ...(distanceBetween(hotel.coordinates, { lat: 24.9873835, lng: 55.0219208 }) < 0.2
@@ -219,11 +233,11 @@ export function evaluateRoute(
   let previous: StopPoint = hotelPoint
   let pause = 0
   const stops = places.map((place, index) => {
-    const fixedTime = settings.slots[place.id]
+    const fixedTime = includedSafari ? undefined : settings.slots[place.id]
     const slot = fixedTime ? toMinutes(fixedTime) : undefined
     const schedule = place.openingHours.schedule
     const sessions = place.openingHours.sessions
-    const visitMinutes =
+    let visitMinutes =
       settings.visits[place.id] ??
       (place.areaId === 'hatta'
         ? 180
@@ -236,6 +250,22 @@ export function evaluateRoute(
         : Infinity,
     )
     const leg = chooseLeg(previous, place, settings, time, date, arriveBy)
+    if (includedSafari) {
+      Object.assign(leg, {
+        mode: 'tour',
+        cost: 0,
+        highCost: 0,
+        detail:
+          'Трансфер оператора входит в пакет. Забор из JA подтверждён; время дороги — оценка.',
+      })
+      const back = taxiLeg(place, hotelPoint, settings)
+      visitMinutes = Math.max(
+        15,
+        Math.round((place.duration.minMinutes + place.duration.maxMinutes) / 2) -
+          leg.minutes -
+          back.minutes,
+      )
+    }
     const departure = time
     time += leg.minutes
     const arrival = time
@@ -250,6 +280,10 @@ export function evaluateRoute(
     time += visitMinutes
     const end = time
     const warnings: string[] = []
+    if (place.areaId === 'desert' && !includedSafari)
+      warnings.push(
+        'Сафари — отдельный тур. Забор из JA, начало и возврат согласуем с оператором; такси в расчёте пока отдельной оценкой.',
+      )
     if (closedOnDate(place, date)) warnings.push('На этот день указано закрытие.')
     if (missedSlot)
       warnings.push(
@@ -263,7 +297,7 @@ export function evaluateRoute(
       warnings.push('Посещение не помещается в опубликованные часы работы.')
     if (!schedule && !sessions && !fixedTime)
       warnings.push('Часы и время входа нужно подтвердить; в расчёте нет закреплённого слота.')
-    if (index === Math.floor((places.length - 1) / 2)) {
+    if (index === Math.floor((places.length - 1) / 2) && !includedSafari) {
       pause = settings.breakMinutes
       time += pause
     }
@@ -292,6 +326,13 @@ export function evaluateRoute(
         destination: hotel.coordinates,
       }
   const returnAt = time + returnLeg.minutes
+  if (includedSafari)
+    Object.assign(returnLeg, {
+      mode: 'tour',
+      cost: 0,
+      highCost: 0,
+      detail: 'Возвращение в отель с оператором, включено в пакет.',
+    })
   const legs = [...stops.map((stop) => stop.leg), returnLeg]
   const tickets = places.map((place) =>
     groupTicketPrice(place, settings, date, bundle.exchangeRate.baseCurrency),

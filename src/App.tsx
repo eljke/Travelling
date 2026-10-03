@@ -26,11 +26,19 @@ function Shell() {
   useEffect(() => {
     const current = destinations[location.pathname.split('/')[1]]
     const place = current?.places.find((p) => p.slug === location.pathname.split('/')[3])
+    const section = location.pathname.split('/')[2]
+    const sectionName =
+      {
+        plan: 'план поездки',
+        photos: 'наши фотографии',
+        shopping: 'торговые центры',
+        sources: 'источники',
+      }[section as 'plan' | 'photos' | 'shopping' | 'sources'] ?? 'места и карта'
     const title = place
       ? `${place.nameRu} · ${current.destination.name} — ${ui.brand}`
       : current
-        ? `${current.destination.name} · ${location.pathname.endsWith('/plan') ? 'план поездки' : 'места и карта'} — ${ui.brand}`
-        : `Ваши путешествия — ${ui.brand}`
+        ? `${current.destination.name} · ${sectionName} — ${ui.brand}`
+        : `${location.pathname === '/updates' ? 'История обновлений' : 'Наши поездки'} — ${ui.brand}`
     document.title = title
     document.querySelector('meta[property="og:title"]')?.setAttribute('content', title)
     document
@@ -39,7 +47,7 @@ function Shell() {
         'content',
         place?.shortDescription ??
           current?.destination.description ??
-          'Личный путеводитель по местам, которые стоят вашего времени.',
+          'Наши поездки, любимые места, планы на день и фотографии вместе.',
       )
   }, [location.pathname])
   useEffect(() => {
@@ -68,10 +76,9 @@ function Shell() {
       </a>
       <header className="site-header">
         <div className="header-inner container">
-          <Link to="/" className="brand" aria-label="elsewhere — ваши путешествия">
+          <Link to="/" className="brand" aria-label="elsewhere — наши поездки">
             <Compass size={27} strokeWidth={1.5} />
             {ui.brand}
-            <span>®</span>
           </Link>
           <nav aria-label="Основная навигация">
             <Link className={location.pathname === '/' ? 'active' : ''} to="/">
@@ -195,7 +202,7 @@ function Shell() {
               <Compass size={23} strokeWidth={1.5} />
               {ui.brand}
             </Link>
-            <p>Места, которые стоят вашего времени.</p>
+            <p>Наши места, планы и фотографии.</p>
             <Link to={`${destinationPath}/photos`}>Наши фото ↗</Link>
           </div>
           <div>

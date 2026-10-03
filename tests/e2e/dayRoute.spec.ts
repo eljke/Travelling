@@ -31,6 +31,7 @@ test('respects seasonal dates and booked admission', async ({ page }) => {
   const gardens = page.locator('.day-ideas:visible article').filter({ hasText: 'Два сада рядом' })
   await expect(gardens.getByRole('button')).toBeDisabled()
   await page.getByRole('button', { name: /День 3/ }).click()
+  await expect(gardens.getByRole('button')).toBeEnabled()
   await gardens.getByRole('button').click()
   await expect(page.locator('.plan-stop:visible')).toHaveCount(2)
   await page.getByLabel('Вход по билету: Сад цветов Miracle Garden', { exact: true }).fill('09:00')
@@ -46,4 +47,31 @@ test('respects seasonal dates and booked admission', async ({ page }) => {
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(
     true,
   )
+})
+
+test('splits one safari package and includes a confirmed hotel transfer', async ({ page }) => {
+  await page.goto('/#/dubai/place/lahbab-desert')
+  await page
+    .locator('.place-story')
+    .getByRole('button', { name: 'В план: Красные дюны Лахбаб', exact: true })
+    .click()
+  await page.getByRole('link', { name: 'План', exact: true }).click()
+  const planner = page.getByRole('region', { name: 'Маршрут на день' })
+  await expect(planner.locator('.route-budget')).toContainText('1 000')
+  await planner.getByText('Как считаем дорогу и деньги', { exact: true }).click()
+  await planner.getByLabel('Оператор подтвердил забор из JA в этом пакете').check()
+  await planner.getByLabel('Выезд из отеля', { exact: true }).fill('15:00')
+  await expect(planner.locator('.route-timeline')).toContainText('21:00 · Возвращение в отель')
+  await expect(planner.locator('.route-leg')).toHaveCount(2)
+  await expect(planner.locator('.route-leg').first()).toContainText('входит в тур')
+  await planner.getByText('Разделить бюджет между двумя семьями', { exact: true }).click()
+  await expect(planner.locator('p').filter({ hasText: 'Семья: 4 взрослых' })).toContainText('667')
+  await expect(planner.locator('p').filter({ hasText: 'Семья: взрослый и ребёнок' })).toContainText(
+    '334',
+  )
+  await expect(page.getByLabel('Время на месте: Красные дюны Лахбаб', { exact: true })).toHaveCount(
+    0,
+  )
+  await page.reload()
+  await expect(planner.locator('.route-timeline')).toContainText('21:00 · Возвращение в отель')
 })

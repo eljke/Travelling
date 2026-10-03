@@ -46,7 +46,6 @@ export default function PlanPage() {
   const bundle = useDestinationBundle(destinationId)
   const { plans, savePlan, favorites } = usePreferences()
   const [params, setParams] = useSearchParams()
-  const [selectedDate, setSelectedDate] = useState('')
   const [dailyMinutes, setDailyMinutes] = useState(360)
   const [message, setMessage] = useState('')
   const [shareUrl, setShareUrl] = useState('')
@@ -79,7 +78,7 @@ export default function PlanPage() {
     }
   }
   const plan = shared ?? plans[destinationId] ?? createItinerary(bundle)
-  const activeDay = plan.days.find((day) => day.date === selectedDate) ?? plan.days[0]
+  const activeDay = plan.days.find((day) => day.date === params.get('day')) ?? plan.days[0]
   const placeById = new globalThis.Map(bundle.places.map((place) => [place.id, place]))
   const scheduled = new Set(plan.days.flatMap((day) => day.placeIds))
   const allPlaces = [...scheduled].map((id) => placeById.get(id)!)
@@ -286,7 +285,14 @@ export default function PlanPage() {
             className={`plan-day-tab ${day.date === activeDay.date ? 'active' : ''}`}
             aria-pressed={day.date === activeDay.date}
             onClick={() => {
-              setSelectedDate(day.date)
+              setParams(
+                (current) => {
+                  const next = new URLSearchParams(current)
+                  next.set('day', day.date)
+                  return next
+                },
+                { replace: true },
+              )
               setSelectedId(undefined)
             }}
           >
@@ -331,15 +337,15 @@ export default function PlanPage() {
               </h2>
               {places.length > 0 && (
                 <p>
-                  {formatDuration(summary)} на посещения · {budget(summary)} ·{' '}
+                  {formatDuration(summary)} по карточкам · {budget(summary)} ·{' '}
                   {formatDistance(summary.distance)} между остановками по прямой
                 </p>
               )}
             </div>
             {summary.maxMinutes > dailyMinutes && (
               <p className="plan-warning">
-                Насыщенный день: посещения могут занять больше {dailyMinutes / 60} часов, ещё без
-                дороги и перерывов. Перенесите часть мест на другой день.
+                По карточкам получается больше {dailyMinutes / 60} часов. С учётом дороги и
+                перерывов день может быть тесным — посмотрите расчёт маршрута ниже.
               </p>
             )}
             {!shared && destinationId === 'dubai' && (
@@ -424,49 +430,62 @@ export default function PlanPage() {
                       {formatDuration(place.duration)} · {formatPrice(place.pricing)}
                     </p>
                     <p className="fine-print">{place.bestTime.join(' ')}</p>
-                    {!shared && (
-                      <div className="stop-timing">
-                        <label>
-                          Вход по билету, если он уже куплен
-                          <input
-                            aria-label={`Вход по билету: ${place.nameRu}`}
-                            type="time"
-                            value={settings.slots[place.id] ?? ''}
-                            onChange={(event) => {
-                              const slots = { ...settings.slots }
-                              if (event.target.value) slots[place.id] = event.target.value
-                              else delete slots[place.id]
-                              updateSettings({ slots })
-                            }}
-                          />
-                        </label>
-                        <label>
-                          Время на месте, мин
-                          <input
-                            aria-label={`Время на месте: ${place.nameRu}`}
-                            type="number"
-                            min="15"
-                            max="720"
-                            step="15"
-                            value={
-                              settings.visits[place.id] ??
-                              (place.areaId === 'hatta'
-                                ? 180
-                                : Math.round(
-                                    (place.duration.minMinutes + place.duration.maxMinutes) / 2,
-                                  ))
-                            }
-                            onChange={(event) => {
-                              const value = Number(event.target.value)
-                              if (Number.isInteger(value) && value >= 15 && value <= 720)
-                                updateSettings({
-                                  visits: { ...settings.visits, [place.id]: value },
-                                })
-                            }}
-                          />
-                        </label>
-                      </div>
-                    )}
+                    {!shared &&
+                      !(
+                        places.length === 1 &&
+                        place.areaId === 'desert' &&
+                        settings.safariTransferConfirmed
+                      ) && (
+                        <div className="stop-timing">
+                          <label>
+                            Вход по билету, если он уже куплен
+                            <input
+                              aria-label={`Вход по билету: ${place.nameRu}`}
+                              type="time"
+                              value={settings.slots[place.id] ?? ''}
+                              onChange={(event) => {
+                                const slots = { ...settings.slots }
+                                if (event.target.value) slots[place.id] = event.target.value
+                                else delete slots[place.id]
+                                updateSettings({ slots })
+                              }}
+                            />
+                          </label>
+                          <label>
+                            Время на месте, мин
+                            <input
+                              aria-label={`Время на месте: ${place.nameRu}`}
+                              type="number"
+                              min="15"
+                              max="720"
+                              step="15"
+                              value={
+                                settings.visits[place.id] ??
+                                (place.areaId === 'hatta'
+                                  ? 180
+                                  : Math.round(
+                                      (place.duration.minMinutes + place.duration.maxMinutes) / 2,
+                                    ))
+                              }
+                              onChange={(event) => {
+                                const value = Number(event.target.value)
+                                if (Number.isInteger(value) && value >= 15 && value <= 720)
+                                  updateSettings({
+                                    visits: { ...settings.visits, [place.id]: value },
+                                  })
+                              }}
+                            />
+                          </label>
+                        </div>
+                      )}
+                    {places.length === 1 &&
+                      place.areaId === 'desert' &&
+                      settings.safariTransferConfirmed && (
+                        <p className="fine-print">
+                          Весь тур с дорогой и ужином — около шести часов. Время забора задаём в
+                          поле «Выезд из отеля».
+                        </p>
+                      )}
                     {bundle.trip.accommodation && (
                       <a
                         className="text-button"

@@ -52,6 +52,8 @@ export const priceSchema = z
     kind: z.enum(['free', 'from', 'fixed', 'unknown']),
     amount: z.number().nonnegative().optional(),
     currency: z.string().length(3),
+    unit: z.enum(['person', 'group']).default('person'),
+    groupCapacity: z.number().int().min(1).max(50).optional(),
     note: z.string(),
     variants: z.array(variantSchema).default([]),
     childPrices: z
@@ -70,6 +72,8 @@ export const priceSchema = z
     sourceIds: references,
   })
   .superRefine((value, ctx) => {
+    if (value.unit === 'group' && value.groupCapacity === undefined)
+      ctx.addIssue({ code: 'custom', message: 'Group prices require a capacity' })
     if (value.kind === 'free' && value.amount !== 0)
       ctx.addIssue({ code: 'custom', message: 'Free prices must be zero' })
     if (

@@ -18,7 +18,7 @@ export function formatPrice(price: PriceInfo) {
     ? 'Бесплатно'
     : price.amount === undefined
       ? 'Цена уточняется'
-      : `${price.kind === 'from' ? 'от ' : ''}${formatCurrency(price.amount, price.currency)}`
+      : `${price.kind === 'from' ? 'от ' : ''}${formatCurrency(price.amount, price.currency)}${price.unit === 'group' ? ' за группу' : ''}`
 }
 export function formatRub(price: PriceInfo, fx: DestinationBundle['exchangeRate']) {
   return price.amount === undefined || price.amount === 0 || price.currency !== fx.baseCurrency

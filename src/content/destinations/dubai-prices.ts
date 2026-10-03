@@ -1,5 +1,15 @@
 export const priceUpdates = [
   {
+    slug: 'lahbab-desert',
+    amount: 1000,
+    url: 'https://thekingofdesert.com/product/desert-safari-private-car-6',
+    note: 'Пример пакета King of Desert: 1000 AED за частную машину до 6 гостей, около 6 часов, с трансфером, программой и ужином. Забор из JA и время подтверждаем отдельно. Это не тариф любого сафари. Возврат до 48 ч ограничен: до 10% денег или ваучер 40%.',
+    variants: [
+      ['Частная машина, до 6 человек', 'standard', 1000],
+      ['Shared car, на человека', 'adult', 250],
+    ],
+  },
+  {
     slug: 'green-planet',
     amount: 155,
     url: 'https://www.thegreenplanetdubai.com/en/day-pass?adventure=day-pass&date=',

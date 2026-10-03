@@ -37,7 +37,7 @@ test.afterEach(async ({ page }) => {
 
 test('opens trips and the destination', async ({ page }) => {
   await page.goto('/')
-  await expect(page.getByRole('heading', { name: 'Ваши путешествия' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Наши поездки' })).toBeVisible()
   await page.getByRole('link', { name: /АКТИВНАЯ ПОЕЗДКА/ }).click()
   await expect(page.getByRole('heading', { name: 'Dubai.', exact: true })).toBeVisible()
   await expect(page.locator('.place-card')).toHaveCount(12)

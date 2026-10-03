@@ -58,6 +58,44 @@ describe('day route', () => {
       ),
     ).toMatchObject({ amount: 300, childEstimated: true })
   })
+  it('prices a private vehicle for the whole party', () => {
+    expect(groupTicketPrice(place('lahbab-desert'), defaultRouteSettings, date)).toMatchObject({
+      amount: 1000,
+      unknown: false,
+      childEstimated: false,
+    })
+    expect(
+      groupTicketPrice(place('lahbab-desert'), { ...defaultRouteSettings, adults: 6 }, date).amount,
+    ).toBe(2000)
+  })
+  it('uses hotel access and external weekday passes separately', () => {
+    expect(groupTicketPrice(place('ja-beach'), defaultRouteSettings, date).amount).toBe(0)
+    const external = { ...defaultRouteSettings, hotelBeachIncluded: false }
+    expect(groupTicketPrice(place('ja-beach'), external, date).amount).toBe(900)
+    expect(groupTicketPrice(place('ja-beach'), external, '2026-10-09').amount).toBe(1200)
+  })
+  it('counts confirmed safari transfers inside the six-hour package', () => {
+    const settings = {
+      ...defaultRouteSettings,
+      start: '15:00',
+      safariTransferConfirmed: true,
+      slots: { [place('lahbab-desert').id]: '18:00' },
+    }
+    const route = evaluateRoute([place('lahbab-desert')], dubai, date, settings)
+    expect(route.returnAt - toMinutes(settings.start)).toBe(360)
+    expect(route.cost).toBe(0)
+    expect(route.ticketCost).toBe(1000)
+    expect(route.stops[0].leg.mode).toBe('tour')
+    expect(route.returnLeg.mode).toBe('tour')
+    expect(route.stops[0].pauseAfter).toBe(0)
+    expect(route.fits).toBe(true)
+    expect(
+      evaluateRoute([place('lahbab-desert')], dubai, date, defaultRouteSettings).cost,
+    ).toBeGreaterThan(0)
+    expect(
+      evaluateRoute([place('lahbab-desert'), place('dubai-mall')], dubai, date, settings).cost,
+    ).toBeGreaterThan(0)
+  })
   it('improves order without dropping stops or breaking return time', () => {
     const stops = ['dubai-mall', 'dubai-marina-walk', 'dubai-aquarium'].map(place)
     const before = evaluateRoute(stops, dubai, date, defaultRouteSettings)

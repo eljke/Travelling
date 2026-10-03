@@ -218,12 +218,15 @@ const sources = [
     'Visit Dubai • сафари',
     'https://www.visitdubai.com/places-to-visit/desert-safari-dubai',
   ),
-  source(
-    'desert-ticket',
-    'Visit Dubai • частное сафари, до 6 гостей',
-    'https://experiences.visitdubai.com/productDetail/89519',
-    'ticket-provider',
-  ),
+  {
+    ...source(
+      'desert-ticket',
+      'King of Desert • частное сафари, до 6 гостей',
+      'https://thekingofdesert.com/product/desert-safari-private-car-6',
+      'ticket-provider',
+    ),
+    accessedAt: '2026-10-03',
+  },
   source(
     'hatta',
     'Visit Dubai • Hatta, активности',
@@ -1455,10 +1458,10 @@ const seeds: Seed[] = [
     image: 'desert',
     short: 'За городом: дюны, тишина и вечернее небо.',
     description:
-      'Сафари — услуга оператора, а не единый входной билет. Точка на карте обозначает район дюн, не место самостоятельной встречи. Подтвердите трансфер из JA, состав программы, интенсивность поездки и возрастные ограничения. Частный проверенный пакет стоит от 990 AED на группу до 6 человек.',
+      'Сафари бронируем как отдельный тур, а не как обычное место на карте. Для шестерых есть частная машина King of Desert за 1000 AED на всю компанию; поездка, программа и ужин занимают около шести часов. Это пример пакета, не оценка качества оператора. До оплаты подтвердим забор из JA, время и ограничения для ребёнка. Условия возврата строгие: по указанной политике до 48 часов возвращают до 10% денег либо предлагают ваучер на 40%.',
     source: 'desert',
     extraSources: ['desert-ticket'],
-    minutes: [240, 360],
+    minutes: [360, 360],
     tags: ['must-see', 'sunset', 'extreme', 'photos'],
     best: 'Во второй половине дня, если оператор подтверждает программу с закатом.',
     transport: 'Обычно трансфер оператора; для JA отдельно уточняйте зону забора.',
@@ -1633,10 +1636,11 @@ const places = [...seeds, ...extraPlaces].map((s) => {
     s.id === 'dubai-aquarium' ? 'aquarium-guide' : s.source,
     s.priceNote ??
       (s.amount === undefined && !s.free
-        ? 'Подтверждённой числовой цены нет. Проверьте продавца на свою дату.'
+        ? 'Цена зависит от выбранного билета. Посмотрим варианты на наши даты.'
         : 'Цена на дату исследования; это не гарантия доступности слота.'),
   )
   if (s.checkedAt) pricing.checkedAt = s.checkedAt
+  if (s.id === 'lahbab-desert') Object.assign(pricing, { unit: 'group', groupCapacity: 6 })
   const childPrices =
     s.childPrices ??
     (s.id === 'dubai-frame'
@@ -1768,9 +1772,11 @@ const places = [...seeds, ...extraPlaces].map((s) => {
       minMinutes: s.minutes[0],
       maxMinutes: s.minutes[1],
       note:
-        s.area === 'hatta'
-          ? 'На этот выезд лучше выделить целый день: здесь учтена и дорога.'
-          : 'Примерно столько стоит заложить на прогулку и возможное ожидание. Можно задержаться, если понравится.',
+        s.area === 'desert'
+          ? 'Около шести часов на весь тур: дорога, программа и ужин. Время забора согласуем с оператором.'
+          : s.area === 'hatta'
+            ? 'На этот выезд лучше выделить целый день: здесь учтена и дорога.'
+            : 'Примерно столько стоит заложить на прогулку и возможное ожидание. Можно задержаться, если понравится.',
     },
     openingHours: {
       text:
@@ -1905,9 +1911,9 @@ export default {
     countryId: 'uae',
     name: 'Dubai',
     nameRu: 'Дубай',
-    tagline: 'Город за пределами открыток.',
+    tagline: 'Море, город и пять дней вместе.',
     description:
-      'От тихих переулков у Creek до красных дюн. Соберите свой Дубай из мест, которые стоят вашего времени.',
+      'Выбираем места на 6–10 октября: от прогулок у моря до садов и смотровых. Живём в JA Palm Tree Court и объединяем соседние места в один выезд.',
     center: { lat: 25.12, lng: 55.2 },
     heroImageId: 'hero',
     timezone: 'Asia/Dubai',
