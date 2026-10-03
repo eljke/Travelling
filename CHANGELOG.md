@@ -1,8 +1,17 @@
 # Changelog
 
-Все заметные изменения проекта записываются здесь. Формат — Keep a Changelog; версии — Semantic Versioning. Коммиты оформляются по Conventional Commits: одна смысловая правка на коммит.
+Все заметные изменения проекта записываются здесь. Формат — [Keep a Changelog](https://keepachangelog.com/ru/1.1.0/); версии — [Semantic Versioning](https://semver.org/lang/ru/). Коммиты оформляются по [Conventional Commits](https://www.conventionalcommits.org/ru/v1.0.0/): одна смысловая правка на коммит.
+
+Каждый выпуск готовится в ветке `release/x.y.z`, получает тег `vx.y.z` и запись ниже. Релизная ветка сливается в актуальный `main`; после каждого выпуска GitHub Actions проверяет и публикует сайт в GitHub Pages.
 
 ## [Unreleased]
+
+## [1.4.1] - 2026-10-03
+
+### Fixed
+
+- Форматирование сохраняет окончания строк при проверке на Windows и в Linux.
+- Локальные браузерные проверки на Windows выполняются последовательно для устойчивой загрузки карт.
 
 ## [1.4.0] - 2026-10-03
 
@@ -68,7 +77,8 @@
 
 - Доступность элементов управления, читаемость кнопок и устойчивость загрузки.
 
-[Unreleased]: https://github.com/eljke/Travelling/compare/v1.4.0...HEAD
+[Unreleased]: https://github.com/eljke/Travelling/compare/v1.4.1...HEAD
+[1.4.1]: https://github.com/eljke/Travelling/compare/v1.4.0...v1.4.1
 [1.4.0]: https://github.com/eljke/Travelling/compare/v1.3.0...v1.4.0
 [1.3.0]: https://github.com/eljke/Travelling/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/eljke/Travelling/compare/v1.1.0...v1.2.0
