@@ -49,6 +49,42 @@ function Leg({
               : 'бесплатно'}
         </strong>
         <p>{leg.detail}</p>
+        {['metro', 'tram'].includes(leg.mode) && (
+          <details className="transit-help">
+            <summary>Как оплатить и пройти</summary>
+            <p>
+              На каждого, включая ребёнка 11 лет, нужна своя карта nol. Silver стоит{' '}
+              {formatMoney(25, fx)}, из них {formatMoney(19, fx)} уже на балансе. Перед поездкой
+              оставляем минимум {formatMoney(7.5, fx)} на каждой карте.
+            </p>
+            <p>
+              {leg.mode === 'tram'
+                ? 'У трамвая нет турникетов: прикладываем карту к валидатору на платформе до посадки и после выхода.'
+                : 'В метро прикладываем карту к турникету на входе и на выходе. С Silver выбираем обычный вагон; Gold требует другого тарифа.'}{' '}
+              Карты покупаем и пополняем в автоматах или кассах станций.
+            </p>
+            <p>
+              При первом использовании в бюджете учтено {formatMoney(6, fx)} за выпуск карты на
+              человека. Начальный баланс отдельно не прибавляем к стоимости проезда; при покупке
+              нужно оплатить все {formatMoney(25, fx)}.
+            </p>
+            <a
+              href="https://rta.ae/wps/portal/rta/ae/public-transport/nol/choose-nol"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Карты nol · RTA ↗
+            </a>
+            {' · '}
+            <a
+              href="https://rta.ae/wps/portal/rta/ae/home/rta-services/service-details?serviceId=337"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Правила метро и трамвая · RTA ↗
+            </a>
+          </details>
+        )}
         <a
           className="text-button"
           href={directionsUrl(
@@ -388,6 +424,12 @@ export default function DayRoutePlanner({
         . Участки дороги и сравнение транспорта ниже показывают полную стоимость машины или поездки
         на всех пассажиров.
       </p>
+      {route.nolCardFee > 0 && (
+        <p className="fine-print">
+          В транспорт добавлен выпуск карт nol: {formatMoney(route.nolCardFee, bundle.exchangeRate)}{' '}
+          на всех. Если карты уже куплены, отметьте это ниже.
+        </p>
+      )}
       {settings.adults === 5 && settings.children === 1 && (
         <details className="route-assumptions">
           <summary>Разделить бюджет между двумя семьями</summary>
@@ -498,6 +540,21 @@ export default function DayRoutePlanner({
       </details>
       <details className="route-assumptions">
         <summary>Как считаем дорогу и деньги</summary>
+        <p>
+          В сбалансированном режиме метро и трамвай выбираем, если экономия на всех не меньше 20 AED
+          и 25% цены такси, а дорога дольше максимум на 15 минут. Выпуск новых карт тоже учитываем.
+          Это наш порог удобства; режим «Дешевле» позволяет сильнее экономить.
+        </p>
+        {!readOnly && (
+          <label>
+            <input
+              type="checkbox"
+              checked={settings.nolCardsOwned}
+              onChange={(event) => update({ nolCardsOwned: event.target.checked })}
+            />
+            Карты nol уже есть у всех участников
+          </label>
+        )}
         {places.some((place) => place.areaId === 'desert') && (
           <>
             <p>

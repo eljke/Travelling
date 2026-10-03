@@ -9,6 +9,7 @@ import {
   travelOptions,
   toMinutes,
   estimateQueue,
+  selectTravelOption,
 } from '../../src/domain/dayRoute'
 import { closedOnDate } from '../../src/domain/openingHours'
 import { createItinerary, normalizeItinerary } from '../../src/domain/itinerary'
@@ -19,6 +20,39 @@ const dubai = destinations.dubai
 const place = (slug: string) => dubai.places.find((place) => place.slug === slug)!
 const date = '2026-10-08'
 describe('day route', () => {
+  it('prefers a taxi unless transit saves enough time-adjusted money', () => {
+    const options = travelOptions(
+      place('mall-of-the-emirates'),
+      place('sky-views'),
+      defaultRouteSettings,
+    )
+    const taxi = options.find((option) => option.mode === 'taxi')!
+    const metro = options.find((option) => option.mode === 'metro')!
+    expect(metro.cost).toBe(30)
+    expect(selectTravelOption(options, defaultRouteSettings).mode).toBe('taxi')
+    const owned = { ...defaultRouteSettings, nolCardsOwned: true }
+    const chosen = selectTravelOption(options, owned)
+    if (chosen.mode === 'metro') {
+      expect(taxi.cost - metro.cost).toBeGreaterThanOrEqual(20)
+      expect(metro.minutes - taxi.minutes).toBeLessThanOrEqual(15)
+    }
+    const route = evaluateRoute([place('mall-of-the-emirates'), place('sky-views')], dubai, date, {
+      ...defaultRouteSettings,
+      preference: 'cheap',
+    })
+    expect(route.nolCardFee).toBe(
+      route.stops.some((stop) => stop.leg.mode === 'metro') || route.returnLeg.mode === 'metro'
+        ? 36
+        : 0,
+    )
+    const withCards = evaluateRoute(
+      [place('mall-of-the-emirates'), place('sky-views')],
+      dubai,
+      date,
+      { ...defaultRouteSettings, preference: 'cheap', nolCardsOwned: true },
+    )
+    expect(withCards.nolCardFee).toBe(0)
+  })
   it('adjusts queues by season and arrival while keeping manual overrides', () => {
     const frame = place('dubai-frame')
     expect(dubai.places.filter((place) => place.queue).length).toBeGreaterThanOrEqual(20)

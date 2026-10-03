@@ -20,6 +20,7 @@ export const routeSettingsSchema = z.object({
   waits: z.record(z.string(), z.number().int().min(0).max(240)).default({}),
   hotelBeachIncluded: z.boolean().default(true),
   safariTransferConfirmed: z.boolean().default(false),
+  nolCardsOwned: z.boolean().default(false),
 })
 export type RouteSettings = z.infer<typeof routeSettingsSchema>
 export const defaultRouteSettings: RouteSettings = routeSettingsSchema.parse({ childAge: 11 })
@@ -51,7 +52,7 @@ const metroAccess: Record<string, { station: number; walk: number }> = {
   'sky-views': { station: 13, walk: 7 },
   'dubai-opera': { station: 13, walk: 18 },
   'museum-of-the-future': { station: 15, walk: 8 },
-  difc: { station: 14, walk: 12 },
+  'difc-gate-avenue': { station: 14, walk: 12 },
 }
 const stationNames: Record<number, string> = {
   0: 'Ibn Battuta',
@@ -132,8 +133,8 @@ export function travelOptions(a: StopPoint, b: StopPoint, settings: RouteSetting
     const start = from?.station ?? 0
     const end = to?.station ?? 0
     const stationCount = Math.abs(start - end)
-    // Highest Silver fare avoids undercounting zones and transfers; cards are separate.
-    const fare = 7.5 * (settings.adults + settings.children)
+    const singleFare = start <= 8 === end <= 8 ? 3 : 5
+    const fare = singleFare * (settings.adults + settings.children)
     options.push({
       mode: 'metro',
       minutes:
@@ -144,7 +145,7 @@ export function travelOptions(a: StopPoint, b: StopPoint, settings: RouteSetting
         (hotelLeg?.minutes ?? 0),
       cost: Math.ceil(fare + (hotelLeg?.cost ?? 0)),
       highCost: Math.ceil(fare + (hotelLeg?.highCost ?? 0)),
-      detail: `${hotelLeg ? `${settings.taxi === 'max' ? 'Hala Max' : 'Такси'} между отелем и Ibn Battuta + ` : ''}красная линия: ${stationNames[start]} → ${stationNames[end]}. До 7,50 AED на пассажира; подходы и ожидание включены.`,
+      detail: `${hotelLeg ? `${settings.taxi === 'max' ? 'Hala Max' : 'Такси'} между отелем и Ibn Battuta + ` : ''}красная линия: ${stationNames[start]} → ${stationNames[end]}. Silver nol: ${singleFare} AED на пассажира по зонам этих станций; подходы и ожидание включены. Направление поезда сверяем на платформе.`,
       origin: a.coordinates,
       destination: b.coordinates,
     })
@@ -170,6 +171,25 @@ function legScore(leg: TravelLeg, preference: RouteSettings['preference']) {
       ? leg.cost + leg.minutes * 0.12
       : leg.minutes + leg.cost * 0.45
 }
+export function selectTravelOption(options: TravelLeg[], settings: RouteSettings) {
+  const taxi = options.find((option) => option.mode === 'taxi')!
+  const cardFee = settings.nolCardsOwned ? 0 : 6 * (settings.adults + settings.children)
+  return options
+    .filter((option) => {
+      if (settings.preference !== 'balanced' || !['metro', 'tram'].includes(option.mode))
+        return true
+      const savings = taxi.cost - option.cost - cardFee
+      return savings >= 20 && savings >= taxi.cost * 0.25 && option.minutes <= taxi.minutes + 15
+    })
+    .sort((a, b) => {
+      const score = (leg: TravelLeg) =>
+        legScore(
+          { ...leg, cost: leg.cost + (['metro', 'tram'].includes(leg.mode) ? cardFee : 0) },
+          settings.preference,
+        )
+      return score(a) - score(b)
+    })[0]
+}
 function chooseLeg(
   a: StopPoint,
   b: StopPoint,
@@ -182,12 +202,17 @@ function chooseLeg(
   const options = travelOptions(a, b, settings).filter(
     (option) =>
       ['walk', 'taxi'].includes(option.mode) ||
-      (departure >= (weekday === 0 ? 8 : 6) * 60 && departure + option.minutes <= 23 * 60),
+      (departure >=
+        (option.mode === 'tram' ? (weekday === 0 ? 9 : 6) : weekday === 0 ? 8 : 5) * 60 &&
+        departure + option.minutes <= 23 * 60),
   )
   const timely = options.filter((option) => departure + option.minutes <= arriveBy)
-  return (timely.length ? timely : options).sort(
-    (left, right) => legScore(left, settings.preference) - legScore(right, settings.preference),
-  )[0]
+  const candidates = timely.length ? timely : options
+  if (!candidates.some((option) => option.mode === 'taxi'))
+    return candidates.sort(
+      (a, b) => legScore(a, settings.preference) - legScore(b, settings.preference),
+    )[0]
+  return selectTravelOption(candidates, settings)
 }
 export function groupTicketPrice(
   place: Place,
@@ -243,6 +268,7 @@ export function evaluateRoute(
   let time = start
   let previous: StopPoint = hotelPoint
   let pause = 0
+  let usedTransit = settings.nolCardsOwned
   const stops = places.map((place, index) => {
     const fixedTime = includedSafari ? undefined : settings.slots[place.id]
     const slot = fixedTime ? toMinutes(fixedTime) : undefined
@@ -261,7 +287,15 @@ export function evaluateRoute(
         ? toMinutes(schedule.closes) - visitMinutes - queueMinutes
         : Infinity,
     )
-    const leg = chooseLeg(previous, place, settings, time, date, arriveBy)
+    const leg = chooseLeg(
+      previous,
+      place,
+      { ...settings, nolCardsOwned: usedTransit },
+      time,
+      date,
+      arriveBy,
+    )
+    usedTransit ||= ['metro', 'tram'].includes(leg.mode)
     if (includedSafari) {
       Object.assign(leg, {
         mode: 'tour',
@@ -334,7 +368,14 @@ export function evaluateRoute(
     }
   })
   const returnLeg = places.length
-    ? chooseLeg(previous, hotelPoint, settings, time, date, deadline - settings.buffer)
+    ? chooseLeg(
+        previous,
+        hotelPoint,
+        { ...settings, nolCardsOwned: usedTransit },
+        time,
+        date,
+        deadline - settings.buffer,
+      )
     : {
         mode: 'taxi' as const,
         minutes: 0,
@@ -356,8 +397,12 @@ export function evaluateRoute(
   const tickets = places.map((place) =>
     groupTicketPrice(place, settings, date, bundle.exchangeRate.baseCurrency),
   )
-  const cost = legs.reduce((sum, leg) => sum + leg.cost, 0)
-  const highCost = legs.reduce((sum, leg) => sum + leg.highCost, 0)
+  const nolCardFee =
+    !settings.nolCardsOwned && legs.some((leg) => ['metro', 'tram'].includes(leg.mode))
+      ? 6 * (settings.adults + settings.children)
+      : 0
+  const cost = legs.reduce((sum, leg) => sum + leg.cost, nolCardFee)
+  const highCost = legs.reduce((sum, leg) => sum + leg.highCost, nolCardFee)
   const violations = stops.filter((stop) =>
     stop.warnings.some(
       (warning) => warning.includes('закрытие') || warning.includes('не помещается'),
@@ -370,6 +415,7 @@ export function evaluateRoute(
     returnAt,
     cost,
     highCost,
+    nolCardFee,
     ticketCost: tickets.reduce((sum, ticket) => sum + ticket.amount, 0),
     unknownPrices: tickets.filter((ticket) => ticket.unknown).length,
     childEstimates: tickets.filter((ticket) => ticket.childEstimated).length,
